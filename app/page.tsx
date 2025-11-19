@@ -1,65 +1,112 @@
+// app/page.tsx
 import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import SmartMap from "@/components/SmartMap";
 
-export default function Home() {
+// ganti FILE_ID_LOGO dengan ID file Google Drive kamu
+const LOGO_URL =
+  "https://drive.google.com/thumbnail?id=1KtUkqQREVr_dQVhjYBdv35HgpUUMrAvS&sz=w200";
+
+export default async function HomePage() {
+  // ambil labs & session barengan
+  const [labs, session] = await Promise.all([
+    prisma.lab.findMany({
+      include: { types: true },
+      orderBy: { name: "asc" },
+    }),
+    getServerSession(authOptions),
+  ]);
+
+  const year = new Date().getFullYear();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="flex min-h-screen flex-col bg-slate-950 text-slate-50">
+      {/* NAVBAR */}
+      <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          {/* Kiri: logo + judul */}
+          <div className="flex items-center gap-3">
+            <div className="relative h-8 w-8 overflow-hidden rounded-lg border border-slate-300 bg-white">
+              <Image
+                src={LOGO_URL}
+                alt="Logo Smart Maps Labkesda"
+                fill
+                sizes="32px"
+                unoptimized
+                className="object-contain"
+              />
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold leading-tight">
+                JabJaB SmartMaps
+              </p>
+              <p className="text-[11px] leading-tight text-slate-400">
+                Peta Laboratorium Kesehatan Jawa Barat-DKI Jakarta-Banten
+              </p>
+            </div>
+          </div>
+
+          {/* Kanan: tombol login / dashboard */}
+          <div className="flex items-center gap-2">
+            {session ? (
+              // ✅ sudah login → langsung ke halaman admin / dashboard
+              <a
+                href="/admin" // kalau route kamu pakai "/dashboard", ganti ini
+                className="rounded-md border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-800"
+              >
+                Dashboard
+              </a>
+            ) : (
+              // ❌ belum login → ke halaman login
+              <a
+                href="/login"
+                className="rounded-md border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-800"
+              >
+                Login Admin
+              </a>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* KONTEN UTAMA */}
+      <div className="flex-1 px-4 py-6 flex justify-center">
+        <div className="w-full max-w-6xl rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl overflow-hidden flex flex-col">
+          {/* header kecil card */}
+          <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+            <div>
+              <h1 className="text-sm font-semibold text-slate-50">
+                Peta Laboratorium Kesehatan
+              </h1>
+              <p className="text-[11px] text-slate-400">
+                Klik marker untuk melihat detail laboratorium.
+              </p>
+            </div>
+          </div>
+
+          {/* area map di dalam “jendela” */}
+          <div className="flex-1 min-h-[420px] h-[70vh]">
+            <SmartMap labs={labs} />
+          </div>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <footer className="border-t border-slate-800 bg-slate-900/95">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 text-[11px] text-slate-400">
+          <p>
+            © {year} ASLABKESDA DPW Jawa Barat-DKI Jakarta-Banten. Semua hak
+            cipta.
+          </p>
+          <p className="hidden sm:block">
+            Smart Maps • Data Laboratorium Kesehatan daerah Jawa Barat, DKI dan
+            Banten
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </footer>
+    </main>
   );
 }

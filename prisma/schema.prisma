@@ -1,0 +1,36 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+
+model LabType {
+  id    String @id @default(cuid())
+  name  String @unique
+  labs  Lab[]  
+}
+
+model Lab {
+  id             String    @id @default(cuid())
+  name           String
+  address        String
+  latitude       Float
+  longitude      Float
+  labPhotoUrl    String
+  head1Name      String?
+  head1PhotoUrl  String?
+  head2Name      String?
+  head2PhotoUrl  String?
+  phone          String?
+  websiteUrl     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // satu lab bisa punya banyak type
+  types          LabType[]
+}
