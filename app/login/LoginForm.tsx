@@ -1,4 +1,3 @@
-// app/login/LoginForm.tsx
 "use client";
 
 import { FormEvent, useState } from "react";
@@ -7,14 +6,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
-// sama dengan LOGO_URL di app/page.tsx
 const LOGO_URL =
   "https://drive.google.com/thumbnail?id=1KtUkqQREVr_dQVhjYBdv35HgpUUMrAvS&sz=w200";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const from = searchParams.get("from") || "/admin";
+
+  // dukung ?callbackUrl=... (dari NextAuth) & ?from=...
+  const callbackUrl =
+    searchParams.get("callbackUrl") ??
+    searchParams.get("from") ??
+    "/admin";
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,27 +31,40 @@ export function LoginForm() {
     const username = String(formData.get("username") ?? "");
     const password = String(formData.get("password") ?? "");
 
-    const res = await signIn("credentials", {
-      username,
-      password,
-      redirect: false,
-      callbackUrl: from,
-    });
+    try {
+      const res = await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+        callbackUrl,
+      });
 
-    setLoading(false);
+      console.log("signIn result:", res);
 
-    if (!res) {
-      setError("Terjadi kesalahan. Coba lagi.");
-      return;
+      setLoading(false);
+
+      if (!res) {
+        setError("Terjadi kesalahan. Coba lagi.");
+        return;
+      }
+
+      if (res.error) {
+        // tampilkan pesan error asli untuk debug
+        setError(`Login gagal: ${res.error}`);
+        return;
+      }
+
+      // sukses
+      if (res.url) {
+        router.push(res.url);
+      } else {
+        router.push(callbackUrl);
+      }
+    } catch (err) {
+      console.error("signIn error:", err);
+      setLoading(false);
+      setError("Terjadi kesalahan jaringan. Coba lagi.");
     }
-
-    if (res.error) {
-      setError("Username atau password salah.");
-      return;
-    }
-
-    // sukses → redirect ke admin (atau path 'from')
-    router.push(res.url ?? "/admin");
   };
 
   return (
