@@ -1,0 +1,10 @@
+.env
+.env.*
+.git
+.next
+.vscode
+backups
+node_modules
+npm-debug.log*
+README.md
+scripts
