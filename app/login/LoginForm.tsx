@@ -23,7 +23,7 @@ const clerkAppearance = {
   },
 };
 
-export function LoginForm({ clerkEnabled = true }: { clerkEnabled?: boolean }) {
+export function LoginForm() {
   const searchParams = useSearchParams();
 
   const redirectUrl =
@@ -75,28 +75,16 @@ export function LoginForm({ clerkEnabled = true }: { clerkEnabled?: boolean }) {
               </div>
             </div>
 
-            {clerkEnabled ? (
-              <div className="smartmaps-clerk">
-                <SignIn
-                  appearance={clerkAppearance}
-                  routing="path"
-                  path="/login"
-                  fallbackRedirectUrl={redirectUrl}
-                  signUpUrl="/sign-up"
-                  withSignUp={false}
-                />
-              </div>
-            ) : (
-              <Card
-                size="small"
-                className="rounded-[22px] border border-amber-200 bg-amber-50/90"
-              >
-                <TypographyParagraph style={{ margin: 0, color: "#92400e" }}>
-                  Konfigurasi autentikasi belum aktif di deployment ini. Isi env
-                  Clerk di Vercel lalu redeploy untuk membuka halaman login.
-                </TypographyParagraph>
-              </Card>
-            )}
+            <div className="smartmaps-clerk">
+              <SignIn
+                appearance={clerkAppearance}
+                routing="path"
+                path="/login"
+                fallbackRedirectUrl={redirectUrl}
+                signUpUrl="/sign-up"
+                withSignUp={false}
+              />
+            </div>
 
             <div className="flex items-center justify-between rounded-[18px] border border-slate-200 bg-slate-50/80 px-3.5 py-3 text-xs text-slate-500">
               <span>© {new Date().getFullYear()} {siteContent.brand.appName}</span>

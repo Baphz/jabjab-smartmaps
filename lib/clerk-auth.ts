@@ -7,13 +7,6 @@ export const LAB_ADMIN_ROLE = "lab_admin";
 
 export type AppRole = typeof ADMIN_ROLE | typeof LAB_ADMIN_ROLE;
 
-export function isClerkConfigured() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() &&
-      process.env.CLERK_SECRET_KEY?.trim()
-  );
-}
-
 type UserWithMetadata =
   | {
       publicMetadata?: UserPublicMetadata | null;
@@ -44,19 +37,6 @@ function getUserLabName(user: UserWithMetadata) {
 }
 
 export async function getCurrentClerkSession() {
-  if (!isClerkConfigured()) {
-    return {
-      userId: null,
-      user: null,
-      role: null,
-      labId: null,
-      labName: null,
-      isAdmin: false,
-      isLabAdmin: false,
-      canAccessDashboard: false,
-    };
-  }
-
   const { userId } = await auth();
 
   if (!userId) {
