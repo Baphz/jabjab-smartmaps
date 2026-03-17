@@ -15,27 +15,25 @@ const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isAdminApiRoute = createRouteMatcher(["/api/admin(.*)"]);
 const isLabsMutationRoute = createRouteMatcher(["/api/labs(.*)"]);
 
-const clerkProxy = clerkMiddleware(
-  async (auth, request) => {
-    if (isPublicRoute(request)) {
-      return;
-    }
-
-    if (
-      isAdminRoute(request) ||
-      isAdminApiRoute(request) ||
-      (isLabsMutationRoute(request) && request.method !== "GET")
-    ) {
-      await auth.protect();
-    }
-  },
-  {
-    signInUrl: "/login",
-  }
-);
-
 export default clerkConfigured
-  ? clerkProxy
+  ? clerkMiddleware(
+      async (auth, request) => {
+        if (isPublicRoute(request)) {
+          return;
+        }
+
+        if (
+          isAdminRoute(request) ||
+          isAdminApiRoute(request) ||
+          (isLabsMutationRoute(request) && request.method !== "GET")
+        ) {
+          await auth.protect();
+        }
+      },
+      {
+        signInUrl: "/login",
+      }
+    )
   : function proxy() {
       return NextResponse.next();
     };
