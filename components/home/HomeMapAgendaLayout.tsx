@@ -55,6 +55,7 @@ export default function HomeMapAgendaLayout({
   todayKey,
 }: HomeMapAgendaLayoutProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [focusedActivity, setFocusedActivity] = useState<ActivitySourceItem | null>(null);
   const activeAgendaLabIds = useMemo(
     () =>
       Array.from(
@@ -154,6 +155,26 @@ export default function HomeMapAgendaLayout({
     [hasSearchFocus, labs, searchedLabIds]
   );
 
+  function handleSelectLab(nextLabId: string | null) {
+    setFocusedActivity(null);
+    setSelectedLabId(nextLabId);
+  }
+
+  function handleSelectActivityLocation(item: ActivitySourceItem) {
+    setFocusedActivity(item);
+    if (
+      typeof item.eventLatitude === "number" &&
+      Number.isFinite(item.eventLatitude) &&
+      typeof item.eventLongitude === "number" &&
+      Number.isFinite(item.eventLongitude)
+    ) {
+      setSelectedLabId(null);
+      return;
+    }
+
+    setSelectedLabId(item.labId ?? null);
+  }
+
   return (
     <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
       <section className="overflow-hidden rounded-[24px] border border-sky-100 bg-sky-50/60 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
@@ -230,8 +251,9 @@ export default function HomeMapAgendaLayout({
                 activeLabIds={activeAgendaLabIds}
                 focusedLabIds={searchedLabIds}
                 mutedLabIds={mutedLabIds}
+                focusedActivity={focusedActivity}
                 selectedLabId={effectiveSelectedLabId}
-                onSelectLab={setSelectedLabId}
+                onSelectLab={handleSelectLab}
               />
             </div>
           </div>
@@ -250,7 +272,8 @@ export default function HomeMapAgendaLayout({
               hideSummary
               hideNote
               maxSelectedItems={3}
-              onSelectLab={setSelectedLabId}
+              onSelectLab={handleSelectLab}
+              onSelectActivityLocation={handleSelectActivityLocation}
             />
           </section>
 
@@ -263,7 +286,7 @@ export default function HomeMapAgendaLayout({
               limit={4}
               compact
               emptyMessage="Belum ada agenda mendatang yang dipublikasikan."
-              onSelectLab={setSelectedLabId}
+              onSelectLab={handleSelectLab}
             />
           </section>
         </div>

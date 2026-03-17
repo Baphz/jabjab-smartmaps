@@ -8,7 +8,7 @@ export const CALENDAR_WEEKDAY_LABELS = [
   "Min",
 ] as const;
 
-export type ActivityKind = "lab_event" | "libur_nasional" | "cuti_bersama";
+export type ActivityKind = "lab_event" | "article" | "libur_nasional" | "cuti_bersama";
 
 export type ActivitySourceItem = {
   id: string;
@@ -25,6 +25,8 @@ export type ActivitySourceItem = {
   locationAddress: string | null;
   eventLatitude: number | null;
   eventLongitude: number | null;
+  articleSlug?: string | null;
+  coverImageUrl?: string | null;
 };
 
 export type ActivityDayItem = ActivitySourceItem & {
@@ -265,18 +267,25 @@ export function formatActivityRange(
 }
 
 export function getActivityKindLabel(kind: ActivityKind) {
+  if (kind === "article") return "Artikel";
   if (kind === "libur_nasional") return "Libur Nasional";
   if (kind === "cuti_bersama") return "Cuti Bersama";
   return "Agenda Lab";
 }
 
 export function getActivityScopeLabel(item: Pick<ActivitySourceItem, "kind" | "isGlobal" | "labName">) {
+  if (item.kind === "article") {
+    if (item.isGlobal) return "Artikel Global DPW";
+    return item.labName;
+  }
+
   if (item.kind !== "lab_event") return null;
   if (item.isGlobal) return "Agenda Global DPW";
   return item.labName;
 }
 
 export function getActivityKindColor(kind: ActivityKind) {
+  if (kind === "article") return "blue";
   if (kind === "libur_nasional") return "red";
   if (kind === "cuti_bersama") return "gold";
   return "cyan";

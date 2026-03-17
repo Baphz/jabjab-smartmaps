@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import LabCoordinatePicker from "@/components/admin/LabCoordinatePicker";
+import useAddressCoordinateAutofill from "@/components/admin/useAddressCoordinateAutofill";
 import {
   buildLabAddress,
   formatCityName,
@@ -213,6 +214,27 @@ export default function LabForm({ initialData }: LabFormProps) {
   const watchedVillageType = Form.useWatch("villageType", form);
   const watchedLatitude = Form.useWatch("latitude", form);
   const watchedLongitude = Form.useWatch("longitude", form);
+
+  const {
+    canResolve: canAutoLocate,
+    hasResolvedOnce: hasAutoLocated,
+    isResolving: isAutoLocating,
+  } = useAddressCoordinateAutofill({
+    resetKey: initialData?.id ?? "create-lab",
+    addressDetail: watchedAddressDetail,
+    provinceName: selectedProvince?.nama ?? null,
+    cityName: selectedCity?.namaTampil ?? null,
+    cityType: selectedCity?.tipe ?? null,
+    districtName: selectedDistrict?.nama ?? null,
+    villageName: selectedVillage?.nama ?? null,
+    villageType: watchedVillageType ?? null,
+    onCoordinatesResolved: (latitude, longitude) => {
+      form.setFieldsValue({
+        latitude,
+        longitude,
+      });
+    },
+  });
 
   const addressPreview = useMemo(
     () =>
@@ -583,6 +605,7 @@ export default function LabForm({ initialData }: LabFormProps) {
                         setSelectedCity(null);
                         setSelectedDistrict(null);
                         setSelectedVillage(null);
+                        form.setFieldsValue({ villageType: undefined });
                         setProvinceSearch("");
                         setCitySearch("");
                         setDistrictSearch("");
@@ -595,6 +618,7 @@ export default function LabForm({ initialData }: LabFormProps) {
                         setSelectedCity(null);
                         setSelectedDistrict(null);
                         setSelectedVillage(null);
+                        form.setFieldsValue({ villageType: undefined });
                         setCitySearch("");
                         setDistrictSearch("");
                         setVillageSearch("");
@@ -623,6 +647,7 @@ export default function LabForm({ initialData }: LabFormProps) {
                         setSelectedCity(null);
                         setSelectedDistrict(null);
                         setSelectedVillage(null);
+                        form.setFieldsValue({ villageType: undefined });
                         setCitySearch("");
                         setDistrictSearch("");
                         setVillageSearch("");
@@ -633,6 +658,7 @@ export default function LabForm({ initialData }: LabFormProps) {
                         setCitySearch(item.namaTampil);
                         setSelectedDistrict(null);
                         setSelectedVillage(null);
+                        form.setFieldsValue({ villageType: undefined });
                         setDistrictSearch("");
                         setVillageSearch("");
                       }}
@@ -659,6 +685,7 @@ export default function LabForm({ initialData }: LabFormProps) {
                       onClear={() => {
                         setSelectedDistrict(null);
                         setSelectedVillage(null);
+                        form.setFieldsValue({ villageType: undefined });
                         setDistrictSearch("");
                         setVillageSearch("");
                       }}
@@ -667,6 +694,7 @@ export default function LabForm({ initialData }: LabFormProps) {
                         setSelectedDistrict(item);
                         setDistrictSearch(item.nama);
                         setSelectedVillage(null);
+                        form.setFieldsValue({ villageType: undefined });
                         setVillageSearch("");
                       }}
                       options={mergeOption(selectedDistrict, districtOptions).map((item) => ({
@@ -691,6 +719,7 @@ export default function LabForm({ initialData }: LabFormProps) {
                       onSearch={setVillageSearch}
                       onClear={() => {
                         setSelectedVillage(null);
+                        form.setFieldsValue({ villageType: undefined });
                         setVillageSearch("");
                       }}
                       onSelect={(value, option) => {
@@ -709,13 +738,13 @@ export default function LabForm({ initialData }: LabFormProps) {
 
                 <Col xs={24} md={12}>
                   <FormItem
-                    label="Jenis wilayah terendah"
+                    label="Label alamat"
                     name="villageType"
-                    extra="Pilih Kelurahan atau Desa bila wilayah terendah tersedia."
                   >
                     <Select
                       allowClear
-                      placeholder="Pilih jenis wilayah"
+                      placeholder={selectedVillage ? "Kelurahan atau Desa" : "Pilih wilayah dulu"}
+                      disabled={!selectedVillage}
                       options={[
                         { value: "KELURAHAN", label: "Kelurahan" },
                         { value: "DESA", label: "Desa" },
@@ -794,11 +823,17 @@ export default function LabForm({ initialData }: LabFormProps) {
           <Col xs={24} xl={12}>
             <Card variant="borderless" title="Koordinat Peta">
               <Space orientation="vertical" size={12} style={{ width: "100%", marginBottom: 16 }}>
-                <div className="rounded-[16px] border border-slate-200 bg-slate-50/85 px-3 py-2.5">
-                  <div className="flex items-center gap-2 text-[11px] font-medium text-slate-600">
-                    <AimOutlined className="text-slate-400" />
-                    Pilih titik langsung di peta agar marker publik tampil presisi.
-                  </div>
+                <div className="flex items-center gap-2 text-[12px] text-slate-500">
+                  <AimOutlined className="text-slate-400" />
+                  <span>
+                    {isAutoLocating
+                      ? "Menyesuaikan titik dari alamat..."
+                      : hasAutoLocated
+                      ? "Titik sudah mengikuti alamat. Geser pin bila perlu."
+                      : canAutoLocate
+                      ? "Titik akan mengikuti alamat yang dipilih."
+                      : "Isi wilayah sampai kecamatan dan kelurahan/desa agar titik ikut bergerak."}
+                  </span>
                 </div>
 
                 <LabCoordinatePicker

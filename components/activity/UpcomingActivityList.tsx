@@ -53,7 +53,7 @@ export default function UpcomingActivityList({
   const upcomingItems = useMemo(
     () =>
       sortActivitySources(items)
-        .filter((item) => item.endDate >= todayKey)
+        .filter((item) => item.kind !== "article" && item.endDate >= todayKey)
         .slice(0, limit),
     [items, limit, todayKey]
   );
@@ -65,16 +65,18 @@ export default function UpcomingActivityList({
           <TypographyTitle level={5} style={{ marginBottom: compact ? 1 : 2 }}>
             {title}
           </TypographyTitle>
-          <TypographyParagraph
-            style={{
-              marginBottom: 0,
-              color: "#64748b",
-              fontSize: compact ? 11.5 : 12,
-              lineHeight: compact ? 1.45 : 1.5,
-            }}
-          >
-            {description}
-          </TypographyParagraph>
+          {description ? (
+            <TypographyParagraph
+              style={{
+                marginBottom: 0,
+                color: "#64748b",
+                fontSize: compact ? 11.5 : 12,
+                lineHeight: compact ? 1.45 : 1.5,
+              }}
+            >
+              {description}
+            </TypographyParagraph>
+          ) : null}
         </div>
 
         {actionHref && actionLabel ? (

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function AdminEventsPage() {
+export default function AdminArticlesPage() {
   redirect("/admin");
 }

@@ -28,9 +28,14 @@ const { Text: TypographyText } = Typography;
 type ImageUploadFieldProps = {
   value?: string;
   onChange?: (value: string) => void;
-  kind: "lab-photo" | "head1-photo" | "head2-photo";
+  kind:
+    | "lab-photo"
+    | "head1-photo"
+    | "head2-photo"
+    | "article-cover"
+    | "article-inline";
   labId?: string | null;
-  bucket?: "profile";
+  bucket?: "profile" | "article";
   title?: string;
   disabled?: boolean;
 };

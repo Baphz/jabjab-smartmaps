@@ -7,10 +7,11 @@ import {
   Card,
   Form,
   Input,
+  Modal,
   Select,
-  Space,
   Table,
   Tag,
+  Tabs,
   Typography,
   message,
 } from "antd";
@@ -18,7 +19,7 @@ import type { ColumnsType } from "antd/es/table";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const { Paragraph: TypographyParagraph, Title: TypographyTitle } = Typography;
+const { Title: TypographyTitle } = Typography;
 const { Item: FormItem } = Form;
 
 export type InviteLabOption = {
@@ -70,7 +71,13 @@ export default function AdminUsersManager({
   const { modal } = App.useApp();
   const [form] = Form.useForm<InviteFormValue>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const closeInvite = () => {
+    setIsInviteOpen(false);
+    form.resetFields();
+  };
 
   const handleCancelInvitation = (invitationId: string) => {
     modal.confirm({
@@ -185,7 +192,7 @@ export default function AdminUsersManager({
       }
 
       messageApi.success("Undangan berhasil dikirim.");
-      form.resetFields();
+      closeInvite();
       router.refresh();
     } catch (error) {
       const message =
@@ -202,127 +209,115 @@ export default function AdminUsersManager({
     <>
       {contextHolder}
 
-      <Space orientation="vertical" size={20} style={{ width: "100%" }}>
-        <Card variant="borderless">
-          <Space orientation="vertical" size={18} style={{ width: "100%" }}>
-            <div>
-              <TypographyTitle level={4} style={{ marginBottom: 4 }}>
-                Undang Akun Labkesda
-              </TypographyTitle>
-              <TypographyParagraph
-                style={{ marginBottom: 0, color: "#64748b" }}
-              >
-                Super admin mengirim undangan email ke tiap lab. User hanya bisa
-                membuat password lewat link invitation, bukan daftar mandiri.
-              </TypographyParagraph>
-            </div>
+      <Card
+        variant="borderless"
+        className="rounded-[20px] border border-slate-200 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.04)]"
+      >
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <TypographyTitle level={4} style={{ margin: 0 }}>
+            Akun Labkesda
+          </TypographyTitle>
 
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleInvite}
-              requiredMark={false}
+          <Button
+            type="primary"
+            icon={<UserAddOutlined />}
+            onClick={() => setIsInviteOpen(true)}
+          >
+            Undang Akun
+          </Button>
+        </div>
+
+        <Tabs
+          size="small"
+          items={[
+            {
+              key: "active",
+              label: `Akun Aktif (${activeUsers.length})`,
+              children: (
+                <Table
+                  rowKey="id"
+                  size="small"
+                  columns={activeColumns}
+                  dataSource={activeUsers}
+                  pagination={{ pageSize: 8, showSizeChanger: false }}
+                  locale={{ emptyText: "Belum ada akun aktif." }}
+                />
+              ),
+            },
+            {
+              key: "pending",
+              label: `Undangan (${pendingInvitations.length})`,
+              children: (
+                <Table
+                  rowKey="id"
+                  size="small"
+                  columns={pendingColumns}
+                  dataSource={pendingInvitations}
+                  pagination={{ pageSize: 8, showSizeChanger: false }}
+                  locale={{ emptyText: "Tidak ada undangan aktif." }}
+                />
+              ),
+            },
+          ]}
+        />
+      </Card>
+
+      <Modal
+        open={isInviteOpen}
+        onCancel={closeInvite}
+        title="Undang Akun Labkesda"
+        width={720}
+        footer={[
+          <Button key="cancel" onClick={closeInvite}>
+            Batal
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            icon={<UserAddOutlined />}
+            loading={isSubmitting}
+            onClick={() => form.submit()}
+          >
+            Kirim Undangan
+          </Button>,
+        ]}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleInvite}
+          requiredMark={false}
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <FormItem
+              label="Email akun"
+              name="email"
+              rules={[
+                { required: true, message: "Email wajib diisi." },
+                { type: "email", message: "Format email tidak valid." },
+              ]}
             >
-              <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr_auto]">
-                <FormItem
-                  label="Email akun"
-                  name="email"
-                  rules={[
-                    { required: true, message: "Email wajib diisi." },
-                    { type: "email", message: "Format email tidak valid." },
-                  ]}
-                >
-                  <Input
-                    prefix={<MailOutlined />}
-                    placeholder="mis. labkesda.kabupaten@email.go.id"
-                  />
-                </FormItem>
+              <Input
+                prefix={<MailOutlined />}
+                placeholder="Alamat email resmi"
+              />
+            </FormItem>
 
-                <FormItem
-                  label="Laboratorium"
-                  name="labId"
-                  rules={[{ required: true, message: "Pilih laboratorium." }]}
-                >
-                  <Select
-                    placeholder="Pilih laboratorium dari daftar"
-                    options={labs}
-                    showSearch
-                    optionFilterProp="label"
-                  />
-                </FormItem>
-
-                <FormItem
-                  label=" "
-                  style={{ alignSelf: "end", marginBottom: 24 }}
-                >
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    icon={<UserAddOutlined />}
-                    loading={isSubmitting}
-                  >
-                    Kirim Undangan
-                  </Button>
-                </FormItem>
-              </div>
-            </Form>
-
-            <TypographyParagraph
-              style={{ marginBottom: 0, color: "#94a3b8", fontSize: 12 }}
+            <FormItem
+              label="Laboratorium"
+              name="labId"
+              rules={[{ required: true, message: "Pilih laboratorium." }]}
             >
-              Opsi laboratorium yang sudah memiliki akun aktif atau invitation
-              aktif akan tampil nonaktif di daftar.
-            </TypographyParagraph>
-          </Space>
-        </Card>
-
-        <Card variant="borderless">
-          <Space orientation="vertical" size={16} style={{ width: "100%" }}>
-            <div>
-              <TypographyTitle level={4} style={{ marginBottom: 4 }}>
-                Akun Labkesda Aktif
-              </TypographyTitle>
-              <TypographyParagraph
-                style={{ marginBottom: 0, color: "#64748b" }}
-              >
-                User yang sudah menyelesaikan aktivasi invitation.
-              </TypographyParagraph>
-            </div>
-
-            <Table
-              rowKey="id"
-              columns={activeColumns}
-              dataSource={activeUsers}
-              pagination={{ pageSize: 8, showSizeChanger: false }}
-              locale={{ emptyText: "Belum ada akun labkesda aktif." }}
-            />
-          </Space>
-        </Card>
-
-        <Card variant="borderless">
-          <Space orientation="vertical" size={16} style={{ width: "100%" }}>
-            <div>
-              <TypographyTitle level={4} style={{ marginBottom: 4 }}>
-                Undangan Menunggu Aktivasi
-              </TypographyTitle>
-              <TypographyParagraph
-                style={{ marginBottom: 0, color: "#64748b" }}
-              >
-                Invitation yang sudah dikirim tetapi belum dipakai untuk membuat
-                password.
-              </TypographyParagraph>
-            </div>
-
-            <Table
-              rowKey="id"
-              columns={pendingColumns}
-              dataSource={pendingInvitations}
-              pagination={{ pageSize: 8, showSizeChanger: false }}
-              locale={{ emptyText: "Tidak ada invitation yang masih aktif." }}
-            />
-          </Space>
-        </Card>
-      </Space>
+              <Select
+                placeholder="Pilih laboratorium"
+                options={labs}
+                showSearch
+                optionFilterProp="label"
+              />
+            </FormItem>
+          </div>
+        </Form>
+      </Modal>
     </>
   );
 }

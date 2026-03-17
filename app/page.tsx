@@ -1,6 +1,7 @@
 import { EnvironmentOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import Image from "next/image";
+import RecentArticlesSection from "@/components/article/RecentArticlesSection";
 import HomeMapAgendaLayout from "@/components/home/HomeMapAgendaLayout";
 import { formatDateKey } from "@/lib/activity-calendar";
 import { getActivitySources } from "@/lib/activity-server";
@@ -39,7 +40,7 @@ function CompactMetric({
 }
 
 export default async function HomePage() {
-  const [labs, session, activity] = await Promise.all([
+  const [labs, session, activity, recentArticles] = await Promise.all([
     prisma.lab.findMany({
       include: { types: true },
       orderBy: { name: "asc" },
@@ -47,6 +48,21 @@ export default async function HomePage() {
     getCurrentClerkSession(),
     getActivitySources({
       onlyPublished: true,
+    }),
+    prisma.article.findMany({
+      where: {
+        isPublished: true,
+      },
+      include: {
+        lab: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: [{ publishedAt: "desc" }, { title: "asc" }],
+      take: 5,
     }),
   ]);
 
@@ -56,7 +72,9 @@ export default async function HomePage() {
     (item) => item.kind === "lab_event" && item.endDate >= todayKey
   ).length;
   const activeHolidayCount = activity.sources.filter(
-    (item) => item.kind !== "lab_event" && item.startDate >= todayKey
+    (item) =>
+      (item.kind === "libur_nasional" || item.kind === "cuti_bersama") &&
+      item.startDate >= todayKey
   ).length;
 
   return (
@@ -147,6 +165,19 @@ export default async function HomePage() {
           labs={labs}
           items={activity.sources}
           todayKey={todayKey}
+        />
+
+        <RecentArticlesSection
+          articles={recentArticles.map((article) => ({
+            id: article.id,
+            slug: article.slug,
+            title: article.title,
+            excerpt: article.excerpt,
+            coverImageUrl: article.coverImageUrl,
+            publishedAt: article.publishedAt,
+            isGlobal: article.isGlobal,
+            labName: article.lab?.name ?? null,
+          }))}
         />
 
         <div className="flex flex-col gap-1 px-1 pb-1 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">

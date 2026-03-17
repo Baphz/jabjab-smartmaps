@@ -18,6 +18,7 @@ import {
 } from "react-leaflet";
 import MapAttributionBadge from "@/components/map/MapAttributionBadge";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
+import type { ActivitySourceItem } from "@/lib/activity-calendar";
 import type { LabCityTypeValue, LabVillageTypeValue } from "@/lib/lab-address";
 import "leaflet/dist/leaflet.css";
 
@@ -58,17 +59,30 @@ export type SmartMapInnerProps = {
   activeLabIds?: string[];
   focusedLabIds?: string[];
   mutedLabIds?: string[];
+  focusedActivity?: ActivitySourceItem | null;
   selectedLabId?: string | null;
   onSelectLab?: (labId: string | null) => void;
 };
 
+function hasValidEventCoordinates(item: ActivitySourceItem | null | undefined) {
+  return Boolean(
+    item &&
+      typeof item.eventLatitude === "number" &&
+      Number.isFinite(item.eventLatitude) &&
+      typeof item.eventLongitude === "number" &&
+      Number.isFinite(item.eventLongitude)
+  );
+}
+
 function MapViewportController({
   selectedLab,
+  focusedActivity,
   labsBounds,
   focusedLabsBounds,
   focusKey,
 }: {
   selectedLab: LabWithTypes | null;
+  focusedActivity: ActivitySourceItem | null;
   labsBounds: L.LatLngBounds | null;
   focusedLabsBounds: L.LatLngBounds | null;
   focusKey: string;
@@ -76,15 +90,39 @@ function MapViewportController({
   const map = useMap();
   const hasInitializedRef = useRef(false);
   const previousSelectedLabIdRef = useRef<string | null>(null);
+  const previousActivityFocusKeyRef = useRef("");
   const previousFocusKeyRef = useRef("");
 
   useEffect(() => {
+    const activityFocusKey =
+      focusedActivity && hasValidEventCoordinates(focusedActivity)
+        ? `${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`
+        : "";
+
+    if (activityFocusKey && focusedActivity && hasValidEventCoordinates(focusedActivity)) {
+      if (
+        !hasInitializedRef.current ||
+        previousActivityFocusKeyRef.current !== activityFocusKey
+      ) {
+        map.flyTo([focusedActivity.eventLatitude!, focusedActivity.eventLongitude!], 13, {
+          animate: true,
+          duration: 0.9,
+        });
+        previousSelectedLabIdRef.current = selectedLab?.id ?? null;
+        previousActivityFocusKeyRef.current = activityFocusKey;
+        previousFocusKeyRef.current = focusKey;
+        hasInitializedRef.current = true;
+      }
+      return;
+    }
+
     if (selectedLab) {
       map.flyTo([selectedLab.latitude, selectedLab.longitude], 11, {
         animate: true,
         duration: 0.9,
       });
       previousSelectedLabIdRef.current = selectedLab.id;
+      previousActivityFocusKeyRef.current = "";
       previousFocusKeyRef.current = focusKey;
       hasInitializedRef.current = true;
       return;
@@ -102,6 +140,7 @@ function MapViewportController({
           animate: true,
         });
         previousSelectedLabIdRef.current = null;
+        previousActivityFocusKeyRef.current = "";
         previousFocusKeyRef.current = focusKey;
         hasInitializedRef.current = true;
       }
@@ -124,10 +163,11 @@ function MapViewportController({
         animate: true,
       });
       previousSelectedLabIdRef.current = null;
+      previousActivityFocusKeyRef.current = "";
       previousFocusKeyRef.current = "";
       hasInitializedRef.current = true;
     }
-  }, [focusKey, focusedLabsBounds, labsBounds, map, selectedLab]);
+  }, [focusKey, focusedActivity, focusedLabsBounds, labsBounds, map, selectedLab]);
 
   return null;
 }
@@ -175,6 +215,27 @@ function createLabIcon(
     iconSize: [42, 54],
     iconAnchor: [21, 50],
     popupAnchor: [0, -42],
+  });
+}
+
+function createActivityFocusIcon(label?: string | null) {
+  const safeLabel = String(label ?? "Lokasi Agenda")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  return L.divIcon({
+    className: "",
+    html: `
+      <div class="activity-focus-marker">
+        <div class="activity-focus-bubble">${safeLabel}</div>
+        <div class="activity-focus-pin">
+          <div class="activity-focus-pin-core"></div>
+        </div>
+      </div>
+    `,
+    iconSize: [148, 82],
+    iconAnchor: [74, 68],
   });
 }
 
@@ -265,6 +326,7 @@ export default function SmartMapInner({
   activeLabIds = [],
   focusedLabIds = [],
   mutedLabIds = [],
+  focusedActivity = null,
   selectedLabId,
   onSelectLab,
 }: SmartMapInnerProps) {
@@ -322,6 +384,7 @@ export default function SmartMapInner({
   );
   const activeLabIdSet = useMemo(() => new Set(activeLabIds), [activeLabIds]);
   const mutedLabIdSet = useMemo(() => new Set(mutedLabIds), [mutedLabIds]);
+  const hasFocusedActivityCoordinates = hasValidEventCoordinates(focusedActivity);
 
   function handleSelectLab(nextLabId: string | null) {
     if (!isControlled) {
@@ -489,7 +552,7 @@ export default function SmartMapInner({
             </div>
           </div>
 
-          {selectedLab ? (
+          {selectedLab || hasFocusedActivityCoordinates ? (
             <Button
               size="small"
               className="pointer-events-auto"
@@ -517,9 +580,31 @@ export default function SmartMapInner({
                   Hasil pencarian
                 </span>
               ) : null}
+              {hasFocusedActivityCoordinates ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="map-legend-pulse map-legend-pulse-event" />
+                  Lokasi agenda
+                </span>
+              ) : null}
             </span>
           </div>
         </div>
+
+        {hasFocusedActivityCoordinates && focusedActivity ? (
+          <div className="pointer-events-none absolute left-3 top-[92px] z-[500] max-w-[320px]">
+            <div className="pointer-events-auto rounded-[16px] border border-emerald-200 bg-white/94 px-3.5 py-2.5 text-[12px] text-slate-600 shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                Agenda Dipilih
+              </div>
+              <div className="mt-1 font-semibold text-slate-900">{focusedActivity.title}</div>
+              {focusedActivity.locationName ? (
+                <div className="mt-1 text-[11.5px] text-slate-500">
+                  {focusedActivity.locationName}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
         <div className="pointer-events-none absolute bottom-3 right-3 z-[500]">
           <MapAttributionBadge />
@@ -548,10 +633,21 @@ export default function SmartMapInner({
             <ZoomControl position="topright" />
             <MapViewportController
               selectedLab={selectedLab}
+              focusedActivity={focusedActivity}
               labsBounds={labsBounds}
               focusedLabsBounds={focusedLabsBounds}
               focusKey={focusKey}
             />
+
+            {hasFocusedActivityCoordinates && focusedActivity ? (
+              <Marker
+                key={`activity-focus:${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`}
+                position={[focusedActivity.eventLatitude!, focusedActivity.eventLongitude!]}
+                icon={createActivityFocusIcon(
+                  focusedActivity.locationName || "Lokasi Agenda"
+                )}
+              />
+            ) : null}
 
             {labs.map((lab) => {
               const isSelected = activeSelectedLabId === lab.id;

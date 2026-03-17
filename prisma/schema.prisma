@@ -53,6 +53,7 @@ model Lab {
 
   // satu lab bisa punya banyak type
   events         LabEvent[]
+  articles       Article[]
   types          LabType[]
 
   @@index([provinceName])
@@ -114,4 +115,25 @@ model MasterHoliday {
   @@unique([date, type])
   @@index([date])
   @@index([type, date])
+}
+
+model Article {
+  id              String   @id @default(cuid())
+  labId           String?
+  isGlobal        Boolean  @default(false)
+  title           String
+  slug            String   @unique
+  excerpt         String?
+  contentHtml     String
+  coverImageUrl   String?
+  isPublished     Boolean  @default(true)
+  publishedAt     DateTime @default(now())
+  createdByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lab             Lab?     @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  @@index([labId, publishedAt])
+  @@index([isPublished, publishedAt])
+  @@index([isGlobal, publishedAt])
 }

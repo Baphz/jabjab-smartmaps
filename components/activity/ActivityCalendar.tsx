@@ -41,6 +41,7 @@ type ActivityCalendarProps = {
   actionLabel?: string;
   maxSelectedItems?: number;
   onSelectLab?: (labId: string) => void;
+  onSelectActivityLocation?: (item: ActivitySourceItem) => void;
 };
 
 const KIND_STYLES: Record<
@@ -55,6 +56,11 @@ const KIND_STYLES: Record<
     cell: "border-emerald-200 bg-emerald-50 text-emerald-700",
     pill: "bg-emerald-50 text-emerald-700 ring-emerald-200",
     dot: "bg-emerald-500",
+  },
+  article: {
+    cell: "border-sky-200 bg-sky-50 text-sky-700",
+    pill: "bg-sky-50 text-sky-700 ring-sky-200",
+    dot: "bg-sky-500",
   },
   libur_nasional: {
     cell: "border-red-200 bg-red-50 text-red-700",
@@ -96,8 +102,9 @@ function overlapsMonth(item: ActivitySourceItem, monthKey: string) {
 
 function rankKind(kind: ActivityKind) {
   if (kind === "lab_event") return 0;
-  if (kind === "libur_nasional") return 1;
-  return 2;
+  if (kind === "article") return 1;
+  if (kind === "libur_nasional") return 2;
+  return 3;
 }
 
 function sortDayItems(items: ActivitySourceItem[]) {
@@ -126,6 +133,7 @@ export default function ActivityCalendar({
   actionLabel,
   maxSelectedItems,
   onSelectLab,
+  onSelectActivityLocation,
 }: ActivityCalendarProps) {
   const sortedItems = useMemo(
     () =>
@@ -167,6 +175,7 @@ export default function ActivityCalendar({
 
   const counts = {
     lab_event: visibleMonthItems.filter((item) => item.kind === "lab_event").length,
+    article: visibleMonthItems.filter((item) => item.kind === "article").length,
     libur_nasional: visibleMonthItems.filter((item) => item.kind === "libur_nasional").length,
     cuti_bersama: visibleMonthItems.filter((item) => item.kind === "cuti_bersama").length,
   };
@@ -187,16 +196,34 @@ export default function ActivityCalendar({
   }
 
   function handleSelectDate(dateKey: string) {
+    const nextItems = sortDayItems(dayMap.get(dateKey) ?? []);
+    const firstMappableActivity =
+      nextItems.find(
+        (item) =>
+          item.kind === "lab_event" &&
+          (typeof item.eventLatitude === "number" ||
+            typeof item.eventLongitude === "number" ||
+            Boolean(item.labId))
+      ) ?? null;
+
     if (!isSameMonth(dateKey, monthKey)) {
       startTransition(() => {
         setMonthKey(dateKey.slice(0, 7));
         setSelectedDateKey(dateKey);
       });
+
+      if (firstMappableActivity && onSelectActivityLocation) {
+        onSelectActivityLocation(firstMappableActivity);
+      }
       setIsDetailOpen(true);
       return;
     }
 
     setSelectedDateKey(dateKey);
+
+    if (firstMappableActivity && onSelectActivityLocation) {
+      onSelectActivityLocation(firstMappableActivity);
+    }
     setIsDetailOpen(true);
   }
 
@@ -207,16 +234,18 @@ export default function ActivityCalendar({
           <TypographyTitle level={5} style={{ marginBottom: compact ? 1 : 2 }}>
             {title}
           </TypographyTitle>
-          <TypographyParagraph
-            style={{
-              marginBottom: 0,
-              color: "#64748b",
-              fontSize: compact ? 11.5 : 12,
-              lineHeight: compact ? 1.45 : 1.5,
-            }}
-          >
-            {description}
-          </TypographyParagraph>
+          {description ? (
+            <TypographyParagraph
+              style={{
+                marginBottom: 0,
+                color: "#64748b",
+                fontSize: compact ? 11.5 : 12,
+                lineHeight: compact ? 1.45 : 1.5,
+              }}
+            >
+              {description}
+            </TypographyParagraph>
+          ) : null}
         </div>
 
         {actionHref && actionLabel ? (
@@ -227,7 +256,7 @@ export default function ActivityCalendar({
       </div>
 
       {!hideSummary ? (
-        <div className={`grid gap-2 ${compact ? "grid-cols-3" : "sm:grid-cols-3"}`}>
+        <div className={`grid gap-2 ${compact ? "grid-cols-2 sm:grid-cols-4" : "sm:grid-cols-4"}`}>
           <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-2.5 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
               Agenda Lab
@@ -236,6 +265,16 @@ export default function ActivityCalendar({
               {counts.lab_event}
             </div>
             <div className="text-[11px] text-slate-500">bulan ini</div>
+          </div>
+
+          <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-2.5 py-2">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Artikel
+            </div>
+            <div className="mt-1 text-base font-semibold tracking-tight text-slate-900">
+              {counts.article}
+            </div>
+            <div className="text-[11px] text-slate-500">terbit</div>
           </div>
 
           <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-2.5 py-2">
@@ -267,7 +306,9 @@ export default function ActivityCalendar({
               {formatMonthTitle(monthKey)}
             </TypographyTitle>
             <TypographyText style={{ color: "#64748b", fontSize: compact ? 11.5 : 12 }}>
-              Klik tanggal untuk membuka detail kegiatan, libur nasional, dan cuti bersama.
+              {compact
+                ? "Klik tanggal untuk detail."
+                : "Klik tanggal untuk membuka detail kegiatan, libur nasional, dan cuti bersama."}
             </TypographyText>
           </div>
 
@@ -291,7 +332,7 @@ export default function ActivityCalendar({
         </div>
 
         <div className={`flex flex-wrap gap-2 ${compact ? "mt-2.5" : "mt-4"}`}>
-          {(["lab_event", "libur_nasional", "cuti_bersama"] as const).map((kind) => (
+          {(["lab_event", "article", "libur_nasional", "cuti_bersama"] as const).map((kind) => (
             <span
               key={kind}
               className={`inline-flex items-center gap-2 rounded-full font-semibold ring-1 ${compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} ${KIND_STYLES[kind].pill}`}
@@ -457,13 +498,29 @@ export default function ActivityCalendar({
                       ) : null}
                     </Space>
 
-                    {item.labId && onSelectLab ? (
+                    {item.kind === "article" && item.articleSlug ? (
+                      <Button
+                        type="link"
+                        size="small"
+                        href={`/artikel/${item.articleSlug}`}
+                        style={{ paddingInline: 0, height: "auto" }}
+                      >
+                        Baca artikel
+                      </Button>
+                    ) : null}
+
+                    {item.kind === "lab_event" &&
+                    (onSelectActivityLocation || (item.labId && onSelectLab)) ? (
                       <Button
                         type="link"
                         size="small"
                         style={{ paddingInline: 0, height: "auto" }}
                         onClick={() => {
-                          onSelectLab(item.labId!);
+                          if (onSelectActivityLocation) {
+                            onSelectActivityLocation(item);
+                          } else if (item.labId && onSelectLab) {
+                            onSelectLab(item.labId);
+                          }
                           setIsDetailOpen(false);
                         }}
                       >

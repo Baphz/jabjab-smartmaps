@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { HolidayType, MasterHoliday, Prisma, LabEvent } from "@prisma/client";
+import type { Article, HolidayType, MasterHoliday, Prisma, LabEvent } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ActivitySourceItem, formatDateKey } from "@/lib/activity-calendar";
 
@@ -8,6 +8,7 @@ export type ActivityQueryArgs = {
   labId?: string | null;
   onlyPublished?: boolean;
   includeInactiveHolidays?: boolean;
+  includeArticles?: boolean;
   rangeStart?: Date;
   rangeEnd?: Date;
 };
@@ -105,6 +106,33 @@ export function mapHolidayToActivitySource(
     locationAddress: null,
     eventLatitude: null,
     eventLongitude: null,
+    articleSlug: null,
+    coverImageUrl: null,
+  };
+}
+
+export function mapArticleToActivitySource(
+  article: Article & { lab: { id: string; name: string } | null }
+): ActivitySourceItem {
+  const dateKey = formatDateKey(article.publishedAt);
+
+  return {
+    id: article.id,
+    kind: "article",
+    isGlobal: article.isGlobal,
+    title: article.title,
+    description: article.excerpt,
+    startDate: dateKey,
+    endDate: dateKey,
+    timeLabel: null,
+    labId: article.isGlobal ? null : article.lab?.id ?? null,
+    labName: article.isGlobal ? "Artikel Global DPW" : article.lab?.name ?? null,
+    locationName: null,
+    locationAddress: null,
+    eventLatitude: null,
+    eventLongitude: null,
+    articleSlug: article.slug,
+    coverImageUrl: article.coverImageUrl,
   };
 }
 
@@ -112,6 +140,7 @@ export async function getActivitySources(args: ActivityQueryArgs = {}) {
   const defaultRange = buildDefaultActivityRange();
   const rangeStart = args.rangeStart ?? defaultRange.rangeStart;
   const rangeEnd = args.rangeEnd ?? defaultRange.rangeEnd;
+  const includeArticles = args.includeArticles !== false;
 
   const labWhere: Prisma.LabEventWhereInput = {
     endDate: {
@@ -141,7 +170,22 @@ export async function getActivitySources(args: ActivityQueryArgs = {}) {
     holidayWhere.isActive = true;
   }
 
-  const [events, holidays] = await Promise.all([
+  const articleWhere: Prisma.ArticleWhereInput = {
+    publishedAt: {
+      gte: rangeStart,
+      lte: rangeEnd,
+    },
+  };
+
+  if (args.onlyPublished) {
+    articleWhere.isPublished = true;
+  }
+
+  if (args.labId) {
+    articleWhere.OR = [{ labId: args.labId }, { isGlobal: true }];
+  }
+
+  const [events, holidays, articles] = await Promise.all([
     prisma.labEvent.findMany({
       where: labWhere,
       include: {
@@ -158,13 +202,29 @@ export async function getActivitySources(args: ActivityQueryArgs = {}) {
       where: holidayWhere,
       orderBy: [{ date: "asc" }, { name: "asc" }],
     }),
+    includeArticles
+      ? prisma.article.findMany({
+          where: articleWhere,
+          include: {
+            lab: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: [{ publishedAt: "desc" }, { title: "asc" }],
+        })
+      : Promise.resolve([]),
   ]);
 
   return {
     events,
     holidays,
+    articles,
     sources: [
       ...events.map(mapLabEventToActivitySource),
+      ...articles.map(mapArticleToActivitySource),
       ...holidays.map(mapHolidayToActivitySource),
     ],
   };

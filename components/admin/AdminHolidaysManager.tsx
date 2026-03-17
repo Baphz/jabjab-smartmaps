@@ -13,6 +13,7 @@ import {
   Card,
   Form,
   Input,
+  Modal,
   Select,
   Space,
   Switch,
@@ -26,7 +27,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { formatMediumDate } from "@/lib/activity-calendar";
 
-const { Paragraph: TypographyParagraph, Text: TypographyText, Title: TypographyTitle } = Typography;
+const { Text: TypographyText, Title: TypographyTitle } = Typography;
 const { Item: FormItem } = Form;
 
 export type AdminHolidayRow = {
@@ -71,6 +72,7 @@ export default function AdminHolidaysManager({ holidays }: Props) {
   const [form] = Form.useForm<HolidayFormValue>();
   const [messageApi, contextHolder] = message.useMessage();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formDefaults = useMemo<HolidayFormValue>(
@@ -86,7 +88,18 @@ export default function AdminHolidaysManager({ holidays }: Props) {
 
   const resetForm = () => {
     setEditingId(null);
+    form.resetFields();
     form.setFieldsValue(formDefaults);
+  };
+
+  const closeEditor = () => {
+    setIsEditorOpen(false);
+    resetForm();
+  };
+
+  const openCreate = () => {
+    resetForm();
+    setIsEditorOpen(true);
   };
 
   const startEdit = (holiday: AdminHolidayRow) => {
@@ -98,6 +111,7 @@ export default function AdminHolidaysManager({ holidays }: Props) {
       source: holiday.source ?? "",
       isActive: holiday.isActive,
     });
+    setIsEditorOpen(true);
   };
 
   const handleDelete = (holiday: AdminHolidayRow) => {
@@ -155,7 +169,7 @@ export default function AdminHolidaysManager({ holidays }: Props) {
           ? "Hari libur berhasil diperbarui."
           : "Hari libur berhasil ditambahkan."
       );
-      resetForm();
+      closeEditor();
       router.refresh();
     } catch (error) {
       const message =
@@ -240,96 +254,24 @@ export default function AdminHolidaysManager({ holidays }: Props) {
 
       <Space orientation="vertical" size={20} style={{ width: "100%" }}>
         <Card variant="borderless">
-          <Space orientation="vertical" size={18} style={{ width: "100%" }}>
-            <div>
-              <TypographyTitle level={4} style={{ marginBottom: 4 }}>
-                {editingId ? "Edit Hari Libur" : "Tambah Hari Libur"}
-              </TypographyTitle>
-              <TypographyParagraph
-                style={{ marginBottom: 0, color: "#64748b" }}
-              >
-                Kalender libur nasional dan cuti bersama dipakai di halaman publik dan dashboard admin.
-              </TypographyParagraph>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <TypographyTitle level={4} style={{ margin: 0 }}>
+              Hari Libur
+            </TypographyTitle>
+
+            <div className="flex items-center gap-2">
+              <Button type="primary" icon={<SaveOutlined />} onClick={openCreate}>
+                Tambah
+              </Button>
+              <Tag icon={<CalendarOutlined />} color="gold">
+                {holidays.length} item
+              </Tag>
             </div>
-
-            <Form
-              form={form}
-              layout="vertical"
-              initialValues={formDefaults}
-              onFinish={handleSubmit}
-              requiredMark={false}
-            >
-              <div className="grid gap-4 xl:grid-cols-2">
-                <FormItem
-                  label="Tanggal"
-                  name="date"
-                  rules={[{ required: true, message: "Tanggal wajib diisi." }]}
-                >
-                  <Input type="date" />
-                </FormItem>
-
-                <FormItem
-                  label="Jenis hari libur"
-                  name="type"
-                  rules={[{ required: true, message: "Jenis wajib dipilih." }]}
-                >
-                  <Select options={holidayTypeOptions} />
-                </FormItem>
-
-                <FormItem
-                  label="Nama hari libur"
-                  name="name"
-                  rules={[{ required: true, message: "Nama hari libur wajib diisi." }]}
-                >
-                  <Input placeholder="mis. Hari Raya Idul Fitri" />
-                </FormItem>
-
-                <FormItem label="Sumber / catatan" name="source">
-                  <Input placeholder="mis. SKB 3 Menteri" />
-                </FormItem>
-              </div>
-
-              <FormItem label="Tampilkan di kalender" name="isActive" valuePropName="checked">
-                <Switch checkedChildren="Aktif" unCheckedChildren="Nonaktif" />
-              </FormItem>
-
-              <Space wrap size={[10, 10]}>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  icon={<SaveOutlined />}
-                  loading={isSubmitting}
-                >
-                  {editingId ? "Simpan Perubahan" : "Simpan Hari Libur"}
-                </Button>
-                {editingId ? (
-                  <Button onClick={resetForm}>Batal Edit</Button>
-                ) : null}
-              </Space>
-            </Form>
-          </Space>
-        </Card>
-
-        <Card variant="borderless">
-          <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <TypographyTitle level={4} style={{ marginBottom: 4 }}>
-                Daftar Hari Libur
-              </TypographyTitle>
-              <TypographyParagraph
-                style={{ marginBottom: 0, color: "#64748b" }}
-              >
-                Libur nasional dan cuti bersama yang aktif akan tampil di kalender publik dan admin.
-              </TypographyParagraph>
-            </div>
-
-            <Tag icon={<CalendarOutlined />} color="gold">
-              {holidays.length} hari libur
-            </Tag>
           </div>
 
           <Table
             rowKey="id"
+            size="small"
             columns={columns}
             dataSource={holidays}
             pagination={{ pageSize: 10, showSizeChanger: false }}
@@ -337,6 +279,74 @@ export default function AdminHolidaysManager({ holidays }: Props) {
           />
         </Card>
       </Space>
+
+      <Modal
+        open={isEditorOpen}
+        onCancel={closeEditor}
+        title={editingId ? "Edit Hari Libur" : "Tambah Hari Libur"}
+        width={720}
+        footer={[
+          <Button key="cancel" onClick={closeEditor}>
+            Batal
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            icon={<SaveOutlined />}
+            loading={isSubmitting}
+            onClick={() => form.submit()}
+          >
+            {editingId ? "Simpan" : "Tambah"}
+          </Button>,
+        ]}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={formDefaults}
+          onFinish={handleSubmit}
+          requiredMark={false}
+        >
+          <div className="grid gap-4 xl:grid-cols-2">
+            <FormItem
+              label="Tanggal"
+              name="date"
+              rules={[{ required: true, message: "Tanggal wajib diisi." }]}
+            >
+              <Input type="date" />
+            </FormItem>
+
+            <FormItem
+              label="Jenis hari libur"
+              name="type"
+              rules={[{ required: true, message: "Jenis wajib dipilih." }]}
+            >
+              <Select options={holidayTypeOptions} />
+            </FormItem>
+
+            <FormItem
+              label="Nama hari libur"
+              name="name"
+              rules={[{ required: true, message: "Nama hari libur wajib diisi." }]}
+            >
+              <Input placeholder="Nama hari libur" />
+            </FormItem>
+
+            <FormItem label="Sumber / catatan" name="source">
+              <Input placeholder="Sumber atau catatan" />
+            </FormItem>
+          </div>
+
+          <FormItem
+            label="Tampilkan di kalender"
+            name="isActive"
+            valuePropName="checked"
+            style={{ marginBottom: 0 }}
+          >
+            <Switch checkedChildren="Aktif" unCheckedChildren="Nonaktif" />
+          </FormItem>
+        </Form>
+      </Modal>
     </>
   );
 }

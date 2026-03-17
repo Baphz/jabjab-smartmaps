@@ -9,6 +9,20 @@ import { siteContent } from "@/lib/site-content";
 
 const { Paragraph: TypographyParagraph, Title: TypographyTitle } = Typography;
 
+const clerkAppearance = {
+  elements: {
+    rootBox: "w-full",
+    cardBox: "w-full max-w-none",
+    card: "w-full max-w-none",
+    main: "w-full",
+    form: "w-full",
+    formField: "w-full",
+    formFieldRow: "w-full",
+    formFieldInput: "w-full",
+    formButtonPrimary: "w-full",
+  },
+};
+
 export function LoginForm() {
   const searchParams = useSearchParams();
 
@@ -63,6 +77,7 @@ export function LoginForm() {
 
             <div className="smartmaps-clerk">
               <SignIn
+                appearance={clerkAppearance}
                 routing="path"
                 path="/login"
                 fallbackRedirectUrl={redirectUrl}

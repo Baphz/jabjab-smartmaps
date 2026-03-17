@@ -26,6 +26,7 @@ import type { ColumnsType } from "antd/es/table";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import LabCoordinatePicker from "@/components/admin/LabCoordinatePicker";
+import useAddressCoordinateAutofill from "@/components/admin/useAddressCoordinateAutofill";
 import {
   formatCityName,
   normalizeWhitespace,
@@ -153,6 +154,8 @@ export default function AdminEventsManager({
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const watchedIsGlobal = Form.useWatch("isGlobal", form) ?? false;
+  const watchedAddressDetail = Form.useWatch("addressDetail", form);
+  const watchedVillageType = Form.useWatch("villageType", form);
   const watchedLatitude = Form.useWatch("latitude", form);
   const watchedLongitude = Form.useWatch("longitude", form);
 
@@ -208,6 +211,28 @@ export default function AdminEventsManager({
     }),
     [formDefaults.latitude, formDefaults.longitude, watchedLatitude, watchedLongitude]
   );
+
+  const {
+    canResolve: canAutoLocate,
+    hasResolvedOnce: hasAutoLocated,
+    isResolving: isAutoLocating,
+  } = useAddressCoordinateAutofill({
+    resetKey: isEditorOpen ? editingId ?? "create-event" : "closed-event",
+    enabled: isEditorOpen,
+    addressDetail: watchedAddressDetail,
+    provinceName: selectedProvince?.nama ?? null,
+    cityName: selectedCity?.namaTampil ?? null,
+    cityType: selectedCity?.tipe ?? null,
+    districtName: selectedDistrict?.nama ?? null,
+    villageName: selectedVillage?.nama ?? null,
+    villageType: watchedVillageType ?? null,
+    onCoordinatesResolved: (latitude, longitude) => {
+      form.setFieldsValue({
+        latitude,
+        longitude,
+      });
+    },
+  });
 
   useEffect(() => {
     if (!isEditorOpen && !editingId) {
@@ -323,6 +348,7 @@ export default function AdminEventsManager({
     setSelectedCity(null);
     setSelectedDistrict(null);
     setSelectedVillage(null);
+    form.setFieldsValue({ villageType: undefined });
     setProvinceSearch("");
     setCitySearch("");
     setDistrictSearch("");
@@ -635,7 +661,7 @@ export default function AdminEventsManager({
               className="md:col-span-2"
               rules={[{ required: true, message: "Judul wajib diisi." }]}
             >
-              <Input placeholder="Judul agenda" />
+              <Input placeholder="Judul kegiatan" />
             </FormItem>
 
             <FormItem
@@ -643,11 +669,11 @@ export default function AdminEventsManager({
               name="locationName"
               rules={[{ required: true, message: "Lokasi wajib diisi." }]}
             >
-              <Input placeholder="Nama venue" />
+              <Input placeholder="Nama lokasi kegiatan" />
             </FormItem>
 
             <FormItem label="Waktu" name="timeLabel">
-              <Input placeholder="08.00 - 12.00 WIB" />
+              <Input placeholder="08.00 - selesai" />
             </FormItem>
 
             <FormItem
@@ -672,7 +698,7 @@ export default function AdminEventsManager({
               className="md:col-span-2"
               rules={[{ required: true, message: "Alamat wajib diisi." }]}
             >
-              <InputTextArea rows={3} placeholder="Jalan, gedung, RT/RW, kode pos" />
+              <InputTextArea rows={3} placeholder="Alamat lengkap lokasi kegiatan" />
             </FormItem>
           </div>
 
@@ -691,6 +717,7 @@ export default function AdminEventsManager({
                   setSelectedCity(null);
                   setSelectedDistrict(null);
                   setSelectedVillage(null);
+                  form.setFieldsValue({ villageType: undefined });
                   setProvinceSearch("");
                   setCitySearch("");
                   setDistrictSearch("");
@@ -703,6 +730,7 @@ export default function AdminEventsManager({
                   setSelectedCity(null);
                   setSelectedDistrict(null);
                   setSelectedVillage(null);
+                  form.setFieldsValue({ villageType: undefined });
                   setCitySearch("");
                   setDistrictSearch("");
                   setVillageSearch("");
@@ -729,6 +757,7 @@ export default function AdminEventsManager({
                   setSelectedCity(null);
                   setSelectedDistrict(null);
                   setSelectedVillage(null);
+                  form.setFieldsValue({ villageType: undefined });
                   setCitySearch("");
                   setDistrictSearch("");
                   setVillageSearch("");
@@ -739,6 +768,7 @@ export default function AdminEventsManager({
                   setCitySearch(item.namaTampil);
                   setSelectedDistrict(null);
                   setSelectedVillage(null);
+                  form.setFieldsValue({ villageType: undefined });
                   setDistrictSearch("");
                   setVillageSearch("");
                 }}
@@ -763,6 +793,7 @@ export default function AdminEventsManager({
                 onClear={() => {
                   setSelectedDistrict(null);
                   setSelectedVillage(null);
+                  form.setFieldsValue({ villageType: undefined });
                   setDistrictSearch("");
                   setVillageSearch("");
                 }}
@@ -771,6 +802,7 @@ export default function AdminEventsManager({
                   setSelectedDistrict(item);
                   setDistrictSearch(item.nama);
                   setSelectedVillage(null);
+                  form.setFieldsValue({ villageType: undefined });
                   setVillageSearch("");
                 }}
                 options={mergeOption(selectedDistrict, districtOptions).map((item) => ({
@@ -793,6 +825,7 @@ export default function AdminEventsManager({
                 onSearch={setVillageSearch}
                 onClear={() => {
                   setSelectedVillage(null);
+                  form.setFieldsValue({ villageType: undefined });
                   setVillageSearch("");
                 }}
                 onSelect={(_value, option) => {
@@ -808,10 +841,11 @@ export default function AdminEventsManager({
               />
             </FormItem>
 
-            <FormItem label="Jenis" name="villageType">
+            <FormItem label="Label alamat" name="villageType">
               <Select
                 allowClear
-                placeholder="Jenis wilayah"
+                placeholder={selectedVillage ? "Kelurahan atau Desa" : "Pilih wilayah dulu"}
+                disabled={!selectedVillage}
                 options={[
                   { value: "KELURAHAN", label: "Kelurahan" },
                   { value: "DESA", label: "Desa" },
@@ -825,20 +859,34 @@ export default function AdminEventsManager({
           </div>
 
           <div className="mt-1 grid gap-3 xl:grid-cols-[minmax(0,1fr)_220px]">
-            <LabCoordinatePicker
-              latitude={coordinatePreview.latitude}
-              longitude={coordinatePreview.longitude}
-              height={250}
-              showOverlay={false}
-              showCoordinateBadge={false}
-              resetLabel="Reset titik"
-              onChange={(nextLatitude, nextLongitude) => {
-                form.setFieldsValue({
-                  latitude: nextLatitude,
-                  longitude: nextLongitude,
-                });
-              }}
-            />
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-[12px] text-slate-500">
+                <span>
+                  {isAutoLocating
+                    ? "Menyesuaikan titik..."
+                    : hasAutoLocated
+                    ? "Titik sudah mengikuti alamat."
+                    : canAutoLocate
+                    ? "Titik akan mengikuti alamat."
+                    : "Lengkapi wilayah untuk menggeser titik otomatis."}
+                </span>
+              </div>
+
+              <LabCoordinatePicker
+                latitude={coordinatePreview.latitude}
+                longitude={coordinatePreview.longitude}
+                height={250}
+                showOverlay={false}
+                showCoordinateBadge={false}
+                resetLabel="Reset titik"
+                onChange={(nextLatitude, nextLongitude) => {
+                  form.setFieldsValue({
+                    latitude: nextLatitude,
+                    longitude: nextLongitude,
+                  });
+                }}
+              />
+            </div>
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
               <FormItem
@@ -860,7 +908,7 @@ export default function AdminEventsManager({
           </div>
 
           <FormItem label="Catatan" name="description" style={{ marginTop: 12, marginBottom: 0 }}>
-            <InputTextArea rows={3} placeholder="Opsional" />
+            <InputTextArea rows={3} placeholder="Ringkasan kegiatan" />
           </FormItem>
         </Form>
       </Modal>
