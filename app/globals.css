@@ -511,10 +511,8 @@ main {
   display: none;
 }
 
-.smartmaps-clerk .cl-formFieldInputShowPasswordButton,
 .smartmaps-clerk .cl-formButtonPrimary,
-.smartmaps-clerk .cl-formFieldInput,
-.smartmaps-clerk .cl-formFieldAction {
+.smartmaps-clerk .cl-formFieldInput {
   width: 100%;
 }
 
@@ -531,6 +529,7 @@ main {
 
 .smartmaps-clerk .cl-formField {
   margin-bottom: 12px;
+  position: relative;
 }
 
 .smartmaps-clerk .cl-form {
@@ -548,6 +547,7 @@ main {
   border-radius: 14px;
   border-color: #d7e2ef;
   background: rgba(248, 251, 255, 0.85);
+  padding-right: 48px;
 }
 
 .smartmaps-clerk .cl-formFieldInput:focus,
@@ -560,6 +560,20 @@ main {
   font-size: 13px;
   font-weight: 600;
   color: #475569;
+}
+
+.smartmaps-clerk .cl-formFieldInputShowPasswordButton,
+.smartmaps-clerk .cl-formFieldAction {
+  position: absolute;
+  right: 12px;
+  top: 38px;
+  z-index: 2;
+  display: inline-flex;
+  width: auto;
+  min-width: auto;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
 }
 
 .smartmaps-clerk .cl-alert {
