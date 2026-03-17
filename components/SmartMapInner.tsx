@@ -1,11 +1,28 @@
-// components/SmartMapInner.tsx
 "use client";
 
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import L from "leaflet";
-import { useMemo, useState } from "react";
+import {
+  EnvironmentOutlined,
+  GlobalOutlined,
+  PhoneOutlined,
+} from "@ant-design/icons";
+import { Button, Card, Descriptions, Drawer, Empty, Grid, Space, Typography } from "antd";
 import Image from "next/image";
+import L from "leaflet";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  MapContainer,
+  Marker,
+  TileLayer,
+  ZoomControl,
+  useMap,
+} from "react-leaflet";
+import MapAttributionBadge from "@/components/map/MapAttributionBadge";
+import { resolveStoredPhotoUrl } from "@/lib/drive-file";
+import type { LabCityTypeValue, LabVillageTypeValue } from "@/lib/lab-address";
 import "leaflet/dist/leaflet.css";
+
+const { Paragraph: TypographyParagraph, Text: TypographyText, Title: TypographyTitle } =
+  Typography;
 
 export type LabTypeDTO = {
   id: string;
@@ -16,6 +33,13 @@ export type LabWithTypes = {
   id: string;
   name: string;
   address: string;
+  addressDetail?: string | null;
+  provinceName?: string | null;
+  cityName?: string | null;
+  cityType?: LabCityTypeValue | null;
+  districtName?: string | null;
+  villageName?: string | null;
+  villageType?: LabVillageTypeValue | null;
   latitude: number;
   longitude: number;
   labPhotoUrl: string;
@@ -30,385 +54,556 @@ export type LabWithTypes = {
 
 export type SmartMapInnerProps = {
   labs: LabWithTypes[];
+  highlightedLabIds?: string[];
+  activeLabIds?: string[];
+  focusedLabIds?: string[];
+  mutedLabIds?: string[];
+  selectedLabId?: string | null;
+  onSelectLab?: (labId: string | null) => void;
 };
 
-// helper: FILE_ID Drive atau URL -> URL thumbnail
-function resolvePhotoUrl(value: string | null): string {
-  if (!value) return "";
-  const v = value.trim();
-  if (!v) return "";
-  if (v.startsWith("http://") || v.startsWith("https://")) return v;
-  return `https://drive.google.com/thumbnail?id=${v}&sz=w400`;
+function MapViewportController({
+  selectedLab,
+  labsBounds,
+  focusedLabsBounds,
+  focusKey,
+}: {
+  selectedLab: LabWithTypes | null;
+  labsBounds: L.LatLngBounds | null;
+  focusedLabsBounds: L.LatLngBounds | null;
+  focusKey: string;
+}) {
+  const map = useMap();
+  const hasInitializedRef = useRef(false);
+  const previousSelectedLabIdRef = useRef<string | null>(null);
+  const previousFocusKeyRef = useRef("");
+
+  useEffect(() => {
+    if (selectedLab) {
+      map.flyTo([selectedLab.latitude, selectedLab.longitude], 11, {
+        animate: true,
+        duration: 0.9,
+      });
+      previousSelectedLabIdRef.current = selectedLab.id;
+      previousFocusKeyRef.current = focusKey;
+      hasInitializedRef.current = true;
+      return;
+    }
+
+    if (focusKey && focusedLabsBounds) {
+      if (
+        !hasInitializedRef.current ||
+        previousSelectedLabIdRef.current ||
+        previousFocusKeyRef.current !== focusKey
+      ) {
+        map.fitBounds(focusedLabsBounds, {
+          padding: [52, 52],
+          maxZoom: 10,
+          animate: true,
+        });
+        previousSelectedLabIdRef.current = null;
+        previousFocusKeyRef.current = focusKey;
+        hasInitializedRef.current = true;
+      }
+
+      return;
+    }
+
+    if (!labsBounds) {
+      return;
+    }
+
+    if (
+      !hasInitializedRef.current ||
+      previousSelectedLabIdRef.current ||
+      previousFocusKeyRef.current
+    ) {
+      map.fitBounds(labsBounds, {
+        padding: [44, 44],
+        maxZoom: 8,
+        animate: true,
+      });
+      previousSelectedLabIdRef.current = null;
+      previousFocusKeyRef.current = "";
+      hasInitializedRef.current = true;
+    }
+  }, [focusKey, focusedLabsBounds, labsBounds, map, selectedLab]);
+
+  return null;
 }
 
-// helper: normalisasi URL website
+function resolvePhotoUrl(value: string | null): string {
+  return resolveStoredPhotoUrl(value);
+}
+
 function normalizeWebsiteUrl(value: string | null): string | null {
   if (!value) return null;
-  const v = value.trim();
-  if (!v) return null;
-  if (v.startsWith("http://") || v.startsWith("https://")) return v;
-  return `https://${v}`;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
 }
 
-// marker bulat merah dengan foto lab
-function createLabIcon(photoValue: string, selected: boolean) {
+function createLabIcon(
+  photoValue: string,
+  selected: boolean,
+  highlighted: boolean,
+  active: boolean,
+  muted: boolean
+) {
   const photoUrl = resolvePhotoUrl(photoValue);
   const style = photoUrl ? `background-image:url('${photoUrl}')` : "";
+  const classes = [
+    "lab-pin",
+    selected ? "lab-pin-selected" : "",
+    active ? "lab-pin-active" : "",
+    highlighted ? "lab-pin-search" : "",
+    muted ? "lab-pin-muted" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return L.divIcon({
     className: "",
     html: `
-      <div class="lab-pin ${selected ? "lab-pin-selected" : ""}">
+      <div class="${classes}">
         <div class="lab-pin-photo" style="${style}"></div>
       </div>
     `,
-    iconSize: [48, 48],
-    iconAnchor: [24, 24],
+    iconSize: [42, 54],
+    iconAnchor: [21, 50],
+    popupAnchor: [0, -42],
   });
 }
 
-const typeColor: Record<string, string> = {
-  BLUD: "bg-sky-100 text-sky-800",
-  LABKESMAS: "bg-emerald-100 text-emerald-800",
-};
+function getLabTypePillClass(name: string) {
+  const normalized = name.toUpperCase();
 
-const getTypeClass = (name: string) =>
-  typeColor[name.toUpperCase()] ?? "bg-slate-100 text-slate-800";
+  if (normalized === "RS") return "border-sky-200 bg-sky-50 text-sky-700";
+  if (normalized === "LABKESMAS") return "border-stone-200 bg-stone-100 text-stone-700";
+  return "border-slate-200 bg-slate-100 text-slate-700";
+}
 
-export default function SmartMapInner({ labs }: SmartMapInnerProps) {
-  const [selectedLab, setSelectedLab] = useState<LabWithTypes | null>(null);
-
-  const center = useMemo(() => {
-    const defaultCenter = { lat: -6.0, lng: 107 }; // fokus Jabar / DKI / Banten
-    if (labs.length === 0) return defaultCenter;
-
-    const avgLat = labs.reduce((sum, l) => sum + l.latitude, 0) / labs.length;
-    const avgLng = labs.reduce((sum, l) => sum + l.longitude, 0) / labs.length;
-
-    return { lat: avgLat, lng: avgLng };
-  }, [labs]);
+function PhotoFrame({
+  src,
+  alt,
+  width,
+  height,
+  rounded = 18,
+}: {
+  src: string;
+  alt: string;
+  width: number | string;
+  height: number | string;
+  rounded?: number;
+}) {
+  if (!src) {
+    return (
+      <div
+        style={{
+          width,
+          height,
+          borderRadius: rounded,
+          border: "1px dashed #cbd5e1",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f8fafc",
+        }}
+      >
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={false} />
+      </div>
+    );
+  }
 
   return (
-    // relative supaya panel bawah bisa absolute di dalam jendela
-    <div className="relative flex h-full w-full">
-      {/* MAP */}
-      <div className="flex-1">
-        <MapContainer
-          center={[center.lat, center.lng]}
-          zoom={9}
-          minZoom={7}
-          maxZoom={18}
-          scrollWheelZoom
-          className="h-full w-full"
-          style={{ height: "100%", width: "100%" }}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> kontributor'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    <div
+      style={{
+        position: "relative",
+        width,
+        height,
+        overflow: "hidden",
+        borderRadius: rounded,
+        border: "1px solid rgba(15, 23, 42, 0.08)",
+        background: "#fff",
+      }}
+    >
+      <Image src={src} alt={alt} fill unoptimized className="object-cover" />
+    </div>
+  );
+}
+
+function DetailSection({
+  eyebrow,
+  children,
+}: {
+  eyebrow: string;
+  children: ReactNode;
+}) {
+  return (
+    <Card
+      size="small"
+      variant="borderless"
+      style={{
+        border: "1px solid rgba(191, 219, 254, 0.9)",
+        background: "rgba(248, 251, 255, 0.96)",
+      }}
+    >
+      <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        {eyebrow}
+      </div>
+      {children}
+    </Card>
+  );
+}
+
+export default function SmartMapInner({
+  labs,
+  highlightedLabIds = [],
+  activeLabIds = [],
+  focusedLabIds = [],
+  mutedLabIds = [],
+  selectedLabId,
+  onSelectLab,
+}: SmartMapInnerProps) {
+  const [isMapReady, setIsMapReady] = useState(false);
+  const [internalSelectedLabId, setInternalSelectedLabId] = useState<string | null>(
+    null
+  );
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const screens = Grid.useBreakpoint();
+  const isControlled = selectedLabId !== undefined;
+  const activeSelectedLabId = isControlled
+    ? selectedLabId ?? null
+    : internalSelectedLabId;
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      setIsMapReady(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  const labsBounds = useMemo(() => {
+    if (labs.length === 0) return null;
+
+    return L.latLngBounds(
+      labs.map((lab) => [lab.latitude, lab.longitude] as [number, number])
+    );
+  }, [labs]);
+
+  const selectedLab = useMemo(
+    () => labs.find((lab) => lab.id === activeSelectedLabId) ?? null,
+    [activeSelectedLabId, labs]
+  );
+  const focusedLabsBounds = useMemo(() => {
+    if (focusedLabIds.length === 0) return null;
+
+    const focusedLabs = labs.filter((lab) => focusedLabIds.includes(lab.id));
+    if (focusedLabs.length === 0) return null;
+
+    return L.latLngBounds(
+      focusedLabs.map((lab) => [lab.latitude, lab.longitude] as [number, number])
+    );
+  }, [focusedLabIds, labs]);
+  const focusKey = useMemo(() => focusedLabIds.join("|"), [focusedLabIds]);
+  const highlightedLabIdSet = useMemo(
+    () => new Set(highlightedLabIds),
+    [highlightedLabIds]
+  );
+  const activeLabIdSet = useMemo(() => new Set(activeLabIds), [activeLabIds]);
+  const mutedLabIdSet = useMemo(() => new Set(mutedLabIds), [mutedLabIds]);
+
+  function handleSelectLab(nextLabId: string | null) {
+    if (!isControlled) {
+      setInternalSelectedLabId(nextLabId);
+    }
+
+    onSelectLab?.(nextLabId);
+  }
+
+  const detailContent = selectedLab ? (
+    <div className="flex flex-col gap-3">
+      <div className="rounded-[24px] border border-sky-100 bg-sky-50/75 p-4">
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <PhotoFrame
+            src={resolvePhotoUrl(selectedLab.labPhotoUrl)}
+            alt={selectedLab.name}
+            width={112}
+            height={112}
+            rounded={20}
           />
 
-          {labs.map((lab) => (
-            <Marker
-              key={lab.id}
-              position={[lab.latitude, lab.longitude]}
-              icon={createLabIcon(lab.labPhotoUrl, selectedLab?.id === lab.id)}
-              eventHandlers={{
-                click: () => setSelectedLab(lab),
-                popupclose: () =>
-                  setSelectedLab((prev) => (prev?.id === lab.id ? null : prev)),
-              }}
-            >
-              <Popup>
-                <div className="space-y-2">
-                  <div className="flex gap-3 items-start">
-                    <Image
-                      src={resolvePhotoUrl(lab.labPhotoUrl)}
-                      alt={lab.name}
-                      width={48}
-                      height={48}
-                      unoptimized
-                      className="h-12 w-12 rounded-full object-cover border border-slate-200 shrink-0"
-                    />
-                    <div className="text-sm leading-snug">
-                      <div className="font-semibold mb-1 text-slate-900">
-                        {lab.name}
-                      </div>
-                      <div className="text-xs text-slate-700">
-                        {lab.address}
-                      </div>
-                      {lab.phone && (
-                        <div className="mt-1 text-[11px] text-slate-600">
-                          Tel: {lab.phone}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* chips tipe */}
-                  <div className="flex flex-wrap gap-1">
-                    {lab.types.map((t) => (
-                      <span
-                        key={t.id}
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${getTypeClass(
-                          t.name
-                        )}`}
-                      >
-                        {t.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
-      </div>
-
-      {/* PANEL DETAIL – DESKTOP / LAYAR LEBAR (samping) */}
-      {selectedLab && (
-        <div className="hidden lg:block w-full max-w-md border-l border-slate-800 bg-slate-50/95 backdrop-blur px-4 py-4 overflow-y-auto relative">
-          <button
-            type="button"
-            onClick={() => setSelectedLab(null)}
-            className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-500 text-xs hover:bg-slate-100 hover:text-slate-700 shadow-sm"
-            aria-label="Tutup panel detail"
-          >
-            ✕
-          </button>
-
-          <div className="panel-slide-in space-y-5 pt-4 pr-1">
-            <div className="space-y-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                Detail laboratorium
-              </p>
-              <h2 className="text-sm font-semibold text-slate-900">
-                {selectedLab.name}
-              </h2>
-              <p className="text-xs text-slate-600 leading-snug">
-                {selectedLab.address}
-              </p>
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Profil Laboratorium
             </div>
-
-            <div className="flex flex-wrap gap-1.5">
-              {selectedLab.types.map((t) => (
+            <TypographyTitle level={4} style={{ marginTop: 4, marginBottom: 4 }}>
+              {selectedLab.name}
+            </TypographyTitle>
+            <TypographyParagraph
+              ellipsis={{ rows: 3 }}
+              style={{ marginBottom: 10, color: "#64748b" }}
+            >
+              {selectedLab.address}
+            </TypographyParagraph>
+            <div className="flex flex-wrap gap-2">
+              {selectedLab.types.map((type) => (
                 <span
-                  key={t.id}
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${getTypeClass(
-                    t.name
-                  )}`}
+                  key={type.id}
+                  className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${getLabTypePillClass(type.name)}`}
                 >
-                  {t.name}
+                  {type.name}
                 </span>
               ))}
             </div>
-
-            {(selectedLab.phone || selectedLab.websiteUrl) && (
-              <section className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                  Kontak instansi
-                </p>
-                {selectedLab.phone && (
-                  <p className="text-xs text-slate-700">
-                    <span className="font-medium">Telepon: </span>
-                    <a
-                      href={`tel:${selectedLab.phone.replace(/\s+/g, "")}`}
-                      className="underline decoration-dotted underline-offset-2"
-                    >
-                      {selectedLab.phone}
-                    </a>
-                  </p>
-                )}
-                {selectedLab.websiteUrl && (
-                  <p className="text-xs text-slate-700">
-                    <span className="font-medium">Website: </span>
-                    <a
-                      href={normalizeWebsiteUrl(selectedLab.websiteUrl) ?? "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-sky-700 hover:text-sky-800 hover:underline underline-offset-2"
-                    >
-                      <span className="truncate max-w-[180px]">
-                        {selectedLab.websiteUrl}
-                      </span>
-                      <span aria-hidden>↗</span>
-                    </a>
-                  </p>
-                )}
-              </section>
-            )}
-
-            <section className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                Foto Laboratorium
-              </p>
-              <div className="relative w-full overflow-hidden rounded-lg bg-slate-200 aspect-video">
-                <Image
-                  src={resolvePhotoUrl(selectedLab.labPhotoUrl)}
-                  alt={selectedLab.name}
-                  fill
-                  unoptimized
-                  className="object-cover"
-                />
-              </div>
-            </section>
-
-            <section className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm space-y-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                Struktur utama
-              </p>
-              <div className="mt-1 flex flex-wrap items-stretch justify-center gap-4">
-                {selectedLab.head1Name && (
-                  <div className="flex w-40 flex-col items-center gap-1.5 text-center">
-                    {selectedLab.head1PhotoUrl && (
-                      <div className="relative h-24 w-24 overflow-hidden rounded-full border border-slate-200 shadow-sm">
-                        <Image
-                          src={resolvePhotoUrl(selectedLab.head1PhotoUrl)}
-                          alt={selectedLab.head1Name ?? "Kepala Laboratorium"}
-                          fill
-                          unoptimized
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    <span className="mt-1 text-[13px] font-semibold text-slate-900">
-                      {selectedLab.head1Name}
-                    </span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-600">
-                      Kepala Laboratorium
-                    </span>
-                  </div>
-                )}
-
-                {selectedLab.head2Name && (
-                  <div className="flex w-40 flex-col items-center gap-1.5 text-center">
-                    {selectedLab.head2PhotoUrl && (
-                      <div className="relative h-24 w-24 overflow-hidden rounded-full border border-slate-200 shadow-sm">
-                        <Image
-                          src={resolvePhotoUrl(selectedLab.head2PhotoUrl)}
-                          alt={selectedLab.head2Name ?? "Kepala Sub Bagian TU"}
-                          fill
-                          unoptimized
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    <span className="mt-1 text-[13px] font-semibold text-slate-900">
-                      {selectedLab.head2Name}
-                    </span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-600">
-                      Kepala Sub Bagian TU
-                    </span>
-                  </div>
-                )}
-              </div>
-            </section>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* PANEL DETAIL – MOBILE & TABLET (bawah), tampil di < lg */}
-      {selectedLab && (
-        <div className="absolute inset-x-0 bottom-0 z-20 flex justify-center lg:hidden">
-          <div className="w-full px-2 pb-2">
-            <div className="mx-auto max-w-xl rounded-2xl border border-slate-300 bg-slate-50/95 shadow-xl panel-slide-in">
-              {/* handle + close */}
-              <div className="relative flex items-center justify-center border-b border-slate-200 px-4 py-2">
-                <div className="h-1.5 w-10 rounded-full bg-slate-300" />
-                <button
-                  type="button"
-                  onClick={() => setSelectedLab(null)}
-                  className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 bg-white text-[11px] text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                  aria-label="Tutup detail laboratorium"
+      <DetailSection eyebrow="Kontak & Lokasi">
+        <Descriptions
+          size="small"
+          column={1}
+          items={[
+            {
+              key: "phone",
+              label: (
+                <Space size={4}>
+                  <PhoneOutlined />
+                  <span>Telepon</span>
+                </Space>
+              ),
+              children: selectedLab.phone ? (
+                <a href={`tel:${selectedLab.phone.replace(/\s+/g, "")}`}>
+                  {selectedLab.phone}
+                </a>
+              ) : (
+                "-"
+              ),
+            },
+            {
+              key: "website",
+              label: (
+                <Space size={4}>
+                  <GlobalOutlined />
+                  <span>Website</span>
+                </Space>
+              ),
+              children: selectedLab.websiteUrl ? (
+                <a
+                  href={normalizeWebsiteUrl(selectedLab.websiteUrl) ?? "#"}
+                  target="_blank"
+                  rel="noreferrer"
                 >
-                  ✕
-                </button>
-              </div>
+                  {selectedLab.websiteUrl}
+                </a>
+              ) : (
+                "-"
+              ),
+            },
+            {
+              key: "coordinate",
+              label: (
+                <Space size={4}>
+                  <EnvironmentOutlined />
+                  <span>Koordinat</span>
+                </Space>
+              ),
+              children: `${selectedLab.latitude}, ${selectedLab.longitude}`,
+            },
+          ]}
+        />
+      </DetailSection>
 
-              <div className="max-h-[45vh] overflow-y-auto px-4 py-3 space-y-3">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                    Detail laboratorium
-                  </p>
-                  <h2 className="text-sm font-semibold text-slate-900">
-                    {selectedLab.name}
-                  </h2>
-                  <p className="text-[11px] text-slate-600 leading-snug">
-                    {selectedLab.address}
-                  </p>
-                </div>
+      <DetailSection eyebrow="Foto Laboratorium">
+        <PhotoFrame
+          src={resolvePhotoUrl(selectedLab.labPhotoUrl)}
+          alt={selectedLab.name}
+          width="100%"
+          height={220}
+          rounded={18}
+        />
+      </DetailSection>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedLab.types.map((t) => (
-                    <span
-                      key={t.id}
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${getTypeClass(
-                        t.name
-                      )}`}
-                    >
-                      {t.name}
-                    </span>
-                  ))}
-                </div>
+      <DetailSection eyebrow="Struktur Utama">
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-[18px] border border-slate-200 bg-slate-50/80 p-4">
+            <Space orientation="vertical" align="center" size={10} style={{ width: "100%" }}>
+              <PhotoFrame
+                src={resolvePhotoUrl(selectedLab.head1PhotoUrl)}
+                alt={selectedLab.head1Name ?? "Kepala Laboratorium"}
+                width={104}
+                height={104}
+                rounded={999}
+              />
+              <TypographyText strong>{selectedLab.head1Name ?? "Belum diisi"}</TypographyText>
+              <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-medium text-sky-700">
+                Kepala Laboratorium
+              </span>
+            </Space>
+          </div>
 
-                {(selectedLab.phone || selectedLab.websiteUrl) && (
-                  <section className="rounded-lg border border-slate-200 bg-white/90 p-3 space-y-1.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                      Kontak instansi
-                    </p>
-                    {selectedLab.phone && (
-                      <p className="text-[11px] text-slate-700">
-                        <span className="font-medium">Telepon: </span>
-                        <a
-                          href={`tel:${selectedLab.phone.replace(
-                            /\s+/g,
-                            ""
-                          )}`}
-                          className="underline decoration-dotted underline-offset-2"
-                        >
-                          {selectedLab.phone}
-                        </a>
-                      </p>
-                    )}
-                    {selectedLab.websiteUrl && (
-                      <p className="text-[11px] text-slate-700">
-                        <span className="font-medium">Website: </span>
-                        <a
-                          href={
-                            normalizeWebsiteUrl(selectedLab.websiteUrl) ?? "#"
-                          }
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-sky-700 hover:text-sky-800 hover:underline underline-offset-2"
-                        >
-                          <span className="truncate max-w-40">
-                            {selectedLab.websiteUrl}
-                          </span>
-                          <span aria-hidden>↗</span>
-                        </a>
-                      </p>
-                    )}
-                  </section>
-                )}
+          <div className="rounded-[18px] border border-slate-200 bg-slate-50/80 p-4">
+            <Space orientation="vertical" align="center" size={10} style={{ width: "100%" }}>
+              <PhotoFrame
+                src={resolvePhotoUrl(selectedLab.head2PhotoUrl)}
+                alt={selectedLab.head2Name ?? "Kepala Sub Bagian TU"}
+                width={104}
+                height={104}
+                rounded={999}
+              />
+              <TypographyText strong>{selectedLab.head2Name ?? "Belum diisi"}</TypographyText>
+              <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                Kepala Sub Bagian TU
+              </span>
+            </Space>
+          </div>
+        </div>
+      </DetailSection>
+    </div>
+  ) : null;
 
-                <section className="space-y-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                    Foto Laboratorium
-                  </p>
-                  <div className="relative w-full overflow-hidden rounded-lg bg-slate-200 aspect-video">
-                    <Image
-                      src={resolvePhotoUrl(selectedLab.labPhotoUrl)}
-                      alt={selectedLab.name}
-                      fill
-                      unoptimized
-                      className="object-cover"
-                    />
-                  </div>
-                </section>
-              </div>
+  return (
+    <div className="h-full">
+      <div className="relative min-h-0 h-full overflow-hidden rounded-[22px]">
+        <div className="pointer-events-none absolute left-3 top-3 z-[500] flex max-w-[calc(100%-24px)] flex-wrap gap-2">
+          <div className="pointer-events-auto rounded-[18px] border border-slate-200 bg-white/92 px-3.5 py-2.5 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Sebaran Aktif
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-xl font-semibold tracking-tight text-slate-950">
+                {labs.length}
+              </span>
+              <span className="text-xs text-slate-600">titik laboratorium</span>
             </div>
           </div>
+
+          {selectedLab ? (
+            <Button
+              size="small"
+              className="pointer-events-auto"
+              onClick={() => handleSelectLab(null)}
+            >
+              Reset peta
+            </Button>
+          ) : null}
         </div>
-      )}
+
+        <div className="pointer-events-none absolute bottom-3 left-3 z-[500]">
+          <div className="rounded-[16px] border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
+            <span className="inline-flex items-center gap-3">
+              <span className="inline-flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-600" />
+                Lokasi laboratorium
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="map-legend-pulse map-legend-pulse-active" />
+                Agenda aktif
+              </span>
+              {highlightedLabIds.length > 0 ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="map-legend-pulse map-legend-pulse-search" />
+                  Hasil pencarian
+                </span>
+              ) : null}
+            </span>
+          </div>
+        </div>
+
+        <div className="pointer-events-none absolute bottom-3 right-3 z-[500]">
+          <MapAttributionBadge />
+        </div>
+
+        {isMapReady ? (
+          <MapContainer
+            key="smart-map-canvas"
+            ref={(map) => {
+              mapInstanceRef.current = map ?? null;
+            }}
+            center={[-6.9, 107.45]}
+            zoom={8}
+            minZoom={6}
+            maxZoom={18}
+            attributionControl={false}
+            scrollWheelZoom={false}
+            zoomControl={false}
+            className="h-full w-full"
+            style={{ height: "100%", width: "100%" }}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            />
+            <ZoomControl position="topright" />
+            <MapViewportController
+              selectedLab={selectedLab}
+              labsBounds={labsBounds}
+              focusedLabsBounds={focusedLabsBounds}
+              focusKey={focusKey}
+            />
+
+            {labs.map((lab) => {
+              const isSelected = activeSelectedLabId === lab.id;
+              const isHighlighted = highlightedLabIdSet.has(lab.id);
+              const isActive = activeLabIdSet.has(lab.id);
+              const isMuted = mutedLabIdSet.has(lab.id);
+
+              return (
+                <Marker
+                  key={`${lab.id}:${isSelected ? "selected" : "idle"}:${isHighlighted ? "search" : "no-search"}:${isActive ? "active" : "no-active"}:${isMuted ? "muted" : "normal"}`}
+                  position={[lab.latitude, lab.longitude]}
+                  icon={createLabIcon(
+                    lab.labPhotoUrl,
+                    isSelected,
+                    isHighlighted,
+                    isActive,
+                    isMuted
+                  )}
+                  eventHandlers={{
+                    click: () => handleSelectLab(lab.id),
+                  }}
+                />
+              );
+            })}
+          </MapContainer>
+        ) : (
+          <div className="h-full w-full bg-slate-50" />
+        )}
+      </div>
+
+      {selectedLab ? (
+        <Drawer
+          open={Boolean(selectedLab)}
+          onClose={() => handleSelectLab(null)}
+          title="Detail Laboratorium"
+          placement={screens.lg ? "right" : "bottom"}
+          size={screens.lg ? 430 : "72vh"}
+          mask={!screens.lg}
+          styles={{
+            header: {
+              padding: "14px 18px",
+              borderBottom: "1px solid rgba(148, 163, 184, 0.18)",
+            },
+            body: {
+              padding: 16,
+              background: "#eef5ff",
+            },
+          }}
+        >
+          {detailContent}
+        </Drawer>
+      ) : null}
     </div>
   );
 }

@@ -1,9 +1,58 @@
 // components/admin/LabForm.tsx
 "use client";
 
+import { AimOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  InputNumber,
+  Row,
+  Select,
+  Space,
+  Typography,
+  notification,
+} from "antd";
 import { useRouter } from "next/navigation";
-import { useState, useMemo, FormEvent } from "react";
-import { Modal } from "@/components/ui/modal";
+import { useEffect, useMemo, useState } from "react";
+import ImageUploadField from "@/components/admin/ImageUploadField";
+import LabCoordinatePicker from "@/components/admin/LabCoordinatePicker";
+import {
+  buildLabAddress,
+  formatCityName,
+  normalizeWhitespace,
+  type LabCityTypeValue,
+  type LabVillageTypeValue,
+} from "@/lib/lab-address";
+
+const { Paragraph: TypographyParagraph, Text: TypographyText, Title: TypographyTitle } =
+  Typography;
+const { Item: FormItem } = Form;
+const { TextArea: InputTextArea } = Input;
+
+type ProvinceOption = {
+  id: string;
+  nama: string;
+};
+
+type CityOption = {
+  id: string;
+  nama: string;
+  tipe: LabCityTypeValue;
+  namaTampil: string;
+};
+
+type DistrictOption = {
+  id: string;
+  nama: string;
+};
+
+type VillageOption = {
+  id: string;
+  nama: string;
+};
 
 export type LabTypeChip = {
   id: string;
@@ -14,6 +63,17 @@ export type LabFormInitial = {
   id?: string;
   name: string;
   address: string;
+  addressDetail?: string | null;
+  provinceId?: string | null;
+  provinceName?: string | null;
+  cityId?: string | null;
+  cityName?: string | null;
+  cityType?: LabCityTypeValue | null;
+  districtId?: string | null;
+  districtName?: string | null;
+  villageId?: string | null;
+  villageName?: string | null;
+  villageType?: LabVillageTypeValue | null;
   latitude: number;
   longitude: number;
   labPhotoUrl: string;
@@ -30,69 +90,313 @@ type LabFormProps = {
   initialData?: LabFormInitial;
 };
 
-type NotifState =
-  | {
-      type: "success" | "error";
-      title: string;
-      message: string;
-    }
-  | null;
+type LabFormValue = {
+  name: string;
+  addressDetail: string;
+  villageType?: LabVillageTypeValue;
+  latitude: number;
+  longitude: number;
+  labPhotoUrl: string;
+  head1Name?: string;
+  head1PhotoUrl?: string;
+  head2Name?: string;
+  head2PhotoUrl?: string;
+  phone?: string;
+  websiteUrl?: string;
+  types: string[];
+};
+
+async function fetchJson<T>(url: string) {
+  const res = await fetch(url, { cache: "no-store" });
+  const data = (await res.json()) as {
+    success?: boolean;
+    data?: T;
+    message?: string;
+  };
+
+  if (!res.ok || data.success === false) {
+    throw new Error(data.message ?? "Gagal mengambil data referensi.");
+  }
+
+  return data.data ?? ([] as T);
+}
+
+function mergeOption<T extends { id: string }>(selected: T | null, options: T[]) {
+  if (!selected) return options;
+  return options.some((item) => item.id === selected.id)
+    ? options
+    : [selected, ...options];
+}
 
 export default function LabForm({ initialData }: LabFormProps) {
   const router = useRouter();
   const isEdit = Boolean(initialData?.id);
-
-  // state untuk manajemen chip types (BLUD, LABKESMAS, dll)
-  const [typeInput, setTypeInput] = useState<string>("");
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(
-    initialData?.types.map((t) => t.name) ?? []
-  );
+  const [form] = Form.useForm<LabFormValue>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notificationApi, contextHolder] = notification.useNotification();
 
-  // state untuk modal notif (sukses / error)
-  const [notif, setNotif] = useState<NotifState>(null);
+  const [provinceOptions, setProvinceOptions] = useState<ProvinceOption[]>([]);
+  const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
+  const [districtOptions, setDistrictOptions] = useState<DistrictOption[]>([]);
+  const [villageOptions, setVillageOptions] = useState<VillageOption[]>([]);
+
+  const [provinceSearch, setProvinceSearch] = useState(initialData?.provinceName ?? "");
+  const [citySearch, setCitySearch] = useState(initialData?.cityName ?? "");
+  const [districtSearch, setDistrictSearch] = useState(initialData?.districtName ?? "");
+  const [villageSearch, setVillageSearch] = useState(initialData?.villageName ?? "");
+
+  const [selectedProvince, setSelectedProvince] = useState<ProvinceOption | null>(
+    initialData?.provinceId && initialData?.provinceName
+      ? {
+          id: initialData.provinceId,
+          nama: initialData.provinceName,
+        }
+      : null
+  );
+  const [selectedCity, setSelectedCity] = useState<CityOption | null>(
+    initialData?.cityId && initialData?.cityName
+      ? {
+          id: initialData.cityId,
+          nama: initialData.cityName,
+          tipe: initialData.cityType ?? "KABUPATEN",
+          namaTampil: formatCityName(initialData.cityName, initialData.cityType),
+        }
+      : null
+  );
+  const [selectedDistrict, setSelectedDistrict] = useState<DistrictOption | null>(
+    initialData?.districtId && initialData?.districtName
+      ? {
+          id: initialData.districtId,
+          nama: initialData.districtName,
+        }
+      : null
+  );
+  const [selectedVillage, setSelectedVillage] = useState<VillageOption | null>(
+    initialData?.villageId && initialData?.villageName
+      ? {
+          id: initialData.villageId,
+          nama: initialData.villageName,
+        }
+      : null
+  );
+
+  const [loadingProvince, setLoadingProvince] = useState(false);
+  const [loadingCity, setLoadingCity] = useState(false);
+  const [loadingDistrict, setLoadingDistrict] = useState(false);
+  const [loadingVillage, setLoadingVillage] = useState(false);
 
   const title = useMemo(
     () => (isEdit ? "Edit Laboratorium" : "Tambah Laboratorium"),
     [isEdit]
   );
 
-  const handleAddType = () => {
-    const value = typeInput.trim();
-    if (!value) return;
-    if (selectedTypes.includes(value)) {
-      setTypeInput("");
+  const initialValues = useMemo<LabFormValue>(
+    () => ({
+      name: initialData?.name ?? "",
+      addressDetail: initialData?.addressDetail ?? "",
+      villageType: initialData?.villageType ?? undefined,
+      latitude: initialData?.latitude ?? -6.9,
+      longitude: initialData?.longitude ?? 107.6,
+      labPhotoUrl: initialData?.labPhotoUrl ?? "",
+      head1Name: initialData?.head1Name ?? undefined,
+      head1PhotoUrl: initialData?.head1PhotoUrl ?? undefined,
+      head2Name: initialData?.head2Name ?? undefined,
+      head2PhotoUrl: initialData?.head2PhotoUrl ?? undefined,
+      phone: initialData?.phone ?? undefined,
+      websiteUrl: initialData?.websiteUrl ?? undefined,
+      types: initialData?.types.map((type) => type.name) ?? [],
+    }),
+    [initialData]
+  );
+
+  const watchedAddressDetail = Form.useWatch("addressDetail", form);
+  const watchedVillageType = Form.useWatch("villageType", form);
+  const watchedLatitude = Form.useWatch("latitude", form);
+  const watchedLongitude = Form.useWatch("longitude", form);
+
+  const addressPreview = useMemo(
+    () =>
+      buildLabAddress({
+        addressDetail: watchedAddressDetail,
+        provinceName: selectedProvince?.nama ?? null,
+        cityName: selectedCity?.namaTampil ?? null,
+        cityType: selectedCity?.tipe ?? null,
+        districtName: selectedDistrict?.nama ?? null,
+        villageName: selectedVillage?.nama ?? null,
+        villageType: watchedVillageType ?? null,
+        fallbackAddress: initialData?.address ?? null,
+      }),
+    [
+      initialData?.address,
+      selectedCity?.namaTampil,
+      selectedCity?.tipe,
+      selectedDistrict?.nama,
+      selectedProvince?.nama,
+      selectedVillage?.nama,
+      watchedAddressDetail,
+      watchedVillageType,
+    ]
+  );
+
+  const coordinatePreview = useMemo(
+    () => ({
+      latitude:
+        typeof watchedLatitude === "number" && Number.isFinite(watchedLatitude)
+          ? watchedLatitude
+          : initialValues.latitude,
+      longitude:
+        typeof watchedLongitude === "number" && Number.isFinite(watchedLongitude)
+          ? watchedLongitude
+          : initialValues.longitude,
+    }),
+    [initialValues.latitude, initialValues.longitude, watchedLatitude, watchedLongitude]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingProvince(true);
+
+    fetchJson<ProvinceOption[]>(
+      `/api/wilayah/provinsi?search=${encodeURIComponent(provinceSearch)}`
+    )
+      .then((data) => {
+        if (!cancelled) {
+          setProvinceOptions(data);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error("Gagal memuat provinsi:", error);
+          setProvinceOptions([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingProvince(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [provinceSearch]);
+
+  useEffect(() => {
+    if (!selectedProvince?.id) {
+      setCityOptions([]);
       return;
     }
-    setSelectedTypes((prev) => [...prev, value]);
-    setTypeInput("");
-  };
 
-  const handleRemoveType = (name: string) => {
-    setSelectedTypes((prev) => prev.filter((t) => t !== name));
-  };
+    let cancelled = false;
+    setLoadingCity(true);
 
-  const openError = (title: string, message: string) => {
-    setNotif({
-      type: "error",
-      title,
+    fetchJson<CityOption[]>(
+      `/api/wilayah/kabkota?provinceId=${encodeURIComponent(selectedProvince.id)}&search=${encodeURIComponent(citySearch)}`
+    )
+      .then((data) => {
+        if (!cancelled) {
+          setCityOptions(data);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error("Gagal memuat kabupaten/kota:", error);
+          setCityOptions([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingCity(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [citySearch, selectedProvince?.id]);
+
+  useEffect(() => {
+    if (!selectedCity?.id) {
+      setDistrictOptions([]);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingDistrict(true);
+
+    fetchJson<DistrictOption[]>(
+      `/api/wilayah/kecamatan?kabKotaId=${encodeURIComponent(selectedCity.id)}&search=${encodeURIComponent(districtSearch)}`
+    )
+      .then((data) => {
+        if (!cancelled) {
+          setDistrictOptions(data);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error("Gagal memuat kecamatan:", error);
+          setDistrictOptions([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingDistrict(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [districtSearch, selectedCity?.id]);
+
+  useEffect(() => {
+    if (!selectedDistrict?.id) {
+      setVillageOptions([]);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingVillage(true);
+
+    fetchJson<VillageOption[]>(
+      `/api/wilayah/kelurahan?kecamatanId=${encodeURIComponent(selectedDistrict.id)}&search=${encodeURIComponent(villageSearch)}`
+    )
+      .then((data) => {
+        if (!cancelled) {
+          setVillageOptions(data);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error("Gagal memuat kelurahan/desa:", error);
+          setVillageOptions([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingVillage(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDistrict?.id, villageSearch]);
+
+  const openError = (message: string, description: string) => {
+    notificationApi.error({
       message,
+      description,
     });
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (values: LabFormValue) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
-      const formData = new FormData(event.currentTarget);
-
-      const latitudeStr = String(formData.get("latitude") ?? "").trim();
-      const longitudeStr = String(formData.get("longitude") ?? "").trim();
-
-      const latitude = Number.parseFloat(latitudeStr);
-      const longitude = Number.parseFloat(longitudeStr);
+      const latitude = Number(values.latitude);
+      const longitude = Number(values.longitude);
 
       if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
         openError(
@@ -103,43 +407,67 @@ export default function LabForm({ initialData }: LabFormProps) {
         return;
       }
 
+      if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+        openError(
+          "Koordinat tidak valid",
+          "Pastikan latitude berada di antara -90 sampai 90 dan longitude di antara -180 sampai 180."
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      const addressDetail = normalizeWhitespace(values.addressDetail ?? "");
+      const address = buildLabAddress({
+        addressDetail,
+        provinceName: selectedProvince?.nama ?? null,
+        cityName: selectedCity?.namaTampil ?? null,
+        cityType: selectedCity?.tipe ?? null,
+        districtName: selectedDistrict?.nama ?? null,
+        villageName: selectedVillage?.nama ?? null,
+        villageType: values.villageType ?? null,
+      });
+
       const body = {
-        name: String(formData.get("name") ?? "").trim(),
-        address: String(formData.get("address") ?? "").trim(),
+        name: values.name.trim(),
+        address,
+        addressDetail: addressDetail || null,
+        provinceId: selectedProvince?.id ?? null,
+        provinceName: selectedProvince?.nama ?? null,
+        cityId: selectedCity?.id ?? null,
+        cityName: selectedCity?.namaTampil ?? null,
+        cityType: selectedCity?.tipe ?? null,
+        districtId: selectedDistrict?.id ?? null,
+        districtName: selectedDistrict?.nama ?? null,
+        villageId: selectedVillage?.id ?? null,
+        villageName: selectedVillage?.nama ?? null,
+        villageType: values.villageType ?? null,
         latitude,
         longitude,
-        labPhotoUrl: String(formData.get("labPhotoUrl") ?? "").trim(),
-        head1Name: (() => {
-          const v = formData.get("head1Name");
-          return v ? String(v).trim() || null : null;
-        })(),
-        head1PhotoUrl: (() => {
-          const v = formData.get("head1PhotoUrl");
-          return v ? String(v).trim() || null : null;
-        })(),
-        head2Name: (() => {
-          const v = formData.get("head2Name");
-          return v ? String(v).trim() || null : null;
-        })(),
-        head2PhotoUrl: (() => {
-          const v = formData.get("head2PhotoUrl");
-          return v ? String(v).trim() || null : null;
-        })(),
-        phone: (() => {
-          const v = formData.get("phone");
-          return v ? String(v).trim() || null : null;
-        })(),
-        websiteUrl: (() => {
-          const v = formData.get("websiteUrl");
-          return v ? String(v).trim() || null : null;
-        })(),
-        types: selectedTypes, // array nama tipe (["BLUD", "LABKESMAS", ...])
+        labPhotoUrl: values.labPhotoUrl.trim(),
+        head1Name: values.head1Name?.trim() || null,
+        head1PhotoUrl: values.head1PhotoUrl?.trim() || null,
+        head2Name: values.head2Name?.trim() || null,
+        head2PhotoUrl: values.head2PhotoUrl?.trim() || null,
+        phone: values.phone?.trim() || null,
+        websiteUrl: values.websiteUrl?.trim() || null,
+        types: (values.types ?? [])
+          .map((type) => type.trim())
+          .filter(Boolean),
       };
 
-      if (!body.name || !body.address) {
+      if (!body.name || !addressDetail) {
         openError(
           "Data belum lengkap",
-          "Nama laboratorium dan alamat wajib diisi."
+          "Nama laboratorium dan detail alamat wajib diisi."
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!selectedProvince || !selectedCity || !selectedDistrict) {
+        openError(
+          "Wilayah belum lengkap",
+          "Pilih minimal provinsi, kabupaten/kota, dan kecamatan dari referensi wilayah."
         );
         setIsSubmitting(false);
         return;
@@ -180,316 +508,374 @@ export default function LabForm({ initialData }: LabFormProps) {
         return;
       }
 
-      // sukses → tampilkan modal sukses, redirect ke /admin setelah user klik OK
-      setNotif({
-        type: "success",
-        title: isEdit ? "Perubahan disimpan" : "Laboratorium ditambahkan",
-        message: "Data laboratorium berhasil disimpan.",
+      notificationApi.success({
+        message: isEdit ? "Perubahan disimpan" : "Laboratorium ditambahkan",
+        description: "Data laboratorium berhasil disimpan.",
       });
-      setIsSubmitting(false);
+      router.push("/admin");
+      router.refresh();
     } catch (err: unknown) {
       const detail =
         err instanceof Error ? err.message : "Terjadi kesalahan tidak diketahui";
       console.error("LabForm submit error:", err);
 
       openError("Gagal menyimpan", `Terjadi kesalahan: ${detail}`);
+    } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleCloseNotif = () => {
-    if (notif?.type === "success") {
-      // setelah sukses, kembali ke daftar admin
-      setNotif(null);
-      router.push("/admin");
-      router.refresh();
-    } else {
-      setNotif(null);
     }
   };
 
   return (
     <>
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-slate-50"
+      {contextHolder}
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={initialValues}
+        onFinish={handleSubmit}
+        requiredMark={false}
+        className="space-y-6"
       >
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <h1 className="text-sm font-semibold">{title}</h1>
-            <p className="text-[11px] text-slate-400">
-              Isi data dasar, kontak, dan lokasi laboratorium.
-            </p>
-          </div>
-        </div>
+        <Space orientation="vertical" size={4}>
+          <TypographyTitle level={4} style={{ marginBottom: 0 }}>
+            {title}
+          </TypographyTitle>
+          <TypographyParagraph
+            style={{ marginBottom: 0, color: "#64748b" }}
+          >
+            Isi data dasar, alamat terstruktur berbasis referensi wilayah, kontak, profil pimpinan, dan koordinat laboratorium.
+          </TypographyParagraph>
+        </Space>
 
-        {/* GRID UTAMA */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* Kolom kiri: info umum & kontak */}
-          <div className="space-y-4">
-            <section className="space-y-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                Informasi umum
-              </p>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-slate-200">
-                  Nama Laboratorium
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  defaultValue={initialData?.name ?? ""}
-                  required
-                  className="w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-slate-200">
-                  Alamat
-                </label>
-                <textarea
-                  name="address"
-                  defaultValue={initialData?.address ?? ""}
-                  required
-                  rows={3}
-                  className="w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                />
-              </div>
-            </section>
-
-            <section className="space-y-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                Kontak instansi
-              </p>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-slate-200">
-                  Nomor Telepon
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  defaultValue={initialData?.phone ?? ""}
-                  placeholder="mis. (022) 1234567 / 0812xxxxxxx"
-                  className="w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-slate-200">
-                  Website Resmi
-                </label>
-                <input
-                  type="url"
-                  name="websiteUrl"
-                  defaultValue={initialData?.websiteUrl ?? ""}
-                  placeholder="mis. labkesda.jabarprov.go.id"
-                  className="w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                />
-              </div>
-            </section>
-          </div>
-
-          {/* Kolom kanan: foto & koordinat */}
-          <div className="space-y-4">
-            <section className="space-y-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                Foto & pimpinan
-              </p>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-slate-200">
-                  Kode Foto Laboratorium (Google Drive thumbnail ID / URL)
-                </label>
-                <input
-                  type="text"
-                  name="labPhotoUrl"
-                  defaultValue={initialData?.labPhotoUrl ?? ""}
-                  placeholder="mis. 1PWxeE1axIWMnoB_..."
-                  className="w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                />
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-medium text-slate-300">
-                    Nama Kepala Lab
-                  </label>
-                  <input
-                    type="text"
-                    name="head1Name"
-                    defaultValue={initialData?.head1Name ?? ""}
-                    className="w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                  />
-                  <input
-                    type="text"
-                    name="head1PhotoUrl"
-                    defaultValue={initialData?.head1PhotoUrl ?? ""}
-                    placeholder="ID / URL Foto Kepala Lab"
-                    className="mt-1 w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-[13px] text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-medium text-slate-300">
-                    Nama Kepala Sub Bagian TU
-                  </label>
-                  <input
-                    type="text"
-                    name="head2Name"
-                    defaultValue={initialData?.head2Name ?? ""}
-                    className="w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                  />
-                  <input
-                    type="text"
-                    name="head2PhotoUrl"
-                    defaultValue={initialData?.head2PhotoUrl ?? ""}
-                    placeholder="ID / URL Foto Kepala Sub Bag TU"
-                    className="mt-1 w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-[13px] text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                  />
-                </div>
-              </div>
-            </section>
-
-            <section className="space-y-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                Koordinat peta
-              </p>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="block text-xs font-medium text-slate-200">
-                    Latitude
-                  </label>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    name="latitude"
-                    defaultValue={initialData?.latitude ?? ""}
-                    required
-                    className="w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-xs font-medium text-slate-200">
-                    Longitude
-                  </label>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    name="longitude"
-                    defaultValue={initialData?.longitude ?? ""}
-                    required
-                    className="w-full rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                  />
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-
-        {/* Types / chips */}
-        <section className="space-y-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            Tipe laboratorium
-          </p>
-
-          <div className="flex flex-wrap gap-2">
-            {selectedTypes.map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => handleRemoveType(t)}
-                className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-0.5 text-[11px] font-medium text-slate-800 hover:bg-slate-200"
+        <Row gutter={[20, 20]}>
+          <Col xs={24} xl={12}>
+            <Card variant="borderless" title="Informasi Umum">
+              <FormItem
+                label="Nama laboratorium"
+                name="name"
+                rules={[{ required: true, message: "Nama laboratorium wajib diisi." }]}
               >
-                {t}
-                <span className="text-[10px]">✕</span>
-              </button>
-            ))}
-            {selectedTypes.length === 0 && (
-              <p className="text-[11px] text-slate-500">
-                Belum ada tipe. Tambahkan misalnya: BLUD, LABKESMAS, RS, SWASTA.
-              </p>
-            )}
-          </div>
+                <Input placeholder="Nama laboratorium" />
+              </FormItem>
 
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={typeInput}
-              onChange={(e) => setTypeInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAddType();
-                }
-              }}
-              placeholder="Ketik lalu Enter (mis. BLUD)"
-              className="flex-1 rounded-md border border-slate-600 bg-slate-950/60 px-2 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-            />
-            <button
-              type="button"
-              onClick={handleAddType}
-              className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-500"
-            >
-              Tambah
-            </button>
-          </div>
-        </section>
+              <FormItem
+                label="Detail alamat"
+                name="addressDetail"
+                rules={[{ required: true, message: "Detail alamat wajib diisi." }]}
+                extra="Isi jalan, nomor, kompleks, RT/RW, dusun, dan kode pos. Wilayah administratif dipilih dari referensi di bawah."
+              >
+                <InputTextArea rows={4} placeholder="Jl. ..., RT/RW ..., kode pos ..." />
+              </FormItem>
 
-        {/* Tombol submit */}
+              <Row gutter={[12, 12]}>
+                <Col xs={24} md={12}>
+                  <FormItem label="Provinsi" required>
+                    <Select
+                      showSearch
+                      allowClear
+                      placeholder="Cari provinsi"
+                      filterOption={false}
+                      loading={loadingProvince}
+                      value={selectedProvince?.id}
+                      onSearch={setProvinceSearch}
+                      onClear={() => {
+                        setSelectedProvince(null);
+                        setSelectedCity(null);
+                        setSelectedDistrict(null);
+                        setSelectedVillage(null);
+                        setProvinceSearch("");
+                        setCitySearch("");
+                        setDistrictSearch("");
+                        setVillageSearch("");
+                      }}
+                      onSelect={(value, option) => {
+                        const item = (option as { item: ProvinceOption }).item;
+                        setSelectedProvince(item);
+                        setProvinceSearch(item.nama);
+                        setSelectedCity(null);
+                        setSelectedDistrict(null);
+                        setSelectedVillage(null);
+                        setCitySearch("");
+                        setDistrictSearch("");
+                        setVillageSearch("");
+                      }}
+                      options={mergeOption(selectedProvince, provinceOptions).map((item) => ({
+                        value: item.id,
+                        label: item.nama,
+                        item,
+                      }))}
+                    />
+                  </FormItem>
+                </Col>
+
+                <Col xs={24} md={12}>
+                  <FormItem label="Kabupaten / Kota" required>
+                    <Select
+                      showSearch
+                      allowClear
+                      placeholder="Cari kabupaten / kota"
+                      filterOption={false}
+                      loading={loadingCity}
+                      disabled={!selectedProvince}
+                      value={selectedCity?.id}
+                      onSearch={setCitySearch}
+                      onClear={() => {
+                        setSelectedCity(null);
+                        setSelectedDistrict(null);
+                        setSelectedVillage(null);
+                        setCitySearch("");
+                        setDistrictSearch("");
+                        setVillageSearch("");
+                      }}
+                      onSelect={(value, option) => {
+                        const item = (option as { item: CityOption }).item;
+                        setSelectedCity(item);
+                        setCitySearch(item.namaTampil);
+                        setSelectedDistrict(null);
+                        setSelectedVillage(null);
+                        setDistrictSearch("");
+                        setVillageSearch("");
+                      }}
+                      options={mergeOption(selectedCity, cityOptions).map((item) => ({
+                        value: item.id,
+                        label: item.namaTampil,
+                        item,
+                      }))}
+                    />
+                  </FormItem>
+                </Col>
+
+                <Col xs={24} md={12}>
+                  <FormItem label="Kecamatan" required>
+                    <Select
+                      showSearch
+                      allowClear
+                      placeholder="Cari kecamatan"
+                      filterOption={false}
+                      loading={loadingDistrict}
+                      disabled={!selectedCity}
+                      value={selectedDistrict?.id}
+                      onSearch={setDistrictSearch}
+                      onClear={() => {
+                        setSelectedDistrict(null);
+                        setSelectedVillage(null);
+                        setDistrictSearch("");
+                        setVillageSearch("");
+                      }}
+                      onSelect={(value, option) => {
+                        const item = (option as { item: DistrictOption }).item;
+                        setSelectedDistrict(item);
+                        setDistrictSearch(item.nama);
+                        setSelectedVillage(null);
+                        setVillageSearch("");
+                      }}
+                      options={mergeOption(selectedDistrict, districtOptions).map((item) => ({
+                        value: item.id,
+                        label: item.nama,
+                        item,
+                      }))}
+                    />
+                  </FormItem>
+                </Col>
+
+                <Col xs={24} md={12}>
+                  <FormItem label="Kelurahan / Desa">
+                    <Select
+                      showSearch
+                      allowClear
+                      placeholder="Cari kelurahan / desa"
+                      filterOption={false}
+                      loading={loadingVillage}
+                      disabled={!selectedDistrict}
+                      value={selectedVillage?.id}
+                      onSearch={setVillageSearch}
+                      onClear={() => {
+                        setSelectedVillage(null);
+                        setVillageSearch("");
+                      }}
+                      onSelect={(value, option) => {
+                        const item = (option as { item: VillageOption }).item;
+                        setSelectedVillage(item);
+                        setVillageSearch(item.nama);
+                      }}
+                      options={mergeOption(selectedVillage, villageOptions).map((item) => ({
+                        value: item.id,
+                        label: item.nama,
+                        item,
+                      }))}
+                    />
+                  </FormItem>
+                </Col>
+
+                <Col xs={24} md={12}>
+                  <FormItem
+                    label="Jenis wilayah terendah"
+                    name="villageType"
+                    extra="Pilih Kelurahan atau Desa bila wilayah terendah tersedia."
+                  >
+                    <Select
+                      allowClear
+                      placeholder="Pilih jenis wilayah"
+                      options={[
+                        { value: "KELURAHAN", label: "Kelurahan" },
+                        { value: "DESA", label: "Desa" },
+                      ]}
+                    />
+                  </FormItem>
+                </Col>
+              </Row>
+
+              <div className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3">
+                <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Alamat Lengkap
+                </div>
+                <TypographyText style={{ color: "#334155" }}>
+                  {addressPreview || "-"}
+                </TypographyText>
+              </div>
+            </Card>
+          </Col>
+
+          <Col xs={24} xl={12}>
+            <Card variant="borderless" title="Kontak Instansi">
+              <FormItem label="Nomor telepon" name="phone">
+                <Input placeholder="mis. (022) 1234567 / 0812xxxxxxx" />
+              </FormItem>
+
+              <FormItem label="Website resmi" name="websiteUrl">
+                <Input placeholder="mis. labkesda.jabarprov.go.id" />
+              </FormItem>
+            </Card>
+          </Col>
+
+          <Col xs={24} xl={12}>
+            <Card variant="borderless" title="Foto & Pimpinan">
+              <FormItem label="Foto laboratorium" name="labPhotoUrl">
+                <ImageUploadField
+                  kind="lab-photo"
+                  labId={initialData?.id}
+                  title="Foto laboratorium"
+                  disabled={isSubmitting}
+                />
+              </FormItem>
+
+              <Row gutter={[12, 12]}>
+                <Col xs={24} md={12}>
+                  <FormItem label="Nama Kepala Lab" name="head1Name">
+                    <Input placeholder="Nama kepala laboratorium" />
+                  </FormItem>
+                  <FormItem label="Foto Kepala Lab" name="head1PhotoUrl">
+                    <ImageUploadField
+                      kind="head1-photo"
+                      labId={initialData?.id}
+                      title="Foto Kepala Lab"
+                      disabled={isSubmitting}
+                    />
+                  </FormItem>
+                </Col>
+
+                <Col xs={24} md={12}>
+                  <FormItem label="Nama Kepala Sub Bagian TU" name="head2Name">
+                    <Input placeholder="Nama kepala sub bagian TU" />
+                  </FormItem>
+                  <FormItem label="Foto Kasubbag TU" name="head2PhotoUrl">
+                    <ImageUploadField
+                      kind="head2-photo"
+                      labId={initialData?.id}
+                      title="Foto Kasubbag TU"
+                      disabled={isSubmitting}
+                    />
+                  </FormItem>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+
+          <Col xs={24} xl={12}>
+            <Card variant="borderless" title="Koordinat Peta">
+              <Space orientation="vertical" size={12} style={{ width: "100%", marginBottom: 16 }}>
+                <div className="rounded-[16px] border border-slate-200 bg-slate-50/85 px-3 py-2.5">
+                  <div className="flex items-center gap-2 text-[11px] font-medium text-slate-600">
+                    <AimOutlined className="text-slate-400" />
+                    Pilih titik langsung di peta agar marker publik tampil presisi.
+                  </div>
+                </div>
+
+                <LabCoordinatePicker
+                  latitude={coordinatePreview.latitude}
+                  longitude={coordinatePreview.longitude}
+                  onChange={(nextLatitude, nextLongitude) => {
+                    form.setFieldsValue({
+                      latitude: nextLatitude,
+                      longitude: nextLongitude,
+                    });
+                  }}
+                />
+              </Space>
+
+              <Row gutter={[12, 12]}>
+                <Col xs={24} md={12}>
+                  <FormItem
+                    label="Latitude"
+                    name="latitude"
+                    rules={[{ required: true, message: "Latitude wajib diisi." }]}
+                  >
+                    <InputNumber
+                      style={{ width: "100%" }}
+                      step={0.000001}
+                      placeholder="-6.900000"
+                    />
+                  </FormItem>
+                </Col>
+
+                <Col xs={24} md={12}>
+                  <FormItem
+                    label="Longitude"
+                    name="longitude"
+                    rules={[{ required: true, message: "Longitude wajib diisi." }]}
+                  >
+                    <InputNumber
+                      style={{ width: "100%" }}
+                      step={0.000001}
+                      placeholder="107.600000"
+                    />
+                  </FormItem>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+
+          <Col xs={24}>
+            <Card variant="borderless" title="Tipe Laboratorium">
+              <FormItem
+                label="Daftar tipe"
+                name="types"
+                extra="Gunakan Enter untuk menambahkan tipe baru. Contoh: BLUD, LABKESMAS, RS, SWASTA."
+              >
+                <Select
+                  mode="tags"
+                  tokenSeparators={[","]}
+                  placeholder="Tambah tipe laboratorium"
+                  options={[]}
+                />
+              </FormItem>
+            </Card>
+          </Col>
+        </Row>
+
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => router.push("/admin")}
-            className="rounded-md border border-slate-600 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800"
-          >
-            Batal
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-md bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-60"
-          >
+          <Button onClick={() => router.push("/admin")}>Batal</Button>
+          <Button type="primary" htmlType="submit" loading={isSubmitting}>
             {isSubmitting
               ? isEdit
                 ? "Menyimpan..."
                 : "Membuat..."
               : isEdit
               ? "Simpan Perubahan"
-              : "Simpan Laboratorium"}
-          </button>
+              : "Tambah Laboratorium"}
+          </Button>
         </div>
-      </form>
-
-      {/* Modal notif (sukses / error) */}
-      <Modal
-        open={notif !== null}
-        onClose={handleCloseNotif}
-        title={notif?.title}
-      >
-        <p
-          className={`text-[11px] ${
-            notif?.type === "error" ? "text-red-200" : "text-emerald-200"
-          }`}
-        >
-          {notif?.message}
-        </p>
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={handleCloseNotif}
-            className={`rounded-md px-3 py-1.5 text-[11px] font-semibold text-white ${
-              notif?.type === "error"
-                ? "bg-red-600 hover:bg-red-500"
-                : "bg-emerald-600 hover:bg-emerald-500"
-            }`}
-          >
-            OK
-          </button>
-        </div>
-      </Modal>
+      </Form>
     </>
   );
 }

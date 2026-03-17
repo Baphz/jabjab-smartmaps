@@ -1,112 +1,159 @@
-// app/page.tsx
+import { EnvironmentOutlined } from "@ant-design/icons";
+import { Button } from "antd";
 import Image from "next/image";
+import HomeMapAgendaLayout from "@/components/home/HomeMapAgendaLayout";
+import { formatDateKey } from "@/lib/activity-calendar";
+import { getActivitySources } from "@/lib/activity-server";
+import { getCurrentClerkSession } from "@/lib/clerk-auth";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import SmartMap from "@/components/SmartMap";
+import { siteContent } from "@/lib/site-content";
 
-// ganti FILE_ID_LOGO dengan ID file Google Drive kamu
-const LOGO_URL =
-  "https://drive.google.com/thumbnail?id=1KtUkqQREVr_dQVhjYBdv35HgpUUMrAvS&sz=w200";
+function CompactMetric({
+  label,
+  value,
+  tone = "blue",
+}: {
+  label: string;
+  value: number;
+  tone?: "blue" | "green" | "amber";
+}) {
+  const toneClass =
+    tone === "blue"
+      ? "border-sky-200 bg-sky-50/90"
+      : tone === "green"
+      ? "border-emerald-200 bg-emerald-50/90"
+      : tone === "amber"
+        ? "border-amber-200 bg-amber-50/90"
+        : "border-sky-200 bg-sky-50/90";
+
+  return (
+    <div className={`rounded-2xl border px-3 py-2 ${toneClass}`}>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+        {label}
+      </div>
+      <div className="mt-1 text-[18px] font-semibold leading-none tracking-tight text-slate-950">
+        {value}
+      </div>
+    </div>
+  );
+}
 
 export default async function HomePage() {
-  // ambil labs & session barengan
-  const [labs, session] = await Promise.all([
+  const [labs, session, activity] = await Promise.all([
     prisma.lab.findMany({
       include: { types: true },
       orderBy: { name: "asc" },
     }),
-    getServerSession(authOptions),
+    getCurrentClerkSession(),
+    getActivitySources({
+      onlyPublished: true,
+    }),
   ]);
 
   const year = new Date().getFullYear();
+  const todayKey = formatDateKey(new Date());
+  const publicAgendaCount = activity.sources.filter(
+    (item) => item.kind === "lab_event" && item.endDate >= todayKey
+  ).length;
+  const activeHolidayCount = activity.sources.filter(
+    (item) => item.kind !== "lab_event" && item.startDate >= todayKey
+  ).length;
 
   return (
-    <main className="flex min-h-screen flex-col bg-slate-950 text-slate-50">
-      {/* NAVBAR */}
-      <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-          {/* Kiri: logo + judul */}
-          <div className="flex items-center gap-3">
-            <div className="relative h-8 w-8 overflow-hidden rounded-lg border border-slate-300 bg-white">
-              <Image
-                src={LOGO_URL}
-                alt="Logo Smart Maps Labkesda"
-                fill
-                sizes="32px"
-                unoptimized
-                className="object-contain"
-              />
+    <main className="min-h-screen px-2.5 py-2.5 sm:px-4 lg:px-5">
+      <div className="mx-auto flex max-w-[1480px] flex-col gap-2.5">
+        <section className="rounded-2xl border border-sky-100 bg-sky-50/75 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end">
+            <div className="min-w-0">
+              <div className="flex items-start gap-3">
+                <div
+                  style={{
+                    position: "relative",
+                    height: 42,
+                    width: 42,
+                    overflow: "hidden",
+                    borderRadius: 12,
+                    border: "1px solid rgba(15, 23, 42, 0.08)",
+                    background: "#fff",
+                  }}
+                >
+                  <Image
+                    src={siteContent.brand.logoUrl}
+                    alt={siteContent.brand.logoAlt}
+                    fill
+                    sizes="42px"
+                    unoptimized
+                    className="object-contain"
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    {siteContent.publicHome.eyebrow}
+                  </div>
+                  <h1 className="mt-0.5 text-[20px] font-semibold tracking-tight text-slate-950 sm:text-[24px]">
+                    {siteContent.publicHome.title}
+                  </h1>
+                  <p className="mt-1 mb-0 max-w-3xl text-[12px] leading-5 text-slate-600 sm:text-[13px]">
+                    {siteContent.publicHome.description}
+                  </p>
+                </div>
+              </div>
+
+              {!session.canAccessDashboard ? (
+                <p className="mt-2.5 mb-0 text-[11px] leading-[1.45] text-slate-500">
+                  {siteContent.publicHome.dashboardAccessNote}
+                </p>
+              ) : null}
             </div>
 
-            <div>
-              <p className="text-sm font-semibold leading-tight">
-                JabJaB SmartMaps
-              </p>
-              <p className="text-[11px] leading-tight text-slate-400">
-                Peta Laboratorium Kesehatan Jawa Barat-DKI Jakarta-Banten
-              </p>
+            <div className="flex flex-col gap-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-sky-200 bg-sky-100/70 px-3 py-2.5">
+                <span className="inline-flex items-center gap-2 text-[11px] font-medium text-slate-600">
+                  <EnvironmentOutlined className="text-slate-400" />
+                  {siteContent.brand.regionLabel}
+                </span>
+                <Button
+                  href={session.canAccessDashboard ? "/admin" : "/login"}
+                  type="primary"
+                  size="small"
+                >
+                  {session.canAccessDashboard ? "Dashboard" : "Login"}
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <CompactMetric
+                  label={siteContent.publicHome.metrics.labs}
+                  value={labs.length}
+                  tone="blue"
+                />
+                <CompactMetric
+                  label={siteContent.publicHome.metrics.activeAgenda}
+                  value={publicAgendaCount}
+                  tone="green"
+                />
+                <CompactMetric
+                  label={siteContent.publicHome.metrics.holidays}
+                  value={activeHolidayCount}
+                  tone="amber"
+                />
+              </div>
             </div>
           </div>
+        </section>
 
-          {/* Kanan: tombol login / dashboard */}
-          <div className="flex items-center gap-2">
-            {session ? (
-              // ✅ sudah login → langsung ke halaman admin / dashboard
-              <a
-                href="/admin" // kalau route kamu pakai "/dashboard", ganti ini
-                className="rounded-md border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-800"
-              >
-                Dashboard
-              </a>
-            ) : (
-              // ❌ belum login → ke halaman login
-              <a
-                href="/login"
-                className="rounded-md border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-800"
-              >
-                Login Admin
-              </a>
-            )}
-          </div>
-        </div>
-      </header>
+        <HomeMapAgendaLayout
+          labs={labs}
+          items={activity.sources}
+          todayKey={todayKey}
+        />
 
-      {/* KONTEN UTAMA */}
-      <div className="flex-1 px-4 py-6 flex justify-center">
-        <div className="w-full max-w-6xl rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl overflow-hidden flex flex-col">
-          {/* header kecil card */}
-          <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
-            <div>
-              <h1 className="text-sm font-semibold text-slate-50">
-                Peta Laboratorium Kesehatan
-              </h1>
-              <p className="text-[11px] text-slate-400">
-                Klik marker untuk melihat detail laboratorium.
-              </p>
-            </div>
-          </div>
-
-          {/* area map di dalam “jendela” */}
-          <div className="flex-1 min-h-[420px] h-[70vh]">
-            <SmartMap labs={labs} />
-          </div>
+        <div className="flex flex-col gap-1 px-1 pb-1 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <span>© {year} {siteContent.brand.organizationName}.</span>
+          <span>{siteContent.brand.footerTagline}</span>
         </div>
       </div>
-
-      {/* FOOTER */}
-      <footer className="border-t border-slate-800 bg-slate-900/95">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 text-[11px] text-slate-400">
-          <p>
-            © {year} ASLABKESDA DPW Jawa Barat-DKI Jakarta-Banten. Semua hak
-            cipta.
-          </p>
-          <p className="hidden sm:block">
-            Smart Maps • Data Laboratorium Kesehatan daerah Jawa Barat, DKI dan
-            Banten
-          </p>
-        </div>
-      </footer>
     </main>
   );
 }

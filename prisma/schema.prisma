@@ -1,13 +1,22 @@
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
 }
 
+enum LabCityType {
+  KABUPATEN
+  KOTA
+}
 
+enum LabVillageType {
+  KELURAHAN
+  DESA
+}
 
 model LabType {
   id    String @id @default(cuid())
@@ -19,6 +28,17 @@ model Lab {
   id             String    @id @default(cuid())
   name           String
   address        String
+  addressDetail  String?
+  provinceId     String?
+  provinceName   String?
+  cityId         String?
+  cityName       String?
+  cityType       LabCityType?
+  districtId     String?
+  districtName   String?
+  villageId      String?
+  villageName    String?
+  villageType    LabVillageType?
   latitude       Float
   longitude      Float
   labPhotoUrl    String
@@ -32,5 +52,66 @@ model Lab {
   updatedAt      DateTime  @updatedAt
 
   // satu lab bisa punya banyak type
+  events         LabEvent[]
   types          LabType[]
+
+  @@index([provinceName])
+  @@index([cityName])
+  @@index([districtName])
+  @@index([villageName])
+}
+
+enum HolidayType {
+  LIBUR_NASIONAL
+  CUTI_BERSAMA
+}
+
+model LabEvent {
+  id              String   @id @default(cuid())
+  labId           String?
+  isGlobal        Boolean  @default(false)
+  title           String
+  description     String?
+  locationName    String?
+  locationAddress String?
+  addressDetail   String?
+  provinceId      String?
+  provinceName    String?
+  cityId          String?
+  cityName        String?
+  cityType        LabCityType?
+  districtId      String?
+  districtName    String?
+  villageId       String?
+  villageName     String?
+  villageType     LabVillageType?
+  latitude        Float?
+  longitude       Float?
+  startDate       DateTime
+  endDate         DateTime
+  timeLabel       String?
+  isPublished     Boolean  @default(true)
+  createdByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lab             Lab?     @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  @@index([labId, startDate])
+  @@index([isPublished, startDate])
+  @@index([isGlobal, startDate])
+}
+
+model MasterHoliday {
+  id        String      @id @default(cuid())
+  date      DateTime
+  name      String
+  type      HolidayType
+  isActive  Boolean     @default(true)
+  source    String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([date, type])
+  @@index([date])
+  @@index([type, date])
 }

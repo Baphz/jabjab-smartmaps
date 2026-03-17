@@ -1,15 +1,14 @@
-// components/SmartMap.tsx
 "use client";
 
+import { Spin } from "antd";
 import dynamic from "next/dynamic";
 import type { SmartMapInnerProps } from "./SmartMapInner";
 
-// SmartMapInner hanya dijalankan di client
 const SmartMapInner = dynamic(() => import("./SmartMapInner"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full w-full items-center justify-center text-slate-200">
-      Memuat peta...
+    <div className="flex h-full w-full items-center justify-center bg-slate-50">
+      <Spin description="Memuat peta..." size="large" />
     </div>
   ),
 });

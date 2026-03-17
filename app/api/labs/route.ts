@@ -1,10 +1,23 @@
 // app/api/labs/route.ts
 import { NextResponse } from "next/server";
+import { requireAdminApiAccess } from "@/lib/clerk-auth";
+import { buildLabAddress, normalizeWhitespace, type LabCityTypeValue, type LabVillageTypeValue } from "@/lib/lab-address";
 import { prisma } from "@/lib/prisma";
 
 type LabPayload = {
   name: string;
   address: string;
+  addressDetail: string | null;
+  provinceId: string | null;
+  provinceName: string | null;
+  cityId: string | null;
+  cityName: string | null;
+  cityType: LabCityTypeValue | null;
+  districtId: string | null;
+  districtName: string | null;
+  villageId: string | null;
+  villageName: string | null;
+  villageType: LabVillageTypeValue | null;
   latitude: number;
   longitude: number;
   labPhotoUrl: string;
@@ -29,11 +42,27 @@ export async function GET() {
 
 // POST /api/labs -> buat lab baru
 export async function POST(req: Request) {
+  const authError = await requireAdminApiAccess();
+
+  if (authError) {
+    return authError;
+  }
+
   try {
     const body = (await req.json()) as LabPayload;
+    const address = buildLabAddress({
+      addressDetail: body.addressDetail,
+      provinceName: body.provinceName,
+      cityName: body.cityName,
+      cityType: body.cityType,
+      districtName: body.districtName,
+      villageName: body.villageName,
+      villageType: body.villageType,
+      fallbackAddress: body.address,
+    });
 
     // Validasi sederhana
-    if (!body.name || !body.address) {
+    if (!body.name || !address) {
       return NextResponse.json(
         { error: "Nama dan alamat wajib diisi" },
         { status: 400 }
@@ -55,8 +84,19 @@ export async function POST(req: Request) {
     // 1) Buat lab tanpa types dulu
     const createdLab = await prisma.lab.create({
       data: {
-        name: body.name,
-        address: body.address,
+        name: normalizeWhitespace(body.name),
+        address,
+        addressDetail: body.addressDetail,
+        provinceId: body.provinceId,
+        provinceName: body.provinceName,
+        cityId: body.cityId,
+        cityName: body.cityName,
+        cityType: body.cityType,
+        districtId: body.districtId,
+        districtName: body.districtName,
+        villageId: body.villageId,
+        villageName: body.villageName,
+        villageType: body.villageType,
         latitude: body.latitude,
         longitude: body.longitude,
         labPhotoUrl: body.labPhotoUrl,
@@ -92,7 +132,6 @@ export async function POST(req: Request) {
       },
       include: { types: true },
     });
-
     return NextResponse.json(labWithTypes, { status: 201 });
   } catch (err: unknown) {
     console.error("POST /api/labs error:", err);

@@ -1,7 +1,10 @@
 // app/admin/[id]/edit/page.tsx
+import { redirect } from "next/navigation";
+import { Alert } from "antd";
 import { prisma } from "@/lib/prisma";
 import LabForm, { LabFormInitial } from "@/components/admin/LabForm";
 import { ModalPageLayout } from "@/components/admin/ModalPageLayout";
+import { requireDashboardPageAccess } from "@/lib/clerk-auth";
 
 type Params = {
   params: Promise<{
@@ -10,7 +13,12 @@ type Params = {
 };
 
 export default async function AdminEditLabPage({ params }: Params) {
+  const session = await requireDashboardPageAccess();
   const { id } = await params;
+
+  if (session.isLabAdmin && session.labId !== id) {
+    redirect("/admin");
+  }
 
   const lab = await prisma.lab.findUnique({
     where: { id },
@@ -20,9 +28,11 @@ export default async function AdminEditLabPage({ params }: Params) {
   if (!lab) {
     return (
       <ModalPageLayout title="Data Tidak Ditemukan" backHref="/admin">
-        <div className="text-sm text-red-300">
-          Data laboratorium tidak ditemukan.
-        </div>
+        <Alert
+          type="error"
+          showIcon
+          title="Data laboratorium tidak ditemukan."
+        />
       </ModalPageLayout>
     );
   }
@@ -31,6 +41,17 @@ export default async function AdminEditLabPage({ params }: Params) {
     id: lab.id,
     name: lab.name,
     address: lab.address,
+    addressDetail: lab.addressDetail,
+    provinceId: lab.provinceId,
+    provinceName: lab.provinceName,
+    cityId: lab.cityId,
+    cityName: lab.cityName,
+    cityType: lab.cityType,
+    districtId: lab.districtId,
+    districtName: lab.districtName,
+    villageId: lab.villageId,
+    villageName: lab.villageName,
+    villageType: lab.villageType,
     latitude: lab.latitude,
     longitude: lab.longitude,
     labPhotoUrl: lab.labPhotoUrl,

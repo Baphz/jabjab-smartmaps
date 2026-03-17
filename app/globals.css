@@ -1,26 +1,23 @@
 @import "tailwindcss";
 
-/* ==== Theme dasar (dari template Next + Geist) ==== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #edf5ff;
+  --foreground: #0f172a;
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-strong: #ffffff;
+  --surface-muted: #eff6ff;
+  --border: rgba(15, 23, 42, 0.08);
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+  --accent-ring: rgba(37, 99, 235, 0.16);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-plus-jakarta-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-/* ==== Layout global ==== */
 html,
 body {
   height: 100%;
@@ -30,39 +27,77 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-plus-jakarta-sans), sans-serif;
 }
 
-/* Leaflet container supaya full */
+a {
+  color: inherit;
+}
+
+#__next,
+.ant-app,
+main {
+  min-height: 100%;
+}
+
 .leaflet-container {
   width: 100%;
   height: 100%;
+  background: #d9e8f3;
 }
 
-/* ==== (Opsional) legacy marker, kalau masih kepakai ==== */
-.lab-marker:hover {
-  transform: scale(1.05);
+.leaflet-popup-content-wrapper {
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
 }
 
-.lab-marker-selected {
-  transform: scale(1.15);
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.7);
-  border-color: #0f766e; /* teal-700 */
+.leaflet-popup-content {
+  margin: 14px 16px;
 }
 
-/* ===================================================== */
-/*  MARKER BULAT MERAH DENGAN FOTO LAB DI TENGAH         */
-/* ===================================================== */
+.leaflet-popup-tip {
+  background: #ffffff;
+}
 
-/* Marker bulat merah (ring) */
+.leaflet-control-zoom {
+  border: 0 !important;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.12) !important;
+}
+
+.leaflet-control-zoom a {
+  width: 34px !important;
+  height: 34px !important;
+  line-height: 34px !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  color: #0f172a !important;
+}
+
+.leaflet-control-zoom a:first-child {
+  border-bottom: 0 !important;
+  border-top-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+}
+
+.leaflet-control-zoom a:last-child {
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+}
+
+.leaflet-control-attribution {
+  border-radius: 8px 0 0 0;
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(6px);
+}
+
 .lab-pin {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 9999px;
-  background: #b22222; /* merah tua */
-  padding: 3px;        /* ketebalan ring merah */
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.5);
+  background: #dc2626;
+  padding: 3px;
+  box-shadow: 0 14px 28px rgba(127, 29, 29, 0.22);
   transform: scale(1);
   transition:
     transform 150ms ease,
@@ -72,47 +107,220 @@ body {
   justify-content: center;
 }
 
-/* Tidak pakai ekor pin lagi (full circle) */
-.lab-pin::after {
-  content: none;
+.lab-pin::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  opacity: 0;
+  transform: scale(0.86);
 }
 
-/* Foto bulat di tengah marker */
 .lab-pin-photo {
   width: 100%;
   height: 100%;
   border-radius: 9999px;
-  background-color: #ffffff;     /* putih kalau foto belum ada */
+  background: #ffffff;
   background-size: cover;
   background-position: center;
   overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
-/* Efek hover: sedikit membesar */
 .lab-pin:hover {
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
-/* Saat marker dipilih: grow + shadow lebih kuat */
 .lab-pin-selected {
-  transform: scale(1.15);
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.7);
+  transform: scale(1.12);
+  box-shadow: 0 18px 34px rgba(127, 29, 29, 0.3);
 }
 
-/* ujung pin (segitiga di bawah) */
+.lab-pin-active::before {
+  border-color: rgba(16, 185, 129, 0.4);
+  opacity: 1;
+  animation: labPinPulse 1.9s ease-out infinite;
+}
+
+.lab-pin-active {
+  background: #16a34a;
+  box-shadow:
+    0 18px 34px rgba(22, 163, 74, 0.22),
+    0 0 0 6px rgba(16, 185, 129, 0.12);
+  animation: labPinGlow 1.9s ease-in-out infinite;
+}
+
+.lab-pin-active .lab-pin-photo {
+  border-color: rgba(236, 253, 245, 0.96);
+}
+
+.lab-pin-search::before {
+  border-color: rgba(245, 158, 11, 0.5);
+  opacity: 1;
+  animation: labPinPulse 1.9s ease-out infinite;
+}
+
+.lab-pin-search {
+  background: #d97706;
+  box-shadow:
+    0 18px 34px rgba(180, 83, 9, 0.28),
+    0 0 0 6px rgba(245, 158, 11, 0.14);
+  animation: labPinGlowSearch 1.9s ease-in-out infinite;
+}
+
+.lab-pin-search .lab-pin-photo {
+  border-color: rgba(255, 251, 235, 0.95);
+}
+
+.lab-pin-muted {
+  background: #94a3b8;
+  box-shadow: 0 12px 24px rgba(71, 85, 105, 0.14);
+  opacity: 0.78;
+}
+
+.lab-pin-muted .lab-pin-photo {
+  border-color: rgba(255, 255, 255, 0.88);
+  filter: grayscale(1) saturate(0) contrast(1.02);
+}
+
 .lab-pin::after {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -12px;
+  bottom: -10px;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 10px solid #b22222;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid #b91c1c;
 }
-/* Animasi panel kanan saat muncul */
+
+.lab-pin-active::after {
+  border-top-color: #059669;
+}
+
+.lab-pin-search::after {
+  border-top-color: #d97706;
+}
+
+.lab-pin-muted::after {
+  border-top-color: #64748b;
+}
+
+.coordinate-picker-pin {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  background: #2563eb;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 16px 30px rgba(37, 99, 235, 0.22),
+    0 0 0 6px rgba(37, 99, 235, 0.12);
+}
+
+.coordinate-picker-pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 9px solid #2563eb;
+}
+
+.coordinate-picker-pin-core {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.94);
+  background: #ffffff;
+}
+
+@keyframes labPinPulse {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.84);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.42);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.42);
+  }
+}
+
+@keyframes labPinGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 18px 34px rgba(5, 150, 105, 0.22),
+      0 0 0 6px rgba(16, 185, 129, 0.09);
+  }
+  50% {
+    box-shadow:
+      0 22px 38px rgba(5, 150, 105, 0.32),
+      0 0 0 10px rgba(16, 185, 129, 0.18);
+  }
+}
+
+@keyframes labPinGlowSearch {
+  0%,
+  100% {
+    box-shadow:
+      0 18px 34px rgba(180, 83, 9, 0.24),
+      0 0 0 6px rgba(245, 158, 11, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 22px 38px rgba(180, 83, 9, 0.34),
+      0 0 0 10px rgba(245, 158, 11, 0.18);
+  }
+}
+
+.map-legend-pulse {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+}
+
+.map-legend-pulse-active {
+  background: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.14);
+}
+
+.map-legend-pulse-search {
+  background: #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.14);
+}
+
+.map-legend-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 9999px;
+  animation: labPinPulse 1.9s ease-out infinite;
+}
+
+.map-legend-pulse-active::after {
+  border: 2px solid rgba(16, 185, 129, 0.42);
+}
+
+.map-legend-pulse-search::after {
+  border: 2px solid rgba(245, 158, 11, 0.5);
+}
+
 @keyframes panelSlideIn {
   from {
     opacity: 0;
@@ -169,65 +377,95 @@ body {
 .panel-slide-down {
   animation: panelSlideDown 220ms ease-out;
 }
-
-/* ========================= */
-/*     ANIMASI UNTUK MODAL   */
-/* ========================= */
-
-@keyframes modalOverlayFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.smartmaps-clerk,
+.smartmaps-clerk .cl-rootBox,
+.smartmaps-clerk .cl-cardBox,
+.smartmaps-clerk .cl-card,
+.smartmaps-clerk .cl-main,
+.smartmaps-clerk .cl-form,
+.smartmaps-clerk .cl-formFieldRow,
+.smartmaps-clerk .cl-formField,
+.smartmaps-clerk .cl-formFieldInput__identifier,
+.smartmaps-clerk .cl-page {
+  width: 100%;
+  max-width: none;
 }
 
-@keyframes modalOverlayFadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+.smartmaps-clerk .cl-cardBox,
+.smartmaps-clerk .cl-card {
+  box-shadow: none;
+  border: 0;
+  background: transparent;
 }
 
-@keyframes modalDialogIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.smartmaps-clerk .cl-main {
+  gap: 14px;
 }
 
-@keyframes modalDialogOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(12px) scale(0.96);
-  }
+.smartmaps-clerk .cl-footer,
+.smartmaps-clerk .cl-footerAction,
+.smartmaps-clerk .cl-footerActionText,
+.smartmaps-clerk .cl-footerActionLink,
+.smartmaps-clerk .cl-dividerRow,
+.smartmaps-clerk .cl-dividerText,
+.smartmaps-clerk .cl-socialButtonsBlockButton,
+.smartmaps-clerk .cl-socialButtonsBlockButtonText {
+  display: none;
 }
 
-/* kelas helper untuk dipakai di komponen Modal */
-.modal-overlay-open {
-  animation: modalOverlayFadeIn 220ms ease-out forwards;
+.smartmaps-clerk .cl-headerTitle,
+.smartmaps-clerk .cl-headerSubtitle {
+  display: none;
 }
 
-.modal-overlay-closed {
-  animation: modalOverlayFadeOut 180ms ease-in forwards;
-  pointer-events: none; /* supaya area overlay benar-benar non-klik */
+.smartmaps-clerk .cl-formFieldInputShowPasswordButton,
+.smartmaps-clerk .cl-formButtonPrimary,
+.smartmaps-clerk .cl-formFieldInput,
+.smartmaps-clerk .cl-formFieldAction,
+.smartmaps-clerk .cl-otpCodeFieldInput {
+  width: 100%;
 }
 
-.modal-dialog-open {
-  animation: modalDialogIn 220ms ease-out forwards;
+.smartmaps-clerk .cl-formButtonPrimary {
+  height: 44px;
+  border-radius: 14px;
+  background: #2563eb;
+  box-shadow: none;
 }
 
-.modal-dialog-closed {
-  animation: modalDialogOut 180ms ease-in forwards;
+.smartmaps-clerk .cl-formFieldRow {
+  display: block;
+}
+
+.smartmaps-clerk .cl-formField {
+  margin-bottom: 12px;
+}
+
+.smartmaps-clerk .cl-formButtonPrimary:hover {
+  background: #1d4ed8;
+}
+
+.smartmaps-clerk .cl-formFieldInput {
+  height: 44px;
+  border-radius: 14px;
+  border-color: #d7e2ef;
+  background: rgba(248, 251, 255, 0.85);
+}
+
+.smartmaps-clerk .cl-formFieldInput:focus,
+.smartmaps-clerk .cl-formFieldInput:focus-visible {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.smartmaps-clerk .cl-formFieldLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.smartmaps-clerk .cl-alertText,
+.smartmaps-clerk .cl-formFieldErrorText,
+.smartmaps-clerk .cl-formResendCodeLink {
+  font-size: 12px;
 }

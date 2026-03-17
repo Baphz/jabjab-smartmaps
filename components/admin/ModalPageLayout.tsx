@@ -1,8 +1,11 @@
-// components/admin/ModalPageLayout.tsx
 "use client";
 
-import Link from "next/link";
+import { CloseOutlined } from "@ant-design/icons";
+import { Button, Card, Space, Typography } from "antd";
 import { ReactNode } from "react";
+import { siteContent } from "@/lib/site-content";
+
+const { Paragraph: TypographyParagraph, Title: TypographyTitle } = Typography;
 
 interface ModalPageLayoutProps {
   title: string;
@@ -16,28 +19,35 @@ export function ModalPageLayout({
   backHref,
 }: ModalPageLayoutProps) {
   return (
-    <main className="min-h-screen bg-slate-950/90 text-slate-50">
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="relative w-full max-w-5xl rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-2xl">
-          <div className="mb-4 flex items-center justify-between gap-2">
-            <div>
-              <h1 className="text-sm font-semibold text-slate-50">{title}</h1>
-              <p className="text-[11px] text-slate-400">
-                Smart Maps Labkesda – Admin
-              </p>
-            </div>
+    <main className="min-h-screen px-4 py-6 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <Card
+          variant="borderless"
+          className="rounded-[24px] border border-sky-100 bg-sky-50/70 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
+          styles={{ body: { padding: 18 } }}
+        >
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <Space orientation="vertical" size={4}>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                {siteContent.admin.modalSubtitle}
+              </div>
+              <TypographyTitle level={3} style={{ marginBottom: 0 }}>
+                {title}
+              </TypographyTitle>
+              <TypographyParagraph
+                style={{ marginBottom: 0, color: "#64748b" }}
+              >
+                Kelola detail data pada halaman kerja ini lalu tutup untuk kembali ke dashboard.
+              </TypographyParagraph>
+            </Space>
 
-            <Link
-              href={backHref}
-              className="rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] text-slate-200 hover:bg-slate-800"
-            >
-              ✕ Tutup
-            </Link>
+            <Button href={backHref} icon={<CloseOutlined />}>
+              Tutup
+            </Button>
           </div>
 
-          {/* konten form / isi halaman */}
-          <div className="max-h-[75vh] overflow-y-auto pr-1">{children}</div>
-        </div>
+          <div>{children}</div>
+        </Card>
       </div>
     </main>
   );

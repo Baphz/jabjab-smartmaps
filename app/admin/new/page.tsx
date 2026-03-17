@@ -1,11 +1,25 @@
 // app/admin/new/page.tsx
 import { ModalPageLayout } from "@/components/admin/ModalPageLayout";
 import LabForm, { LabFormInitial } from "@/components/admin/LabForm";
+import { requireAdminPageAccess } from "@/lib/clerk-auth";
 
 export default async function AdminNewLabPage() {
+  await requireAdminPageAccess();
+
   const initial: LabFormInitial = {
     name: "",
     address: "",
+    addressDetail: null,
+    provinceId: null,
+    provinceName: null,
+    cityId: null,
+    cityName: null,
+    cityType: null,
+    districtId: null,
+    districtName: null,
+    villageId: null,
+    villageName: null,
+    villageType: null,
     latitude: -6.9,
     longitude: 107.6,
     labPhotoUrl: "",
