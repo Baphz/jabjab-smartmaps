@@ -87,16 +87,30 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const clerkPublishableKey =
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() || null;
+
+  const appContent = (
+    <AntdRegistry>
+      <ConfigProvider theme={antdTheme} componentSize="small">
+        <AntdApp>{children}</AntdApp>
+      </ConfigProvider>
+    </AntdRegistry>
+  );
+
   return (
     <html lang="id" className={plusJakartaSans.variable}>
       <body>
-        <ClerkProvider afterSignOutUrl="/login">
-          <AntdRegistry>
-            <ConfigProvider theme={antdTheme} componentSize="small">
-              <AntdApp>{children}</AntdApp>
-            </ConfigProvider>
-          </AntdRegistry>
-        </ClerkProvider>
+        {clerkPublishableKey ? (
+          <ClerkProvider
+            publishableKey={clerkPublishableKey}
+            afterSignOutUrl="/login"
+          >
+            {appContent}
+          </ClerkProvider>
+        ) : (
+          appContent
+        )}
       </body>
     </html>
   );

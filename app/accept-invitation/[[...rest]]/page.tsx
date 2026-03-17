@@ -13,6 +13,9 @@ const { Paragraph: TypographyParagraph, Title: TypographyTitle } = Typography;
 
 export default function AcceptInvitationPage() {
   const searchParams = useSearchParams();
+  const clerkEnabled = Boolean(
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim()
+  );
 
   const labName = searchParams.get("lab_name") ?? "";
   const labId = searchParams.get("lab_id") ?? "";
@@ -99,15 +102,24 @@ export default function AcceptInvitationPage() {
                   </TypographyParagraph>
                 </div>
 
-                <div className="smartmaps-clerk">
-                  <SignUp
-                    routing="path"
-                    path="/accept-invitation"
-                    forceRedirectUrl="/admin"
-                    fallbackRedirectUrl="/admin"
-                    signInUrl="/login"
+                {clerkEnabled ? (
+                  <div className="smartmaps-clerk">
+                    <SignUp
+                      routing="path"
+                      path="/accept-invitation"
+                      forceRedirectUrl="/admin"
+                      fallbackRedirectUrl="/admin"
+                      signInUrl="/login"
+                    />
+                  </div>
+                ) : (
+                  <Alert
+                    type="warning"
+                    showIcon
+                    title="Konfigurasi autentikasi belum aktif"
+                    description="Isi env Clerk di deployment ini lalu redeploy untuk mengaktifkan pembuatan password melalui undangan."
                   />
-                </div>
+                )}
               </Space>
             </Card>
           </Col>
