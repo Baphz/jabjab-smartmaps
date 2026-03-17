@@ -13,23 +13,18 @@ export async function POST(req: Request) {
 
   try {
     const body = (await req.json()) as {
+      invitationId?: string;
       email?: string;
       labId?: string;
     };
 
+    const invitationId = String(body.invitationId ?? "").trim();
     const email = String(body.email ?? "").trim().toLowerCase();
     const labId = String(body.labId ?? "").trim();
 
-    if (!email) {
+    if (!invitationId || !email || !labId) {
       return NextResponse.json(
-        { error: "Email wajib diisi." },
-        { status: 400 }
-      );
-    }
-
-    if (!labId) {
-      return NextResponse.json(
-        { error: "Laboratorium wajib dipilih." },
+        { error: "Data invitation tidak lengkap." },
         { status: 400 }
       );
     }
@@ -50,22 +45,7 @@ export async function POST(req: Request) {
     }
 
     const client = await clerkClient();
-    const [users, invitations] = await Promise.all([
-      client.users.getUserList({ limit: 100 }),
-      client.invitations.getInvitationList({ limit: 100 }),
-    ]);
-
-    const activeUserForLab = users.data.find(
-      (user) => user.publicMetadata?.lab_id === lab.id
-    );
-
-    if (activeUserForLab) {
-      return NextResponse.json(
-        { error: "Laboratorium ini sudah memiliki akun aktif." },
-        { status: 409 }
-      );
-    }
-
+    const users = await client.users.getUserList({ limit: 100 });
     const activeUserForEmail = users.data.find((user) =>
       user.emailAddresses.some(
         (emailAddress) => emailAddress.emailAddress.toLowerCase() === email
@@ -79,23 +59,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const pendingInvitation = invitations.data.find(
-      (invitation) =>
-        invitation.emailAddress.toLowerCase() === email ||
-        invitation.publicMetadata?.lab_id === lab.id
-    );
-
-    if (pendingInvitation) {
-      return NextResponse.json(
-        { error: "Sudah ada invitation aktif untuk email atau laboratorium ini." },
-        { status: 409 }
-      );
-    }
-
     const params = new URLSearchParams({
       lab_id: lab.id,
       lab_name: lab.name,
     });
+
+    try {
+      await client.invitations.revokeInvitation(invitationId);
+    } catch (error) {
+      console.warn("POST /api/admin/resend-invitation revoke warning:", error);
+    }
 
     const invitation = await client.invitations.createInvitation({
       emailAddress: email,
@@ -117,10 +90,10 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/admin/invite-user error:", error);
+    console.error("POST /api/admin/resend-invitation error:", error);
 
     const message =
-      error instanceof Error ? error.message : "Gagal mengirim undangan.";
+      error instanceof Error ? error.message : "Gagal mengirim ulang undangan.";
 
     return NextResponse.json({ error: message }, { status: 500 });
   }

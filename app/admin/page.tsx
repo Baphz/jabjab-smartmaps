@@ -175,7 +175,9 @@ export default async function AdminDashboardPage() {
           })
         : Promise.resolve([]),
       clerk ? clerk.users.getUserList({ limit: 100 }) : Promise.resolve(null),
-      clerk ? clerk.invitations.getInvitationList({ limit: 100 }) : Promise.resolve(null),
+      clerk
+        ? clerk.invitations.getInvitationList({ status: "pending", limit: 100 })
+        : Promise.resolve(null),
     ]);
 
   const labRows = labs.map((lab) => ({

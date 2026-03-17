@@ -1,6 +1,11 @@
 "use client";
 
-import { DeleteOutlined, MailOutlined, UserAddOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  MailOutlined,
+  ReloadOutlined,
+  UserAddOutlined,
+} from "@ant-design/icons";
 import {
   App,
   Button,
@@ -107,6 +112,37 @@ export default function AdminUsersManager({
     });
   };
 
+  const handleResendInvitation = (row: PendingInvitationRow) => {
+    modal.confirm({
+      title: "Kirim ulang undangan ini?",
+      content: "Email undangan baru akan dikirim ke alamat yang sama.",
+      okText: "Kirim Ulang",
+      cancelText: "Tutup",
+      async onOk() {
+        const res = await fetch("/api/admin/resend-invitation", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            invitationId: row.id,
+            email: row.email,
+            labId: row.labId,
+          }),
+        });
+
+        const data = (await res.json()) as { error?: string };
+
+        if (!res.ok) {
+          throw new Error(data.error ?? "Gagal mengirim ulang undangan.");
+        }
+
+        messageApi.success("Undangan berhasil dikirim ulang.");
+        router.refresh();
+      },
+    });
+  };
+
   const activeColumns: ColumnsType<ActiveLabUserRow> = [
     {
       title: "Email",
@@ -158,16 +194,25 @@ export default function AdminUsersManager({
     {
       title: "Aksi",
       key: "action",
-      width: 120,
+      width: 220,
       render: (_, row) => (
-        <Button
-          danger
-          type="text"
-          icon={<DeleteOutlined />}
-          onClick={() => handleCancelInvitation(row.id)}
-        >
-          Batalkan
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            type="text"
+            icon={<ReloadOutlined />}
+            onClick={() => handleResendInvitation(row)}
+          >
+            Kirim Ulang
+          </Button>
+          <Button
+            danger
+            type="text"
+            icon={<DeleteOutlined />}
+            onClick={() => handleCancelInvitation(row.id)}
+          >
+            Batalkan
+          </Button>
+        </div>
       ),
     },
   ];
