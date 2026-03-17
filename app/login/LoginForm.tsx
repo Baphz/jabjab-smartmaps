@@ -13,13 +13,16 @@ const clerkAppearance = {
   elements: {
     rootBox: "w-full",
     cardBox: "w-full max-w-none",
-    card: "w-full max-w-none",
-    main: "w-full",
+    card: "w-full max-w-none border-0 bg-transparent shadow-none",
+    page: "mx-auto w-full max-w-[440px]",
+    main: "mx-auto w-full max-w-[440px]",
+    header: "hidden",
     form: "w-full",
     formField: "w-full",
     formFieldRow: "w-full",
     formFieldInput: "w-full",
     formButtonPrimary: "w-full",
+    otpCodeFieldInput: "h-14 w-11 min-w-11 rounded-[14px]",
   },
 };
 

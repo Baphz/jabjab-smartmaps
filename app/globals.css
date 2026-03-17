@@ -460,7 +460,6 @@ main {
 .smartmaps-clerk .cl-rootBox,
 .smartmaps-clerk .cl-cardBox,
 .smartmaps-clerk .cl-card,
-.smartmaps-clerk .cl-main,
 .smartmaps-clerk .cl-form,
 .smartmaps-clerk .cl-formFieldRow,
 .smartmaps-clerk .cl-formField,
@@ -470,17 +469,32 @@ main {
   max-width: none;
 }
 
+.smartmaps-clerk {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
 .smartmaps-clerk .cl-cardBox,
 .smartmaps-clerk .cl-card {
   box-shadow: none;
   border: 0;
   background: transparent;
+  padding: 0;
+}
+
+.smartmaps-clerk .cl-page,
+.smartmaps-clerk .cl-main {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
 }
 
 .smartmaps-clerk .cl-main {
-  gap: 14px;
+  gap: 12px;
 }
 
+.smartmaps-clerk .cl-header,
 .smartmaps-clerk .cl-footer,
 .smartmaps-clerk .cl-footerAction,
 .smartmaps-clerk .cl-footerActionText,
@@ -500,8 +514,7 @@ main {
 .smartmaps-clerk .cl-formFieldInputShowPasswordButton,
 .smartmaps-clerk .cl-formButtonPrimary,
 .smartmaps-clerk .cl-formFieldInput,
-.smartmaps-clerk .cl-formFieldAction,
-.smartmaps-clerk .cl-otpCodeFieldInput {
+.smartmaps-clerk .cl-formFieldAction {
   width: 100%;
 }
 
@@ -518,6 +531,12 @@ main {
 
 .smartmaps-clerk .cl-formField {
   margin-bottom: 12px;
+}
+
+.smartmaps-clerk .cl-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .smartmaps-clerk .cl-formButtonPrimary:hover {
@@ -543,10 +562,39 @@ main {
   color: #475569;
 }
 
+.smartmaps-clerk .cl-alert {
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.smartmaps-clerk .cl-alertText {
+  line-height: 1.5;
+}
+
+.smartmaps-clerk .cl-otpCodeFieldInput {
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 56px !important;
+  border-radius: 14px !important;
+  border-color: #d7e2ef !important;
+  background: rgba(248, 251, 255, 0.92) !important;
+}
+
+.smartmaps-clerk .cl-otpCodeFieldInput:focus,
+.smartmaps-clerk .cl-otpCodeFieldInput:focus-visible {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14) !important;
+}
+
 .smartmaps-clerk .cl-alertText,
 .smartmaps-clerk .cl-formFieldErrorText,
 .smartmaps-clerk .cl-formResendCodeLink {
   font-size: 12px;
+}
+
+.smartmaps-clerk .cl-formResendCodeLink {
+  display: block;
+  text-align: center;
 }
 
 .smartmaps-article-content p {
