@@ -28,11 +28,11 @@ function CompactMetric({
         : "smartmaps-metric-card smartmaps-metric-card-amber";
 
   return (
-    <div className={`rounded-2xl border px-3 py-2 ${toneClass}`}>
+    <div className={`min-w-[108px] rounded-2xl border px-3 py-2.5 ${toneClass}`}>
       <div className="smartmaps-metric-label text-[10px] font-semibold uppercase tracking-[0.14em]">
         {label}
       </div>
-      <div className="smartmaps-metric-value mt-1 text-[18px] font-semibold leading-none tracking-tight">
+      <div className="smartmaps-metric-value mt-1.5 text-[18px] font-semibold leading-none tracking-tight">
         {value}
       </div>
     </div>
@@ -82,24 +82,24 @@ export default async function HomePage() {
     <main className="min-h-screen px-2.5 py-2.5 sm:px-4 lg:px-5">
       <div className="mx-auto flex max-w-[1480px] flex-col gap-2.5">
         <section className="rounded-2xl border border-slate-200 bg-white/96 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end">
-            <div className="min-w-0">
-              <div className="flex items-start gap-3">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-3">
                 <div
                   className="smartmaps-logo-frame"
                   style={{
                     position: "relative",
-                    height: 42,
-                    width: 42,
+                    height: 48,
+                    width: 48,
                     overflow: "hidden",
-                    borderRadius: 12,
+                    borderRadius: 14,
                   }}
                 >
                   <Image
                     src={branding.logoUrl}
                     alt={branding.logoAlt}
                     fill
-                    sizes="42px"
+                    sizes="48px"
                     unoptimized
                     className="object-contain"
                   />
@@ -109,32 +109,13 @@ export default async function HomePage() {
                   <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                     {siteContent.publicHome.eyebrow}
                   </div>
-                  <h1 className="mt-0.5 text-[20px] font-semibold tracking-tight text-slate-950 sm:text-[24px]">
+                  <h1 className="mt-0.5 text-[22px] font-semibold tracking-tight text-slate-950 sm:text-[28px]">
                     {siteContent.publicHome.title}
                   </h1>
                 </div>
               </div>
-            </div>
 
-            <div className="flex flex-col gap-2.5">
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-slate-50/90 px-3 py-2.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-2 text-[11px] font-medium text-slate-600">
-                    <EnvironmentOutlined className="text-slate-400" />
-                    {branding.regionLabel}
-                  </span>
-                  <ThemeModeToggle />
-                </div>
-                <Button
-                  href={session.canAccessDashboard ? "/admin" : "/login"}
-                  type="primary"
-                  size="small"
-                >
-                  {session.canAccessDashboard ? "Dashboard" : "Login"}
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <CompactMetric
                   label={siteContent.publicHome.metrics.labs}
                   value={labs.length}
@@ -150,6 +131,23 @@ export default async function HomePage() {
                   value={activeHolidayCount}
                   tone="amber"
                 />
+              </div>
+            </div>
+
+            <div className="xl:w-auto">
+              <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/90 p-2">
+                <span className="inline-flex min-h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-medium text-slate-600">
+                    <EnvironmentOutlined className="text-slate-400" />
+                    {branding.regionLabel}
+                </span>
+                <ThemeModeToggle />
+                <Button
+                  href={session.canAccessDashboard ? "/admin" : "/login"}
+                  type="primary"
+                  size="small"
+                >
+                  {session.canAccessDashboard ? "Dashboard" : "Login"}
+                </Button>
               </div>
             </div>
           </div>
