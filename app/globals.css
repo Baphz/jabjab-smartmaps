@@ -298,6 +298,49 @@ html.theme-dark .smartmaps-logo-frame {
   background: var(--surface) !important;
 }
 
+.smartmaps-empty-panel {
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--surface-muted) 76%, transparent);
+}
+
+html.theme-dark .smartmaps-empty-panel {
+  background: rgba(15, 23, 42, 0.76);
+}
+
+html.theme-dark .ant-empty {
+  color: #cbd5e1 !important;
+}
+
+html.theme-dark .ant-empty-image {
+  opacity: 0.78;
+}
+
+html.theme-dark .ant-empty-img-default-ellipse {
+  fill: #111c31 !important;
+}
+
+html.theme-dark .ant-empty-img-default-path-1,
+html.theme-dark .ant-empty-img-default-path-2,
+html.theme-dark .ant-empty-img-default-path-3,
+html.theme-dark .ant-empty-img-default-path-4,
+html.theme-dark .ant-empty-img-default-path-5 {
+  fill: #475569 !important;
+}
+
+html.theme-dark .ant-empty-img-default-g {
+  fill: #64748b !important;
+}
+
+html.theme-dark .ant-empty-img-simple-ellipse,
+html.theme-dark .ant-empty-img-simple-path {
+  fill: #334155 !important;
+}
+
+html.theme-dark .ant-table-placeholder > td {
+  background: #0f172a !important;
+  border-color: rgba(71, 85, 105, 0.78) !important;
+}
+
 .lab-pin {
   position: relative;
   width: 42px;

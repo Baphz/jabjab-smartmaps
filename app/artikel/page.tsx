@@ -119,7 +119,7 @@ export default async function ArticlesPage() {
         </section>
 
         {articles.length === 0 ? (
-          <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-10 shadow-[0_18px_38px_rgba(15,23,42,0.04)]">
+          <div className="smartmaps-empty-panel rounded-[24px] px-4 py-10 shadow-[0_18px_38px_rgba(15,23,42,0.04)]">
             <Empty
               description="Belum ada artikel."
               image={Empty.PRESENTED_IMAGE_SIMPLE}

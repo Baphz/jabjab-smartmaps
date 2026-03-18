@@ -69,7 +69,7 @@ export default function RecentArticlesSection({
       </div>
 
       {articles.length === 0 ? (
-        <div className="mt-4 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-4 py-8">
+        <div className="smartmaps-empty-panel mt-4 rounded-[20px] px-4 py-8">
           <Empty
             description="Belum ada artikel."
             image={Empty.PRESENTED_IMAGE_SIMPLE}

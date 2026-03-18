@@ -413,7 +413,7 @@ export default function ActivityCalendar({
       >
         <div className="pb-1">
           {selectedItems.length === 0 ? (
-            <div className="rounded-[20px] border border-dashed border-slate-200 bg-slate-50 px-4 py-8">
+            <div className="smartmaps-empty-panel rounded-[20px] px-4 py-8">
               <Empty
                 description="Belum ada item."
                 image={Empty.PRESENTED_IMAGE_SIMPLE}

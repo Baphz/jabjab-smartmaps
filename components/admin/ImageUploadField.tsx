@@ -153,7 +153,7 @@ export default function ImageUploadField({
               </Space>
             </div>
           ) : (
-            <div className="py-4">
+            <div className="smartmaps-empty-panel py-4">
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description="Belum ada gambar"

@@ -88,7 +88,7 @@ export default function UpcomingActivityList({
 
       {upcomingItems.length === 0 ? (
         <div
-          className={`rounded-[14px] border border-dashed border-slate-200 bg-slate-50 ${
+          className={`smartmaps-empty-panel rounded-[14px] ${
             compact ? "px-3 py-4" : "px-3 py-5"
           }`}
         >
