@@ -107,7 +107,7 @@ export default async function ArticlesPage() {
                 Artikel
               </div>
               <h1 className="mb-1 mt-1 text-[28px] font-semibold tracking-tight text-slate-950">
-                Artikel Labkesda
+                Artikel DPW Aslabkesda
               </h1>
               <p className="m-0 max-w-3xl text-[13px] leading-6 text-slate-600">
                 Kumpulan publikasi terbaru dari DPW dan laboratorium yang terdaftar.

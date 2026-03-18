@@ -1,10 +1,11 @@
 "use client";
 
 import {
+  ReloadOutlined,
   SearchOutlined,
   PushpinOutlined,
 } from "@ant-design/icons";
-import { Input } from "antd";
+import { Button, Input } from "antd";
 import { useMemo, useState } from "react";
 import ActivityCalendar from "@/components/activity/ActivityCalendar";
 import UpcomingActivityList from "@/components/activity/UpcomingActivityList";
@@ -193,7 +194,7 @@ export default function HomeMapAgendaLayout({
               </h2>
             </div>
 
-            <div className="w-full max-w-[350px]">
+            <div className="flex w-full max-w-[470px] flex-col gap-2 sm:flex-row">
               <Input
                 allowClear
                 size="middle"
@@ -204,6 +205,17 @@ export default function HomeMapAgendaLayout({
                   setSearchQuery(event.target.value);
                 }}
               />
+              {normalizedSearchQuery || focusedActivity || effectiveSelectedLabId ? (
+                <Button
+                  type="default"
+                  size="middle"
+                  icon={<ReloadOutlined />}
+                  onClick={handleResetMapView}
+                  className="sm:min-w-[134px] sm:self-stretch"
+                >
+                  Reset peta
+                </Button>
+              ) : null}
             </div>
           </div>
 
@@ -252,11 +264,7 @@ export default function HomeMapAgendaLayout({
                 mutedLabIds={mutedLabIds}
                 focusedActivity={focusedActivity}
                 selectedLabId={effectiveSelectedLabId}
-                hasActiveView={Boolean(
-                  normalizedSearchQuery || focusedActivity || effectiveSelectedLabId
-                )}
                 onSelectLab={handleSelectLab}
-                onResetView={handleResetMapView}
               />
             </div>
           </div>

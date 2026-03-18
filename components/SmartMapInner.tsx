@@ -5,7 +5,7 @@ import {
   GlobalOutlined,
   PhoneOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Descriptions, Drawer, Empty, Grid, Space, Typography } from "antd";
+import { Card, Descriptions, Drawer, Empty, Grid, Space, Typography } from "antd";
 import Image from "next/image";
 import L from "leaflet";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -63,8 +63,6 @@ export type SmartMapInnerProps = {
   focusedActivity?: ActivitySourceItem | null;
   selectedLabId?: string | null;
   onSelectLab?: (labId: string | null) => void;
-  hasActiveView?: boolean;
-  onResetView?: () => void;
 };
 
 function hasValidEventCoordinates(item: ActivitySourceItem | null | undefined) {
@@ -328,8 +326,6 @@ export default function SmartMapInner({
   focusedActivity = null,
   selectedLabId,
   onSelectLab,
-  hasActiveView = false,
-  onResetView,
 }: SmartMapInnerProps) {
   const { mode } = useAppTheme();
   const [isMapReady, setIsMapReady] = useState(false);
@@ -564,22 +560,6 @@ export default function SmartMapInner({
             </div>
           </div>
 
-          {hasActiveView ? (
-            <Button
-              size="small"
-              className="pointer-events-auto"
-              onClick={() => {
-                if (onResetView) {
-                  onResetView();
-                  return;
-                }
-
-                handleSelectLab(null);
-              }}
-            >
-              Reset peta
-            </Button>
-          ) : null}
         </div>
 
         <div className="pointer-events-none absolute bottom-3 left-3 z-500">
@@ -703,7 +683,7 @@ export default function SmartMapInner({
           open={Boolean(selectedLab)}
           onClose={() => handleSelectLab(null)}
           title="Detail Laboratorium"
-          placement={screens.lg ? "right" : "bottom"}
+          placement={screens.lg ? "left" : "bottom"}
           size={screens.lg ? 430 : "72vh"}
           mask={!screens.lg}
           styles={{
