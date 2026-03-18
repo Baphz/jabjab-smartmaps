@@ -282,6 +282,17 @@ main {
   background: var(--surface-strong);
 }
 
+.smartmaps-logo-frame {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+html.theme-dark .smartmaps-logo-frame {
+  border-color: rgba(148, 163, 184, 0.32);
+  background: #ffffff;
+}
+
 .smartmaps-detail-section.ant-card {
   border-color: var(--border) !important;
   background: var(--surface) !important;

@@ -88,14 +88,13 @@ export default async function HomePage() {
             <div className="min-w-0">
               <div className="flex items-start gap-3">
                 <div
+                  className="smartmaps-logo-frame"
                   style={{
                     position: "relative",
                     height: 42,
                     width: 42,
                     overflow: "hidden",
                     borderRadius: 12,
-                    border: "1px solid var(--border)",
-                    background: "var(--surface-strong)",
                   }}
                 >
                   <Image

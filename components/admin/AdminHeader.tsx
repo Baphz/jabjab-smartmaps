@@ -65,11 +65,7 @@ export default function AdminHeader({
             {logoUrl ? (
               <div className="mb-2 flex items-center gap-2">
                 <div
-                  className="relative h-10 w-10 overflow-hidden rounded-xl"
-                  style={{
-                    border: "1px solid var(--border)",
-                    background: "var(--surface-strong)",
-                  }}
+                  className="smartmaps-logo-frame relative h-10 w-10 overflow-hidden rounded-xl"
                 >
                   <Image
                     src={logoUrl}

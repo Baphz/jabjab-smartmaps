@@ -49,14 +49,13 @@ export function LoginForm({ branding }: { branding: AppBranding }) {
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div
+                  className="smartmaps-logo-frame"
                   style={{
                     position: "relative",
                     height: 60,
                     width: 60,
                     overflow: "hidden",
                     borderRadius: 18,
-                    border: "1px solid var(--border)",
-                    background: "var(--surface-strong)",
                   }}
                 >
                   <Image
