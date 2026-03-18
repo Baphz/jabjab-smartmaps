@@ -12,7 +12,7 @@ type ThemeModeToggleProps = {
 
 export default function ThemeModeToggle({
   size = "small",
-  shape = "circle",
+  shape = "default",
   className,
 }: ThemeModeToggleProps) {
   const { mode, toggleMode } = useAppTheme();
@@ -22,7 +22,7 @@ export default function ThemeModeToggle({
       <Button
         size={size}
         shape={shape}
-        className={className}
+        className={["smartmaps-theme-toggle", className].filter(Boolean).join(" ")}
         icon={mode === "dark" ? <SunOutlined /> : <MoonOutlined />}
         onClick={toggleMode}
       />

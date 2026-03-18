@@ -24,14 +24,7 @@ function MapPill({
   children: React.ReactNode;
   tone?: "neutral" | "focus" | "success" | "search";
 }) {
-  const toneClass =
-    tone === "focus"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
-      : tone === "success"
-        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-        : tone === "search"
-          ? "border-amber-200 bg-amber-50 text-amber-700"
-          : "border-slate-200 bg-white text-slate-600";
+  const toneClass = `smartmaps-map-pill smartmaps-map-pill-${tone}`;
 
   return (
     <span

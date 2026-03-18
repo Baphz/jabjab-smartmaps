@@ -212,6 +212,13 @@ html.theme-dark .smartmaps-activity-modal .ant-modal-close:focus {
   color: #e6edf7 !important;
 }
 
+.smartmaps-theme-toggle.ant-btn,
+.smartmaps-header-toggle-button.ant-btn {
+  min-height: 40px;
+  min-width: 44px;
+  border-radius: 14px;
+}
+
 .smartmaps-header-action-button.ant-btn {
   min-height: 40px;
   min-width: 40px;
@@ -271,86 +278,163 @@ main {
   min-height: 100%;
 }
 
-.smartmaps-metric-card {
+.smartmaps-metric-chip {
   position: relative;
   overflow: hidden;
 }
 
-.smartmaps-metric-card::after {
-  content: "";
-  position: absolute;
-  inset: auto -18px -18px auto;
-  width: 58px;
-  height: 58px;
-  border-radius: 9999px;
-  opacity: 0.24;
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.smartmaps-metric-card-blue {
-  border-color: #2f6fed;
-  background: #2f6fed;
-}
-
-.smartmaps-metric-card-green {
-  border-color: #2fa67c;
-  background: #2fa67c;
-}
-
-.smartmaps-metric-card-amber {
-  border-color: #e1bf72;
-  background: #fff4da;
-}
-
-.smartmaps-metric-label {
+.smartmaps-metric-chip-label,
+.smartmaps-metric-chip-value {
   position: relative;
   z-index: 1;
 }
 
-.smartmaps-metric-value {
-  position: relative;
-  z-index: 1;
+.smartmaps-metric-chip-blue {
+  border-color: rgba(96, 165, 250, 0.42);
+  background: #edf4ff;
+  color: #1d4ed8;
 }
 
-.smartmaps-metric-card-blue .smartmaps-metric-label,
-.smartmaps-metric-card-green .smartmaps-metric-label {
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.smartmaps-metric-card-blue .smartmaps-metric-value,
-.smartmaps-metric-card-green .smartmaps-metric-value {
+.smartmaps-metric-chip-blue .smartmaps-metric-chip-value {
+  background: #2563eb;
   color: #ffffff;
 }
 
-.smartmaps-metric-card-amber .smartmaps-metric-label {
-  color: #8a651f;
+.smartmaps-metric-chip-green {
+  border-color: rgba(52, 211, 153, 0.46);
+  background: #eefbf5;
+  color: #047857;
 }
 
-.smartmaps-metric-card-amber .smartmaps-metric-value {
-  color: #6f4f15;
+.smartmaps-metric-chip-green .smartmaps-metric-chip-value {
+  background: #059669;
+  color: #ffffff;
 }
 
-html.theme-dark .smartmaps-metric-card-blue {
-  border-color: #4378ea !important;
-  background: #315ec3 !important;
+.smartmaps-metric-chip-violet {
+  border-color: rgba(167, 139, 250, 0.46);
+  background: #f4f0ff;
+  color: #6d28d9;
 }
 
-html.theme-dark .smartmaps-metric-card-green {
-  border-color: #3eb48a !important;
-  background: #277c63 !important;
+.smartmaps-metric-chip-violet .smartmaps-metric-chip-value {
+  background: #7c3aed;
+  color: #ffffff;
 }
 
-html.theme-dark .smartmaps-metric-card-amber {
-  border-color: #8b6a2e !important;
-  background: #3b2d14 !important;
+.smartmaps-metric-chip-amber {
+  border-color: rgba(251, 191, 36, 0.46);
+  background: #fff7e8;
+  color: #b45309;
 }
 
-html.theme-dark .smartmaps-metric-card-amber .smartmaps-metric-label {
-  color: #d7bf8a !important;
+.smartmaps-metric-chip-amber .smartmaps-metric-chip-value {
+  background: #f59e0b;
+  color: #422006;
 }
 
-html.theme-dark .smartmaps-metric-card-amber .smartmaps-metric-value {
-  color: #fff3d2 !important;
+.smartmaps-header-pill {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(255, 255, 255, 0.96);
+  color: #475569;
+}
+
+.smartmaps-map-pill-neutral {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(255, 255, 255, 0.96);
+  color: #475569;
+}
+
+.smartmaps-map-pill-focus {
+  border-color: rgba(96, 165, 250, 0.38);
+  background: #eef4ff;
+  color: #1d4ed8;
+}
+
+.smartmaps-map-pill-success {
+  border-color: rgba(52, 211, 153, 0.38);
+  background: #eefbf5;
+  color: #047857;
+}
+
+.smartmaps-map-pill-search {
+  border-color: rgba(251, 191, 36, 0.42);
+  background: #fff7e8;
+  color: #b45309;
+}
+
+html.theme-dark .smartmaps-metric-chip-blue {
+  border-color: rgba(125, 172, 255, 0.5) !important;
+  background: rgba(41, 91, 171, 0.52) !important;
+  color: #dbeafe !important;
+}
+
+html.theme-dark .smartmaps-metric-chip-blue .smartmaps-metric-chip-value {
+  background: #7db2ff !important;
+  color: #10254a !important;
+}
+
+html.theme-dark .smartmaps-metric-chip-green {
+  border-color: rgba(88, 214, 167, 0.5) !important;
+  background: rgba(23, 100, 76, 0.54) !important;
+  color: #d1fae5 !important;
+}
+
+html.theme-dark .smartmaps-metric-chip-green .smartmaps-metric-chip-value {
+  background: #4ade80 !important;
+  color: #073b2b !important;
+}
+
+html.theme-dark .smartmaps-metric-chip-violet {
+  border-color: rgba(189, 163, 255, 0.5) !important;
+  background: rgba(72, 46, 130, 0.56) !important;
+  color: #ede9fe !important;
+}
+
+html.theme-dark .smartmaps-metric-chip-violet .smartmaps-metric-chip-value {
+  background: #c4b5fd !important;
+  color: #342160 !important;
+}
+
+html.theme-dark .smartmaps-metric-chip-amber {
+  border-color: rgba(250, 204, 21, 0.5) !important;
+  background: rgba(120, 79, 17, 0.52) !important;
+  color: #fef3c7 !important;
+}
+
+html.theme-dark .smartmaps-metric-chip-amber .smartmaps-metric-chip-value {
+  background: #facc15 !important;
+  color: #4c3100 !important;
+}
+
+html.theme-dark .smartmaps-header-pill {
+  border-color: rgba(110, 131, 160, 0.42) !important;
+  background: rgba(30, 41, 59, 0.94) !important;
+  color: #dbe4f0 !important;
+}
+
+html.theme-dark .smartmaps-map-pill-neutral {
+  border-color: rgba(110, 131, 160, 0.42) !important;
+  background: rgba(30, 41, 59, 0.94) !important;
+  color: #dbe4f0 !important;
+}
+
+html.theme-dark .smartmaps-map-pill-focus {
+  border-color: rgba(125, 172, 255, 0.46) !important;
+  background: rgba(41, 91, 171, 0.52) !important;
+  color: #dbeafe !important;
+}
+
+html.theme-dark .smartmaps-map-pill-success {
+  border-color: rgba(88, 214, 167, 0.46) !important;
+  background: rgba(23, 100, 76, 0.54) !important;
+  color: #d1fae5 !important;
+}
+
+html.theme-dark .smartmaps-map-pill-search {
+  border-color: rgba(250, 204, 21, 0.46) !important;
+  background: rgba(120, 79, 17, 0.54) !important;
+  color: #fef3c7 !important;
 }
 
 .leaflet-container {

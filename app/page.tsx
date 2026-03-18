@@ -20,33 +20,14 @@ function CompactMetricChip({
   value: number;
   tone?: "blue" | "green" | "violet" | "amber";
 }) {
-  const wrapperClass =
-    tone === "blue"
-      ? "border-blue-200/90 bg-blue-50/90 text-blue-800"
-      : tone === "green"
-        ? "border-emerald-200/90 bg-emerald-50/90 text-emerald-800"
-        : tone === "violet"
-          ? "border-violet-200/90 bg-violet-50/90 text-violet-800"
-          : "border-amber-200/90 bg-amber-50/90 text-amber-800";
-  const valueClass =
-    tone === "blue"
-      ? "bg-blue-600 text-white"
-      : tone === "green"
-        ? "bg-emerald-600 text-white"
-        : tone === "violet"
-          ? "bg-violet-600 text-white"
-          : "bg-amber-500 text-amber-950";
+  const toneClass = `smartmaps-metric-chip smartmaps-metric-chip-${tone}`;
 
   return (
-    <div
-      className={`inline-flex min-w-fit items-center gap-2 rounded-full border px-2.5 py-1.5 ${wrapperClass}`}
-    >
-      <div className="text-[10px] font-semibold uppercase tracking-[0.14em]">
+    <div className={`inline-flex min-w-fit items-center gap-2 rounded-full border px-2.5 py-1.5 ${toneClass}`}>
+      <div className="smartmaps-metric-chip-label text-[10px] font-semibold uppercase tracking-[0.14em]">
         {label}
       </div>
-      <div
-        className={`inline-flex min-w-7 items-center justify-center rounded-full px-2 py-0.5 text-[12px] font-semibold leading-none ${valueClass}`}
-      >
+      <div className="smartmaps-metric-chip-value inline-flex min-w-7 items-center justify-center rounded-full px-2 py-0.5 text-[12px] font-semibold leading-none">
         {value}
       </div>
     </div>
@@ -163,13 +144,13 @@ export default async function HomePage() {
 
             <div className="xl:w-auto">
               <div className="flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-slate-200 bg-slate-50/85 p-2.5">
-                <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-[11px] font-medium text-slate-600 shadow-[0_1px_0_rgba(255,255,255,0.5)]">
+                <span className="smartmaps-header-pill inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 text-[11px] font-medium shadow-[0_1px_0_rgba(255,255,255,0.5)]">
                     <EnvironmentOutlined className="text-slate-400" />
                     <span className="whitespace-nowrap">{branding.regionLabel}</span>
                 </span>
                 <ThemeModeToggle
                   size="middle"
-                  className="smartmaps-header-action-button"
+                  className="smartmaps-header-toggle-button"
                 />
                 <Button
                   href={session.canAccessDashboard ? "/admin" : "/login"}
