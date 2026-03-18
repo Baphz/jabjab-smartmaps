@@ -3,6 +3,7 @@ import { Button } from "antd";
 import Image from "next/image";
 import RecentArticlesSection from "@/components/article/RecentArticlesSection";
 import HomeMapAgendaLayout from "@/components/home/HomeMapAgendaLayout";
+import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
 import { formatDateKey } from "@/lib/activity-calendar";
 import { getActivitySources } from "@/lib/activity-server";
 import { getAppBranding } from "@/lib/app-branding";
@@ -93,8 +94,8 @@ export default async function HomePage() {
                     width: 42,
                     overflow: "hidden",
                     borderRadius: 12,
-                    border: "1px solid rgba(15, 23, 42, 0.08)",
-                    background: "#fff",
+                    border: "1px solid var(--border)",
+                    background: "var(--surface-strong)",
                   }}
                 >
                   <Image
@@ -120,10 +121,13 @@ export default async function HomePage() {
 
             <div className="flex flex-col gap-2.5">
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-sky-200 bg-sky-100/70 px-3 py-2.5">
-                <span className="inline-flex items-center gap-2 text-[11px] font-medium text-slate-600">
-                  <EnvironmentOutlined className="text-slate-400" />
-                  {branding.regionLabel}
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-2 text-[11px] font-medium text-slate-600">
+                    <EnvironmentOutlined className="text-slate-400" />
+                    {branding.regionLabel}
+                  </span>
+                  <ThemeModeToggle />
+                </div>
                 <Button
                   href={session.canAccessDashboard ? "/admin" : "/login"}
                   type="primary"

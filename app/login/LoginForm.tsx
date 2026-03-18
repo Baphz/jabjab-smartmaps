@@ -5,6 +5,7 @@ import { Card, Space, Typography } from "antd";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
 import type { AppBranding } from "@/lib/app-branding";
 import { siteContent } from "@/lib/site-content";
 
@@ -45,33 +46,37 @@ export function LoginForm({ branding }: { branding: AppBranding }) {
           styles={{ body: { padding: 24 } }}
         >
           <Space orientation="vertical" size={20} style={{ width: "100%" }}>
-            <div className="flex items-center gap-4">
-              <div
-                style={{
-                  position: "relative",
-                  height: 60,
-                  width: 60,
-                  overflow: "hidden",
-                  borderRadius: 18,
-                  border: "1px solid rgba(15, 23, 42, 0.08)",
-                  background: "#fff",
-                }}
-              >
-                <Image
-                  src={branding.logoUrl}
-                  alt={branding.logoAlt}
-                  fill
-                  sizes="60px"
-                  unoptimized
-                  className="object-contain"
-                />
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div
+                  style={{
+                    position: "relative",
+                    height: 60,
+                    width: 60,
+                    overflow: "hidden",
+                    borderRadius: 18,
+                    border: "1px solid var(--border)",
+                    background: "var(--surface-strong)",
+                  }}
+                >
+                  <Image
+                    src={branding.logoUrl}
+                    alt={branding.logoAlt}
+                    fill
+                    sizes="60px"
+                    unoptimized
+                    className="object-contain"
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <TypographyTitle level={2} style={{ margin: 0 }}>
+                    {siteContent.login.title}
+                  </TypographyTitle>
+                </div>
               </div>
 
-              <div className="min-w-0">
-                <TypographyTitle level={2} style={{ margin: 0 }}>
-                  {siteContent.login.title}
-                </TypographyTitle>
-              </div>
+              <ThemeModeToggle />
             </div>
 
             <div className="smartmaps-clerk">

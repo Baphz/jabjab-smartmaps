@@ -263,15 +263,11 @@ function PhotoFrame({
   if (!src) {
     return (
       <div
+        className="smartmaps-photo-frame-empty"
         style={{
           width,
           height,
           borderRadius: rounded,
-          border: "1px dashed #cbd5e1",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#f8fafc",
         }}
       >
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={false} />
@@ -281,14 +277,13 @@ function PhotoFrame({
 
   return (
     <div
+      className="smartmaps-photo-frame"
       style={{
         position: "relative",
         width,
         height,
         overflow: "hidden",
         borderRadius: rounded,
-        border: "1px solid rgba(15, 23, 42, 0.08)",
-        background: "#fff",
       }}
     >
       <Image src={src} alt={alt} fill unoptimized className="object-cover" />
@@ -307,9 +302,10 @@ function DetailSection({
     <Card
       size="small"
       variant="borderless"
+      className="smartmaps-detail-section"
       style={{
-        border: "1px solid rgba(191, 219, 254, 0.9)",
-        background: "rgba(248, 251, 255, 0.96)",
+        border: "1px solid var(--border)",
+        background: "var(--surface)",
       }}
     >
       <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -415,7 +411,7 @@ export default function SmartMapInner({
             </TypographyTitle>
             <TypographyParagraph
               ellipsis={{ rows: 3 }}
-              style={{ marginBottom: 10, color: "#64748b" }}
+              style={{ marginBottom: 10 }}
             >
               {selectedLab.address}
             </TypographyParagraph>
@@ -689,11 +685,11 @@ export default function SmartMapInner({
           styles={{
             header: {
               padding: "14px 18px",
-              borderBottom: "1px solid rgba(148, 163, 184, 0.18)",
+              borderBottom: "1px solid var(--border)",
             },
             body: {
               padding: 16,
-              background: "#eef5ff",
+              background: "var(--surface-muted)",
             },
           }}
         >

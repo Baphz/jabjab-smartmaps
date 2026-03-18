@@ -3,14 +3,12 @@
 import {
   HomeOutlined,
   LogoutOutlined,
-  MoonOutlined,
   PlusOutlined,
-  SunOutlined,
 } from "@ant-design/icons";
-import { App, Button, Card, Space, Tag, Tooltip, Typography } from "antd";
+import { App, Button, Card, Space, Tag, Typography } from "antd";
 import { useClerk } from "@clerk/nextjs";
 import Image from "next/image";
-import { useAppTheme } from "@/components/theme/AppThemeProvider";
+import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
 
 const { Text: TypographyText, Title: TypographyTitle } = Typography;
 
@@ -31,7 +29,6 @@ export default function AdminHeader({
 }: AdminHeaderProps) {
   const { signOut } = useClerk();
   const { modal } = App.useApp();
-  const { mode, toggleMode } = useAppTheme();
 
   const handleConfirmLogout = () => {
     modal.confirm({
@@ -67,7 +64,13 @@ export default function AdminHeader({
           <div className="mt-2">
             {logoUrl ? (
               <div className="mb-2 flex items-center gap-2">
-                <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                <div
+                  className="relative h-10 w-10 overflow-hidden rounded-xl"
+                  style={{
+                    border: "1px solid var(--border)",
+                    background: "var(--surface-strong)",
+                  }}
+                >
                   <Image
                     src={logoUrl}
                     alt={logoAlt ?? appName ?? "Logo aplikasi"}
@@ -78,7 +81,7 @@ export default function AdminHeader({
                   />
                 </div>
                 {appName ? (
-                  <TypographyText style={{ color: "#64748b", fontSize: 12 }}>
+                  <TypographyText style={{ fontSize: 12 }}>
                     {appName}
                   </TypographyText>
                 ) : null}
@@ -91,14 +94,7 @@ export default function AdminHeader({
         </div>
 
         <Space wrap size={[8, 8]} className="justify-end">
-          <Tooltip title={mode === "dark" ? "Mode terang" : "Mode gelap"}>
-            <Button
-              size="small"
-              shape="circle"
-              icon={mode === "dark" ? <SunOutlined /> : <MoonOutlined />}
-              onClick={toggleMode}
-            />
-          </Tooltip>
+          <ThemeModeToggle />
           <Button size="small" href="/" icon={<HomeOutlined />}>
             Peta
           </Button>

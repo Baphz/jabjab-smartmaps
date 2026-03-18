@@ -8,6 +8,7 @@ import {
 import { SignUp } from "@clerk/nextjs";
 import { Alert, Card, Col, Descriptions, Row, Space, Tag, Typography } from "antd";
 import { useSearchParams } from "next/navigation";
+import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
 
 const { Paragraph: TypographyParagraph, Title: TypographyTitle } = Typography;
 
@@ -17,8 +18,12 @@ export default function AcceptInvitationPage() {
   const labId = searchParams.get("lab_id") ?? "";
 
   return (
-    <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-10">
+    <main className="relative min-h-screen px-4 py-6 sm:px-6 lg:px-10">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-7xl items-center">
+        <div className="absolute right-4 top-4 z-10 sm:right-6 sm:top-6">
+          <ThemeModeToggle />
+        </div>
+
         <Row gutter={[24, 24]} align="middle" className="w-full">
           <Col xs={24} lg={11}>
             <Card variant="borderless">

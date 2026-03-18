@@ -73,18 +73,22 @@ html.theme-dark [class*="bg-sky-100"],
 html.theme-dark [class*="bg-emerald-50"],
 html.theme-dark [class*="bg-emerald-100"],
 html.theme-dark [class*="bg-amber-50"],
-html.theme-dark [class*="bg-amber-100"] {
+html.theme-dark [class*="bg-amber-100"],
+html.theme-dark [class*="bg-stone-100"] {
   background: rgba(15, 23, 42, 0.92) !important;
 }
 
 html.theme-dark [class*="border-slate-100"],
 html.theme-dark [class*="border-slate-200"],
+html.theme-dark [class*="border-slate-300"],
 html.theme-dark [class*="border-sky-100"],
 html.theme-dark [class*="border-sky-200"],
 html.theme-dark [class*="border-emerald-100"],
 html.theme-dark [class*="border-emerald-200"],
 html.theme-dark [class*="border-amber-100"],
-html.theme-dark [class*="border-amber-200"] {
+html.theme-dark [class*="border-amber-200"],
+html.theme-dark [class*="border-stone-200"],
+html.theme-dark [class*="border-dashed"] {
   border-color: rgba(71, 85, 105, 0.78) !important;
 }
 
@@ -191,6 +195,20 @@ html.theme-dark .leaflet-container {
   filter: brightness(0.82) saturate(0.92);
 }
 
+html.theme-dark .leaflet-popup-content-wrapper,
+html.theme-dark .leaflet-popup-tip,
+html.theme-dark .leaflet-control-attribution,
+html.theme-dark .leaflet-control-zoom a {
+  background: rgba(15, 23, 42, 0.94) !important;
+  border-color: rgba(71, 85, 105, 0.78) !important;
+  color: #e2e8f0 !important;
+}
+
+html.theme-dark .leaflet-control-attribution a,
+html.theme-dark .leaflet-popup-content a {
+  color: #93c5fd !important;
+}
+
 a {
   color: inherit;
 }
@@ -249,6 +267,24 @@ main {
   border-radius: 8px 0 0 0;
   background: rgba(255, 255, 255, 0.82) !important;
   backdrop-filter: blur(6px);
+}
+
+.smartmaps-photo-frame-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+  background: var(--surface-muted);
+}
+
+.smartmaps-photo-frame {
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+}
+
+.smartmaps-detail-section.ant-card {
+  border-color: var(--border) !important;
+  background: var(--surface) !important;
 }
 
 .lab-pin {
