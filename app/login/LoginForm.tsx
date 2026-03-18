@@ -8,7 +8,7 @@ import Image from "next/image";
 import type { AppBranding } from "@/lib/app-branding";
 import { siteContent } from "@/lib/site-content";
 
-const { Paragraph: TypographyParagraph, Title: TypographyTitle } = Typography;
+const { Title: TypographyTitle } = Typography;
 
 const clerkAppearance = {
   elements: {
@@ -71,11 +71,6 @@ export function LoginForm({ branding }: { branding: AppBranding }) {
                 <TypographyTitle level={2} style={{ margin: 0 }}>
                   {siteContent.login.title}
                 </TypographyTitle>
-                <TypographyParagraph
-                  style={{ margin: "4px 0 0", color: "#64748b" }}
-                >
-                  Masuk dengan akun undangan yang sudah aktif.
-                </TypographyParagraph>
               </div>
             </div>
 

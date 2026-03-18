@@ -60,12 +60,9 @@ export default function RecentArticlesSection({
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
             Artikel
           </div>
-          <h2 className="mb-1 mt-1 text-[22px] font-semibold tracking-tight text-slate-950">
+          <h2 className="mb-0 mt-1 text-[22px] font-semibold tracking-tight text-slate-950">
             5 Artikel Terbaru
           </h2>
-          <p className="m-0 text-[12px] leading-5 text-slate-600">
-            Rilis terbaru dari DPW dan laboratorium yang sudah dipublikasikan.
-          </p>
         </div>
 
         <Button href="/artikel">Lihat semua artikel</Button>
@@ -74,7 +71,7 @@ export default function RecentArticlesSection({
       {articles.length === 0 ? (
         <div className="mt-4 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-4 py-8">
           <Empty
-            description="Belum ada artikel yang dipublikasikan."
+            description="Belum ada artikel."
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         </div>

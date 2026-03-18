@@ -39,7 +39,6 @@ type ActivityCalendarProps = {
   note?: string;
   actionHref?: string;
   actionLabel?: string;
-  maxSelectedItems?: number;
   onSelectLab?: (labId: string) => void;
   onSelectActivityLocation?: (item: ActivitySourceItem) => void;
 };
@@ -128,10 +127,9 @@ export default function ActivityCalendar({
   compact = false,
   hideSummary = false,
   hideNote = false,
-  note = "Hari libur nasional dan cuti bersama mengikuti master kalender kerja yang dikelola super admin.",
+  note = "",
   actionHref,
   actionLabel,
-  maxSelectedItems,
   onSelectLab,
   onSelectActivityLocation,
 }: ActivityCalendarProps) {
@@ -264,7 +262,6 @@ export default function ActivityCalendar({
             <div className="mt-1 text-base font-semibold tracking-tight text-slate-900">
               {counts.lab_event}
             </div>
-            <div className="text-[11px] text-slate-500">bulan ini</div>
           </div>
 
           <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-2.5 py-2">
@@ -274,7 +271,6 @@ export default function ActivityCalendar({
             <div className="mt-1 text-base font-semibold tracking-tight text-slate-900">
               {counts.article}
             </div>
-            <div className="text-[11px] text-slate-500">terbit</div>
           </div>
 
           <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-2.5 py-2">
@@ -284,7 +280,6 @@ export default function ActivityCalendar({
             <div className="mt-1 text-base font-semibold tracking-tight text-slate-900">
               {counts.libur_nasional}
             </div>
-            <div className="text-[11px] text-slate-500">tanggal</div>
           </div>
 
           <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-2.5 py-2">
@@ -294,7 +289,6 @@ export default function ActivityCalendar({
             <div className="mt-1 text-base font-semibold tracking-tight text-slate-900">
               {counts.cuti_bersama}
             </div>
-            <div className="text-[11px] text-slate-500">tanggal</div>
           </div>
         </div>
       ) : null}
@@ -305,11 +299,6 @@ export default function ActivityCalendar({
             <TypographyTitle level={5} style={{ marginBottom: compact ? 1 : 2 }}>
               {formatMonthTitle(monthKey)}
             </TypographyTitle>
-            <TypographyText style={{ color: "#64748b", fontSize: compact ? 11.5 : 12 }}>
-              {compact
-                ? "Klik tanggal untuk detail."
-                : "Klik tanggal untuk membuka detail kegiatan, libur nasional, dan cuti bersama."}
-            </TypographyText>
           </div>
 
           <Space wrap size={[8, 8]}>
@@ -423,14 +412,10 @@ export default function ActivityCalendar({
         ].filter(Boolean)}
       >
         <div className="pb-1">
-          <div className="mb-3 text-[12px] text-slate-500">
-            Agenda dan status kalender untuk tanggal terpilih.
-          </div>
-
           {selectedItems.length === 0 ? (
             <div className="rounded-[20px] border border-dashed border-slate-200 bg-slate-50 px-4 py-8">
               <Empty
-                description="Belum ada agenda pada tanggal ini."
+                description="Belum ada item."
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               />
             </div>
@@ -531,11 +516,6 @@ export default function ActivityCalendar({
                 </div>
               ))}
 
-              {typeof maxSelectedItems === "number" && selectedItems.length > maxSelectedItems ? (
-                <div className="px-1 text-[10.5px] text-slate-500">
-                  Menampilkan seluruh {selectedItems.length} item pada tanggal ini.
-                </div>
-              ) : null}
             </Space>
           )}
         </div>

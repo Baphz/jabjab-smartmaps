@@ -8,7 +8,7 @@ import ImageUploadField from "@/components/admin/ImageUploadField";
 import type { AppBranding } from "@/lib/app-branding";
 
 const { Item: FormItem } = Form;
-const { Text: TypographyText, Title: TypographyTitle } = Typography;
+const { Title: TypographyTitle } = Typography;
 
 type AppSettingsFormValues = {
   appName: string;
@@ -111,9 +111,6 @@ export default function AdminAppSettingsManager({ branding }: Props) {
             <TypographyTitle level={4} style={{ margin: 0 }}>
               Identitas Aplikasi
             </TypographyTitle>
-            <TypographyText style={{ color: "#64748b" }}>
-              Logo, favicon, dan identitas brand yang tampil di halaman publik dan login.
-            </TypographyText>
             <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">

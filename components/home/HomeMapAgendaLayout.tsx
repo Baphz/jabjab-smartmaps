@@ -4,7 +4,7 @@ import {
   SearchOutlined,
   PushpinOutlined,
 } from "@ant-design/icons";
-import { Input, Typography } from "antd";
+import { Input } from "antd";
 import { useMemo, useState } from "react";
 import ActivityCalendar from "@/components/activity/ActivityCalendar";
 import UpcomingActivityList from "@/components/activity/UpcomingActivityList";
@@ -15,8 +15,6 @@ import {
   buildLabSearchText,
   normalizeSearchValue,
 } from "@/lib/lab-address";
-
-const { Paragraph: TypographyParagraph, Title: TypographyTitle } = Typography;
 
 function MapPill({
   children,
@@ -184,14 +182,9 @@ export default function HomeMapAgendaLayout({
               <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Peta
               </div>
-              <TypographyTitle level={5} style={{ marginTop: 2, marginBottom: 2 }}>
+              <h2 className="mt-0.5 mb-0 text-[18px] font-semibold tracking-tight text-slate-950">
                 Sebaran Laboratorium
-              </TypographyTitle>
-              <TypographyParagraph
-                style={{ marginBottom: 0, color: "#64748b", fontSize: 11.5, lineHeight: 1.45 }}
-              >
-                Cari nama lab atau wilayah untuk langsung menyorot area yang relevan di peta.
-              </TypographyParagraph>
+              </h2>
             </div>
 
             <div className="w-full max-w-[350px]">
@@ -266,12 +259,11 @@ export default function HomeMapAgendaLayout({
             <ActivityCalendar
               items={items}
               title="Kalender"
-              description="Agenda kegiatan dan hari libur."
+              description=""
               todayKey={todayKey}
               compact
               hideSummary
               hideNote
-              maxSelectedItems={3}
               onSelectLab={handleSelectLab}
               onSelectActivityLocation={handleSelectActivityLocation}
             />
@@ -281,11 +273,11 @@ export default function HomeMapAgendaLayout({
             <UpcomingActivityList
               items={items}
               title="Agenda"
-              description="Kegiatan terdekat yang sudah dipublikasikan."
+              description=""
               todayKey={todayKey}
               limit={4}
               compact
-              emptyMessage="Belum ada agenda mendatang yang dipublikasikan."
+              emptyMessage="Belum ada agenda."
               onSelectLab={handleSelectLab}
             />
           </section>

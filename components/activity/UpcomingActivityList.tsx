@@ -45,7 +45,7 @@ export default function UpcomingActivityList({
   todayKey,
   compact = false,
   limit = 6,
-  emptyMessage = "Belum ada agenda mendatang yang tercatat.",
+  emptyMessage = "Belum ada agenda.",
   actionHref,
   actionLabel,
   onSelectLab,

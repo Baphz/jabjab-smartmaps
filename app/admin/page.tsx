@@ -32,12 +32,10 @@ function AdminMetricCard({
   label,
   value,
   tone = "slate",
-  helper,
 }: {
   label: string;
   value: number | string;
   tone?: "slate" | "green" | "amber" | "blue";
-  helper?: string;
 }) {
   const toneClass =
     tone === "green"
@@ -56,7 +54,6 @@ function AdminMetricCard({
       <div className="mt-2 text-[24px] font-semibold leading-none tracking-tight text-slate-950">
         {value}
       </div>
-      {helper ? <div className="mt-1 text-[11px] text-slate-500">{helper}</div> : null}
     </div>
   );
 }
@@ -442,7 +439,6 @@ export default async function AdminDashboardPage() {
             type="warning"
             showIcon
             title="Akun Labkesda belum ditautkan ke laboratorium"
-            description="Hubungi super admin untuk memperbaiki tautan akun ke laboratorium."
           />
         ) : null}
 
@@ -454,10 +450,7 @@ export default async function AdminDashboardPage() {
           >
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Laboratorium Saya
-                </div>
-                <h2 className="mb-1 mt-1 text-xl font-semibold text-slate-900">{primaryLab.name}</h2>
+                <h2 className="mb-1 text-xl font-semibold text-slate-900">{primaryLab.name}</h2>
                 <p className="m-0 max-w-3xl text-sm leading-6 text-slate-600">
                   {primaryLab.address}
                 </p>
@@ -480,28 +473,17 @@ export default async function AdminDashboardPage() {
         ) : null}
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <AdminMetricCard
-            label="Laboratorium"
-            value={labs.length}
-            helper={session.isAdmin ? "terdaftar" : "ditautkan ke akun"}
-          />
+          <AdminMetricCard label="Laboratorium" value={labs.length} />
           <AdminMetricCard
             label="Agenda bulan ini"
             value={visibleMonthAgendaCount}
             tone="green"
-            helper="bulan aktif"
           />
-          <AdminMetricCard
-            label="Artikel"
-            value={visibleArticleCount}
-            tone="blue"
-            helper="tersedia di kalender"
-          />
+          <AdminMetricCard label="Artikel" value={visibleArticleCount} tone="blue" />
           <AdminMetricCard
             label={session.isAdmin ? "Hari libur" : "Agenda mendatang"}
             value={session.isAdmin ? visibleMonthHolidayCount : upcomingAgendaCount}
             tone={session.isAdmin ? "amber" : "green"}
-            helper={session.isAdmin ? "bulan aktif" : "siap berjalan"}
           />
         </div>
 

@@ -114,17 +114,8 @@ export default async function HomePage() {
                   <h1 className="mt-0.5 text-[20px] font-semibold tracking-tight text-slate-950 sm:text-[24px]">
                     {siteContent.publicHome.title}
                   </h1>
-                  <p className="mt-1 mb-0 max-w-3xl text-[12px] leading-5 text-slate-600 sm:text-[13px]">
-                    {siteContent.publicHome.description}
-                  </p>
                 </div>
               </div>
-
-              {!session.canAccessDashboard ? (
-                <p className="mt-2.5 mb-0 text-[11px] leading-[1.45] text-slate-500">
-                  {siteContent.publicHome.dashboardAccessNote}
-                </p>
-              ) : null}
             </div>
 
             <div className="flex flex-col gap-2.5">

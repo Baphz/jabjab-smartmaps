@@ -87,9 +87,6 @@ export default function AdminHeader({
             <TypographyTitle level={3} style={{ margin: 0 }}>
               Dashboard
             </TypographyTitle>
-            <TypographyText style={{ color: "#64748b", fontSize: 13 }}>
-              {isAdmin ? "Kontrol operasional Labkesda." : "Kelola data laboratorium Anda."}
-            </TypographyText>
           </div>
         </div>
 

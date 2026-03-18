@@ -16,9 +16,8 @@ export const siteContent = {
   publicHome: {
     eyebrow: "Smart Maps Labkesda",
     title: "Peta dan Agenda Laboratorium",
-    description:
-      "Pemantauan lokasi laboratorium kesehatan dan agenda kegiatan yang dipublikasikan.",
-    dashboardAccessNote: "Akses dashboard diberikan melalui undangan email.",
+    description: "",
+    dashboardAccessNote: "",
     metrics: {
       labs: "Laboratorium",
       activeAgenda: "Agenda aktif",
@@ -28,8 +27,7 @@ export const siteContent = {
   login: {
     badge: "Smart Maps Labkesda",
     title: "Login Dashboard Labkesda",
-    description:
-      "Portal pengelolaan peta laboratorium untuk Jawa Barat, DKI Jakarta, dan Banten.",
+    description: "",
     highlights: [
       "Dashboard berbasis peta",
       "Akses melalui undangan",
@@ -41,8 +39,7 @@ export const siteContent = {
     helpText:
       "Jika Anda belum menerima undangan, hubungi super admin untuk mendapatkan akses.",
     signInTitle: "Masuk ke akun Anda",
-    signInDescription:
-      "Gunakan email undangan dan password yang sudah Anda buat saat aktivasi akun.",
+    signInDescription: "",
     backToMapLabel: "Kembali ke peta",
   },
   admin: {
