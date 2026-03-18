@@ -2,6 +2,7 @@
 
 import {
   CalendarOutlined,
+  CloseOutlined,
   EnvironmentOutlined,
   LeftOutlined,
   RightOutlined,
@@ -396,10 +397,42 @@ export default function ActivityCalendar({
       </div>
 
       <Modal
+        className="smartmaps-activity-modal"
         open={isDetailOpen}
         onCancel={() => setIsDetailOpen(false)}
         title={`Detail ${formatFullDate(selectedDateKey)}`}
         width={620}
+        closeIcon={<CloseOutlined className="text-slate-400" />}
+        styles={{
+          mask: {
+            backdropFilter: "blur(10px)",
+            background: "rgba(2, 6, 23, 0.5)",
+          },
+          container: {
+            padding: 0,
+            overflow: "hidden",
+            borderRadius: 24,
+            border: "1px solid var(--border)",
+            background: "var(--surface-strong)",
+            boxShadow: "0 24px 54px rgba(2, 6, 23, 0.22)",
+          },
+          header: {
+            marginBottom: 0,
+            padding: "16px 20px 14px",
+            borderBottom: "1px solid var(--border)",
+            background: "transparent",
+          },
+          body: {
+            padding: "16px 20px 8px",
+            background: "transparent",
+          },
+          footer: {
+            marginTop: 0,
+            padding: "12px 20px 16px",
+            borderTop: "1px solid var(--border)",
+            background: "transparent",
+          },
+        }}
         footer={[
           actionHref && actionLabel ? (
             <Button key="manage" href={actionHref}>
@@ -424,7 +457,11 @@ export default function ActivityCalendar({
               {selectedItems.map((item) => (
                 <div
                   key={`${item.id}:${selectedDateKey}`}
-                  className="rounded-[14px] border border-slate-200 bg-slate-50/70 px-3 py-2.5"
+                  className="rounded-2xl border px-3.5 py-3"
+                  style={{
+                    borderColor: "var(--border)",
+                    background: "color-mix(in srgb, var(--surface-muted) 82%, transparent)",
+                  }}
                 >
                   <Space orientation="vertical" size={6} style={{ width: "100%" }}>
                     <div className="flex flex-wrap gap-1.5">
@@ -434,7 +471,13 @@ export default function ActivityCalendar({
                         {getActivityKindLabel(item.kind)}
                       </span>
                       {getActivityScopeLabel(item) ? (
-                        <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                        <span
+                          className="inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium text-slate-600"
+                          style={{
+                            borderColor: "var(--border)",
+                            background: "var(--surface-strong)",
+                          }}
+                        >
                           {getActivityScopeLabel(item)}
                         </span>
                       ) : null}

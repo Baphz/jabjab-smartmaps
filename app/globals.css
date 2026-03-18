@@ -184,6 +184,30 @@ html.theme-dark .ant-btn-link:focus {
   color: #bfdbfe !important;
 }
 
+.smartmaps-activity-modal .ant-modal-close {
+  inset-inline-end: 16px !important;
+  top: 14px !important;
+  color: #64748b !important;
+  border-radius: 9999px;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.smartmaps-activity-modal .ant-modal-close:hover,
+.smartmaps-activity-modal .ant-modal-close:focus {
+  background: rgba(148, 163, 184, 0.12) !important;
+  color: #334155 !important;
+}
+
+html.theme-dark .smartmaps-activity-modal .ant-modal-close {
+  color: #94a3b8 !important;
+}
+
+html.theme-dark .smartmaps-activity-modal .ant-modal-close:hover,
+html.theme-dark .smartmaps-activity-modal .ant-modal-close:focus {
+  background: rgba(110, 131, 160, 0.18) !important;
+  color: #e6edf7 !important;
+}
+
 html.theme-dark .ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #f8fafc !important;
 }
