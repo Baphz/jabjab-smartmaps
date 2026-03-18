@@ -327,7 +327,9 @@ export default function ActivityCalendar({
               key={kind}
               className={`inline-flex items-center gap-2 rounded-full font-semibold ring-1 ${compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} ${KIND_STYLES[kind].pill}`}
             >
-              <span className={`h-2.5 w-2.5 rounded-full ${KIND_STYLES[kind].dot}`} />
+              <span
+                className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${KIND_STYLES[kind].dot}`}
+              />
               {getActivityKindLabel(kind)}
             </span>
           ))}
