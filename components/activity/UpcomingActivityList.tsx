@@ -10,6 +10,7 @@ import {
   getActivityScopeLabel,
   sortActivitySources,
 } from "@/lib/activity-calendar";
+import { buildAdministrativeAddressParts } from "@/lib/lab-address";
 
 const { Paragraph: TypographyParagraph, Text: TypographyText, Title: TypographyTitle } = Typography;
 
@@ -57,6 +58,17 @@ export default function UpcomingActivityList({
         .slice(0, limit),
     [items, limit, todayKey]
   );
+
+  function getLocationParts(item: ActivitySourceItem) {
+    return buildAdministrativeAddressParts({
+      provinceName: item.provinceName,
+      cityName: item.cityName,
+      cityType: item.cityType,
+      districtName: item.districtName,
+      villageName: item.villageName,
+      villageType: item.villageType,
+    });
+  }
 
   return (
     <Space orientation="vertical" size={compact ? 10 : 12} style={{ width: "100%" }}>
@@ -154,10 +166,27 @@ export default function UpcomingActivityList({
                     </TypographyText>
                   ) : null}
 
-                  {item.locationAddress ? (
+                  {item.addressDetail ? (
+                    <TypographyText style={{ color: "#64748b", fontSize: 11.5 }}>
+                      {item.addressDetail}
+                    </TypographyText>
+                  ) : item.locationAddress ? (
                     <TypographyText style={{ color: "#64748b", fontSize: 11.5 }}>
                       {item.locationAddress}
                     </TypographyText>
+                  ) : null}
+
+                  {getLocationParts(item).length > 0 ? (
+                    <div className="mt-0.5 flex flex-wrap gap-1.5">
+                      {getLocationParts(item).map((part) => (
+                        <span
+                          key={`${item.id}:${part}`}
+                          className="inline-flex rounded-full border border-slate-200 bg-white/85 px-2 py-0.5 text-[10.5px] font-medium text-slate-600"
+                        >
+                          {part}
+                        </span>
+                      ))}
+                    </div>
                   ) : null}
                 </Space>
 

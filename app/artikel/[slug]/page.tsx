@@ -2,6 +2,7 @@ import { Button, Tag } from "antd";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import ArticleContent from "@/components/article/ArticleContent";
+import ArticleOriginMeta from "@/components/article/ArticleOriginMeta";
 import { formatMediumDate } from "@/lib/activity-calendar";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
 import { prisma } from "@/lib/prisma";
@@ -27,6 +28,12 @@ export default async function ArticleDetailPage({ params }: PageProps) {
         select: {
           id: true,
           name: true,
+          provinceName: true,
+          cityName: true,
+          cityType: true,
+          districtName: true,
+          villageName: true,
+          villageType: true,
         },
       },
     },
@@ -50,9 +57,17 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
         <article className="rounded-[26px] border border-slate-200 bg-white px-5 py-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:px-7 sm:py-7">
           <div className="flex flex-wrap gap-1.5">
-            <Tag color={article.isGlobal ? "blue" : "green"} variant="filled">
-              {article.isGlobal ? "Global DPW" : article.lab?.name ?? "Artikel Lab"}
-            </Tag>
+            <ArticleOriginMeta
+              isGlobal={article.isGlobal}
+              labName={article.lab?.name ?? null}
+              provinceName={article.lab?.provinceName ?? null}
+              cityName={article.lab?.cityName ?? null}
+              cityType={article.lab?.cityType ?? null}
+              districtName={article.lab?.districtName ?? null}
+              villageName={article.lab?.villageName ?? null}
+              villageType={article.lab?.villageType ?? null}
+              mode="full"
+            />
             <Tag>{formatMediumDate(formatDate(article.publishedAt))}</Tag>
           </div>
 

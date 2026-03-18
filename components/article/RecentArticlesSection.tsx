@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { Button, Empty, Tag } from "antd";
+import { Button, Empty } from "antd";
 import Image from "next/image";
+import ArticleOriginMeta from "@/components/article/ArticleOriginMeta";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
+import { type LabCityTypeValue, type LabVillageTypeValue } from "@/lib/lab-address";
+import { siteContent } from "@/lib/site-content";
 
 type ArticleCardItem = {
   id: string;
@@ -12,6 +15,12 @@ type ArticleCardItem = {
   publishedAt: Date | string;
   isGlobal: boolean;
   labName: string | null;
+  provinceName: string | null;
+  cityName: string | null;
+  cityType: LabCityTypeValue | null;
+  districtName: string | null;
+  villageName: string | null;
+  villageType: LabVillageTypeValue | null;
 };
 
 function formatPublishedDate(value: Date | string) {
@@ -58,14 +67,14 @@ export default function RecentArticlesSection({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Artikel
+            {siteContent.publicHome.sections.articlesEyebrow}
           </div>
           <h2 className="mb-0 mt-1 text-[22px] font-semibold tracking-tight text-slate-950">
-            5 Artikel Terbaru
+            {siteContent.publicHome.sections.articlesTitle}
           </h2>
         </div>
 
-        <Button href="/artikel">Lihat semua artikel</Button>
+        <Button href="/artikel">{siteContent.publicHome.sections.articlesActionLabel}</Button>
       </div>
 
       {articles.length === 0 ? (
@@ -85,10 +94,17 @@ export default function RecentArticlesSection({
             >
               <ArticleCover title={article.title} coverImageUrl={article.coverImageUrl} />
 
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                <Tag color={article.isGlobal ? "blue" : "green"} variant="filled">
-                  {article.isGlobal ? "Global DPW" : article.labName ?? "Artikel Lab"}
-                </Tag>
+              <div className="mt-3">
+                <ArticleOriginMeta
+                  isGlobal={article.isGlobal}
+                  labName={article.labName}
+                  provinceName={article.provinceName}
+                  cityName={article.cityName}
+                  cityType={article.cityType}
+                  districtName={article.districtName}
+                  villageName={article.villageName}
+                  villageType={article.villageType}
+                />
               </div>
 
               <div className="mt-2 text-[11px] text-slate-500">

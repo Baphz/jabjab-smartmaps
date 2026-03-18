@@ -16,6 +16,7 @@ import {
   buildLabSearchText,
   normalizeSearchValue,
 } from "@/lib/lab-address";
+import { siteContent } from "@/lib/site-content";
 
 function MapPill({
   children,
@@ -103,6 +104,7 @@ export default function HomeMapAgendaLayout({
           cityType: lab.cityType,
           districtName: lab.districtName,
           villageName: lab.villageName,
+          villageType: lab.villageType,
         }),
         searchText: buildLabSearchText({
           name: lab.name,
@@ -180,10 +182,10 @@ export default function HomeMapAgendaLayout({
           <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Peta
+                {siteContent.publicHome.sections.mapEyebrow}
               </div>
               <h2 className="mt-0.5 mb-0 text-[18px] font-semibold tracking-tight text-slate-950">
-                Sebaran Laboratorium
+                {siteContent.publicHome.sections.mapTitle}
               </h2>
             </div>
 

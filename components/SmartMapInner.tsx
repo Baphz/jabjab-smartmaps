@@ -20,11 +20,14 @@ import MapAttributionBadge from "@/components/map/MapAttributionBadge";
 import { useAppTheme } from "@/components/theme/AppThemeProvider";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
 import type { ActivitySourceItem } from "@/lib/activity-calendar";
-import type { LabCityTypeValue, LabVillageTypeValue } from "@/lib/lab-address";
+import {
+  buildAdministrativeAddressParts,
+  type LabCityTypeValue,
+  type LabVillageTypeValue,
+} from "@/lib/lab-address";
 import "leaflet/dist/leaflet.css";
 
-const { Paragraph: TypographyParagraph, Text: TypographyText, Title: TypographyTitle } =
-  Typography;
+const { Paragraph: TypographyParagraph } = Typography;
 
 export type LabTypeDTO = {
   id: string;
@@ -341,6 +344,54 @@ function DetailSection({
   );
 }
 
+function StructurePersonCard({
+  photoUrl,
+  name,
+  role,
+  roleClassName,
+}: {
+  photoUrl: string;
+  name: string | null;
+  role: string;
+  roleClassName: string;
+}) {
+  const displayName = name?.trim() || "Belum diisi";
+
+  return (
+    <div className="rounded-[18px] border border-slate-200 bg-slate-50/80 p-4">
+      <div className="flex h-full flex-col items-center text-center">
+        <PhotoFrame
+          src={photoUrl}
+          alt={displayName}
+          width={96}
+          height={96}
+          rounded={999}
+        />
+
+        <div className="mt-3 min-h-[68px] w-full">
+          <div
+            className="mx-auto max-w-[220px] overflow-hidden text-[14px] font-semibold leading-5 text-slate-900"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+            }}
+            title={displayName}
+          >
+            {displayName}
+          </div>
+        </div>
+
+        <span
+          className={`mt-auto inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${roleClassName}`}
+        >
+          {role}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function SmartMapInner({
   labs,
   highlightedLabIds = [],
@@ -411,6 +462,20 @@ export default function SmartMapInner({
     mode === "dark"
       ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+  const selectedLabAreaParts = useMemo(
+    () =>
+      selectedLab
+        ? buildAdministrativeAddressParts({
+            provinceName: selectedLab.provinceName,
+            cityName: selectedLab.cityName,
+            cityType: selectedLab.cityType,
+            districtName: selectedLab.districtName,
+            villageName: selectedLab.villageName,
+            villageType: selectedLab.villageType,
+          })
+        : [],
+    [selectedLab]
+  );
 
   function handleSelectLab(nextLabId: string | null) {
     if (!isControlled) {
@@ -433,8 +498,8 @@ export default function SmartMapInner({
           <PhotoFrame
             src={resolvePhotoUrl(selectedLab.labPhotoUrl)}
             alt={selectedLab.name}
-            width={112}
-            height={112}
+            width={104}
+            height={104}
             rounded={20}
           />
 
@@ -442,15 +507,35 @@ export default function SmartMapInner({
             <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
               Profil Laboratorium
             </div>
-            <TypographyTitle level={4} style={{ marginTop: 4, marginBottom: 4 }}>
+            <div
+              className="mt-1 overflow-hidden text-[28px] font-semibold leading-[1.15] tracking-tight text-slate-950"
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+              }}
+              title={selectedLab.name}
+            >
               {selectedLab.name}
-            </TypographyTitle>
+            </div>
             <TypographyParagraph
               ellipsis={{ rows: 3 }}
-              style={{ marginBottom: 10 }}
+              style={{ marginTop: 8, marginBottom: 10, lineHeight: 1.55 }}
             >
               {selectedLab.address}
             </TypographyParagraph>
+            {selectedLabAreaParts.length > 0 ? (
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                {selectedLabAreaParts.map((part) => (
+                  <span
+                    key={part}
+                    className="inline-flex rounded-full border border-slate-200 bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-600"
+                  >
+                    {part}
+                  </span>
+                ))}
+              </div>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               {selectedLab.types.map((type) => (
                 <span
@@ -470,6 +555,16 @@ export default function SmartMapInner({
           size="small"
           column={1}
           items={[
+            {
+              key: "address",
+              label: (
+                <Space size={4}>
+                  <EnvironmentOutlined />
+                  <span>Alamat</span>
+                </Space>
+              ),
+              children: selectedLab.address || "-",
+            },
             {
               key: "phone",
               label: (
@@ -509,10 +604,7 @@ export default function SmartMapInner({
             {
               key: "coordinate",
               label: (
-                <Space size={4}>
-                  <EnvironmentOutlined />
-                  <span>Koordinat</span>
-                </Space>
+                "Koordinat"
               ),
               children: `${selectedLab.latitude}, ${selectedLab.longitude}`,
             },
@@ -532,37 +624,19 @@ export default function SmartMapInner({
 
       <DetailSection eyebrow="Struktur Utama">
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-[18px] border border-slate-200 bg-slate-50/80 p-4">
-            <Space orientation="vertical" align="center" size={10} style={{ width: "100%" }}>
-              <PhotoFrame
-                src={resolvePhotoUrl(selectedLab.head1PhotoUrl)}
-                alt={selectedLab.head1Name ?? "Kepala Laboratorium"}
-                width={104}
-                height={104}
-                rounded={999}
-              />
-              <TypographyText strong>{selectedLab.head1Name ?? "Belum diisi"}</TypographyText>
-              <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-medium text-sky-700">
-                Kepala Laboratorium
-              </span>
-            </Space>
-          </div>
+          <StructurePersonCard
+            photoUrl={resolvePhotoUrl(selectedLab.head1PhotoUrl)}
+            name={selectedLab.head1Name}
+            role="Kepala Laboratorium"
+            roleClassName="border-sky-200 bg-sky-50 text-sky-700"
+          />
 
-          <div className="rounded-[18px] border border-slate-200 bg-slate-50/80 p-4">
-            <Space orientation="vertical" align="center" size={10} style={{ width: "100%" }}>
-              <PhotoFrame
-                src={resolvePhotoUrl(selectedLab.head2PhotoUrl)}
-                alt={selectedLab.head2Name ?? "Kepala Sub Bagian TU"}
-                width={104}
-                height={104}
-                rounded={999}
-              />
-              <TypographyText strong>{selectedLab.head2Name ?? "Belum diisi"}</TypographyText>
-              <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                Kepala Sub Bagian TU
-              </span>
-            </Space>
-          </div>
+          <StructurePersonCard
+            photoUrl={resolvePhotoUrl(selectedLab.head2PhotoUrl)}
+            name={selectedLab.head2Name}
+            role="Kepala Sub Bagian TU"
+            roleClassName="border-slate-200 bg-white text-slate-600"
+          />
         </div>
       </DetailSection>
     </div>

@@ -130,7 +130,7 @@ export default function ArticleRichTextEditor({
         {contextHolder}
 
         <div className="overflow-hidden rounded-[18px] border border-slate-200 bg-white">
-          <div className="flex min-h-[320px] items-center justify-center text-slate-400">
+          <div className="flex min-h-80 items-center justify-center text-slate-400">
             <Spin description="Memuat editor..." />
           </div>
         </div>

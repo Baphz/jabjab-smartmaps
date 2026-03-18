@@ -814,43 +814,50 @@ export default function AdminEventsManager({
             </FormItem>
 
             <FormItem label="Kelurahan / Desa">
-              <Select
-                showSearch
-                allowClear
-                placeholder="Kelurahan / Desa"
-                filterOption={false}
-                loading={loadingVillage}
-                disabled={!selectedDistrict}
-                value={selectedVillage?.id}
-                onSearch={setVillageSearch}
-                onClear={() => {
-                  setSelectedVillage(null);
-                  form.setFieldsValue({ villageType: undefined });
-                  setVillageSearch("");
-                }}
-                onSelect={(_value, option) => {
-                  const item = (option as { item: VillageOption }).item;
-                  setSelectedVillage(item);
-                  setVillageSearch(item.nama);
-                }}
-                options={mergeOption(selectedVillage, villageOptions).map((item) => ({
-                  value: item.id,
-                  label: item.nama,
-                  item,
-                }))}
-              />
-            </FormItem>
+              <div className="grid gap-2 sm:grid-cols-[144px_minmax(0,1fr)]">
+                <FormItem name="villageType" noStyle>
+                  <Select
+                    allowClear
+                    placeholder="Jenis"
+                    disabled={!selectedDistrict}
+                    options={[
+                      { value: "KELURAHAN", label: "Kelurahan" },
+                      { value: "DESA", label: "Desa" },
+                    ]}
+                  />
+                </FormItem>
 
-            <FormItem label="Label alamat" name="villageType">
-              <Select
-                allowClear
-                placeholder={selectedVillage ? "Kelurahan atau Desa" : "Pilih wilayah dulu"}
-                disabled={!selectedVillage}
-                options={[
-                  { value: "KELURAHAN", label: "Kelurahan" },
-                  { value: "DESA", label: "Desa" },
-                ]}
-              />
+                <Select
+                  showSearch
+                  allowClear
+                  placeholder={
+                    watchedVillageType === "DESA"
+                      ? "Cari nama desa"
+                      : watchedVillageType === "KELURAHAN"
+                        ? "Cari nama kelurahan"
+                        : "Cari nama kelurahan / desa"
+                  }
+                  filterOption={false}
+                  loading={loadingVillage}
+                  disabled={!selectedDistrict}
+                  value={selectedVillage?.id}
+                  onSearch={setVillageSearch}
+                  onClear={() => {
+                    setSelectedVillage(null);
+                    setVillageSearch("");
+                  }}
+                  onSelect={(_value, option) => {
+                    const item = (option as { item: VillageOption }).item;
+                    setSelectedVillage(item);
+                    setVillageSearch(item.nama);
+                  }}
+                  options={mergeOption(selectedVillage, villageOptions).map((item) => ({
+                    value: item.id,
+                    label: item.nama,
+                    item,
+                  }))}
+                />
+              </div>
             </FormItem>
 
             <FormItem label="Publik" name="isPublished" valuePropName="checked">

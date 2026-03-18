@@ -708,48 +708,50 @@ export default function LabForm({ initialData }: LabFormProps) {
 
                 <Col xs={24} md={12}>
                   <FormItem label="Kelurahan / Desa">
-                    <Select
-                      showSearch
-                      allowClear
-                      placeholder="Cari kelurahan / desa"
-                      filterOption={false}
-                      loading={loadingVillage}
-                      disabled={!selectedDistrict}
-                      value={selectedVillage?.id}
-                      onSearch={setVillageSearch}
-                      onClear={() => {
-                        setSelectedVillage(null);
-                        form.setFieldsValue({ villageType: undefined });
-                        setVillageSearch("");
-                      }}
-                      onSelect={(value, option) => {
-                        const item = (option as { item: VillageOption }).item;
-                        setSelectedVillage(item);
-                        setVillageSearch(item.nama);
-                      }}
-                      options={mergeOption(selectedVillage, villageOptions).map((item) => ({
-                        value: item.id,
-                        label: item.nama,
-                        item,
-                      }))}
-                    />
-                  </FormItem>
-                </Col>
+                    <div className="grid gap-2 sm:grid-cols-[144px_minmax(0,1fr)]">
+                      <FormItem name="villageType" noStyle>
+                        <Select
+                          allowClear
+                          placeholder="Jenis"
+                          disabled={!selectedDistrict}
+                          options={[
+                            { value: "KELURAHAN", label: "Kelurahan" },
+                            { value: "DESA", label: "Desa" },
+                          ]}
+                        />
+                      </FormItem>
 
-                <Col xs={24} md={12}>
-                  <FormItem
-                    label="Label alamat"
-                    name="villageType"
-                  >
-                    <Select
-                      allowClear
-                      placeholder={selectedVillage ? "Kelurahan atau Desa" : "Pilih wilayah dulu"}
-                      disabled={!selectedVillage}
-                      options={[
-                        { value: "KELURAHAN", label: "Kelurahan" },
-                        { value: "DESA", label: "Desa" },
-                      ]}
-                    />
+                      <Select
+                        showSearch
+                        allowClear
+                        placeholder={
+                          watchedVillageType === "DESA"
+                            ? "Cari nama desa"
+                            : watchedVillageType === "KELURAHAN"
+                              ? "Cari nama kelurahan"
+                              : "Cari nama kelurahan / desa"
+                        }
+                        filterOption={false}
+                        loading={loadingVillage}
+                        disabled={!selectedDistrict}
+                        value={selectedVillage?.id}
+                        onSearch={setVillageSearch}
+                        onClear={() => {
+                          setSelectedVillage(null);
+                          setVillageSearch("");
+                        }}
+                        onSelect={(value, option) => {
+                          const item = (option as { item: VillageOption }).item;
+                          setSelectedVillage(item);
+                          setVillageSearch(item.nama);
+                        }}
+                        options={mergeOption(selectedVillage, villageOptions).map((item) => ({
+                          value: item.id,
+                          label: item.nama,
+                          item,
+                        }))}
+                      />
+                    </div>
                   </FormItem>
                 </Col>
               </Row>
@@ -804,8 +806,8 @@ export default function LabForm({ initialData }: LabFormProps) {
                 </Col>
 
                 <Col xs={24} md={12}>
-                  <FormItem label="Nama Kepala Sub Bagian TU" name="head2Name">
-                    <Input placeholder="Nama kepala sub bagian TU" />
+                  <FormItem label="Nama KaSubBag Tata Usaha" name="head2Name">
+                    <Input placeholder="Nama KaSubBag Tata Usaha" />
                   </FormItem>
                   <FormItem label="Foto Kasubbag TU" name="head2PhotoUrl">
                     <ImageUploadField

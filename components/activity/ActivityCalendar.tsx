@@ -26,6 +26,7 @@ import {
   type ActivityKind,
   type ActivitySourceItem,
 } from "@/lib/activity-calendar";
+import { buildAdministrativeAddressParts } from "@/lib/lab-address";
 
 const { Paragraph: TypographyParagraph, Text: TypographyText, Title: TypographyTitle } = Typography;
 
@@ -54,23 +55,23 @@ const KIND_STYLES: Record<
 > = {
   lab_event: {
     cell: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    pill: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-    dot: "bg-emerald-500",
+    pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-event",
+    dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-event",
   },
   article: {
     cell: "border-sky-200 bg-sky-50 text-sky-700",
-    pill: "bg-sky-50 text-sky-700 ring-sky-200",
-    dot: "bg-sky-500",
+    pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-article",
+    dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-article",
   },
   libur_nasional: {
     cell: "border-red-200 bg-red-50 text-red-700",
-    pill: "bg-red-50 text-red-700 ring-red-200",
-    dot: "bg-red-500",
+    pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-holiday",
+    dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-holiday",
   },
   cuti_bersama: {
     cell: "border-orange-200 bg-orange-50 text-orange-700",
-    pill: "bg-orange-50 text-orange-700 ring-orange-200",
-    dot: "bg-orange-500",
+    pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-leave",
+    dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-leave",
   },
 };
 
@@ -178,6 +179,17 @@ export default function ActivityCalendar({
     libur_nasional: visibleMonthItems.filter((item) => item.kind === "libur_nasional").length,
     cuti_bersama: visibleMonthItems.filter((item) => item.kind === "cuti_bersama").length,
   };
+
+  function getLocationParts(item: ActivitySourceItem) {
+    return buildAdministrativeAddressParts({
+      provinceName: item.provinceName,
+      cityName: item.cityName,
+      cityType: item.cityType,
+      districtName: item.districtName,
+      villageName: item.villageName,
+      villageType: item.villageType,
+    });
+  }
 
   function moveMonth(direction: number) {
     if (!monthStart) return;
@@ -521,10 +533,27 @@ export default function ActivityCalendar({
                         </TypographyText>
                       ) : null}
 
-                      {item.locationAddress ? (
+                      {item.addressDetail ? (
+                        <TypographyText style={{ color: "#64748b", fontSize: 11.5 }}>
+                          {item.addressDetail}
+                        </TypographyText>
+                      ) : item.locationAddress ? (
                         <TypographyText style={{ color: "#64748b", fontSize: 11.5 }}>
                           {item.locationAddress}
                         </TypographyText>
+                      ) : null}
+
+                      {getLocationParts(item).length > 0 ? (
+                        <div className="mt-0.5 flex flex-wrap gap-1.5">
+                          {getLocationParts(item).map((part) => (
+                            <span
+                              key={`${item.id}:${selectedDateKey}:${part}`}
+                              className="inline-flex rounded-full border border-slate-200 bg-white/85 px-2 py-0.5 text-[10.5px] font-medium text-slate-600"
+                            >
+                              {part}
+                            </span>
+                          ))}
+                        </div>
                       ) : null}
                     </Space>
 

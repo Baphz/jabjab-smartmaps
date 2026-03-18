@@ -61,6 +61,12 @@ export default async function HomePage() {
           select: {
             id: true,
             name: true,
+            provinceName: true,
+            cityName: true,
+            cityType: true,
+            districtName: true,
+            villageName: true,
+            villageType: true,
           },
         },
       },
@@ -122,22 +128,22 @@ export default async function HomePage() {
                 <CompactMetricChip
                   label="Total"
                   value={labs.length}
-                  tone="blue"
-                />
-                <CompactMetricChip
-                  label="Banten"
-                  value={bantenLabCount}
                   tone="green"
-                />
-                <CompactMetricChip
-                  label="DKI"
-                  value={dkiLabCount}
-                  tone="violet"
                 />
                 <CompactMetricChip
                   label="Jabar"
                   value={jabarLabCount}
+                  tone="blue"
+                />
+                <CompactMetricChip
+                  label="DKI"
+                  value={dkiLabCount}
                   tone="amber"
+                />
+                <CompactMetricChip
+                  label="Banten"
+                  value={bantenLabCount}
+                  tone="violet"
                 />
               </div>
             </div>
@@ -181,6 +187,12 @@ export default async function HomePage() {
             publishedAt: article.publishedAt,
             isGlobal: article.isGlobal,
             labName: article.lab?.name ?? null,
+            provinceName: article.lab?.provinceName ?? null,
+            cityName: article.lab?.cityName ?? null,
+            cityType: article.lab?.cityType ?? null,
+            districtName: article.lab?.districtName ?? null,
+            villageName: article.lab?.villageName ?? null,
+            villageType: article.lab?.villageType ?? null,
           }))}
         />
 

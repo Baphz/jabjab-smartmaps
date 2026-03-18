@@ -82,6 +82,34 @@ export function formatVillageName(value: string | null | undefined) {
   return toDisplayCase(value);
 }
 
+export function formatVillageLabel(
+  value: string | null | undefined,
+  type?: LabVillageTypeValue | null
+) {
+  const display = formatVillageName(value);
+  if (!display) return "";
+
+  if (type === "DESA") return `Desa ${display}`;
+  if (type === "KELURAHAN") return `Kelurahan ${display}`;
+  return display;
+}
+
+export function buildAdministrativeAddressParts(args: {
+  provinceName?: string | null;
+  cityName?: string | null;
+  cityType?: LabCityTypeValue | null;
+  districtName?: string | null;
+  villageName?: string | null;
+  villageType?: LabVillageTypeValue | null;
+}) {
+  return [
+    formatVillageLabel(args.villageName, args.villageType),
+    args.districtName ? `Kecamatan ${formatDistrictName(args.districtName)}` : "",
+    formatCityName(args.cityName, args.cityType),
+    args.provinceName ? `Provinsi ${formatProvinceName(args.provinceName)}` : "",
+  ].filter(Boolean);
+}
+
 export function buildStructuredAddress({
   addressDetail,
   provinceName,
@@ -94,14 +122,14 @@ export function buildStructuredAddress({
 }: BuildStructuredAddressArgs) {
   const parts = [
     normalizeWhitespace(String(addressDetail ?? "")),
-    villageName
-      ? `${villageType === "DESA" ? "Desa" : villageType === "KELURAHAN" ? "Kelurahan" : ""}${
-          villageType ? " " : ""
-        }${formatVillageName(villageName)}`
-      : "",
-    districtName ? `Kecamatan ${formatDistrictName(districtName)}` : "",
-    cityName ? formatCityName(cityName, cityType) : "",
-    provinceName ? `Provinsi ${formatProvinceName(provinceName)}` : "",
+    ...buildAdministrativeAddressParts({
+      provinceName,
+      cityName,
+      cityType,
+      districtName,
+      villageName,
+      villageType,
+    }),
   ].filter(Boolean);
 
   const built = normalizeWhitespace(parts.join(", ").replace(/\s+,/g, ","));
@@ -168,11 +196,12 @@ export function buildLabAreaLabels(args: {
   cityType?: LabCityTypeValue | null;
   districtName?: string | null;
   villageName?: string | null;
+  villageType?: LabVillageTypeValue | null;
 }) {
   return [
     formatProvinceName(args.provinceName),
     formatCityName(args.cityName, args.cityType),
     args.districtName ? `Kecamatan ${formatDistrictName(args.districtName)}` : "",
-    args.villageName ? formatVillageName(args.villageName) : "",
+    formatVillageLabel(args.villageName, args.villageType),
   ].filter(Boolean);
 }

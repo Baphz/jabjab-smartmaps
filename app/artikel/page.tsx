@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { Button, Empty, Tag } from "antd";
+import { Button, Empty } from "antd";
 import Image from "next/image";
+import ArticleOriginMeta from "@/components/article/ArticleOriginMeta";
 import { formatMediumDate } from "@/lib/activity-calendar";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
+import { type LabCityTypeValue, type LabVillageTypeValue } from "@/lib/lab-address";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +17,12 @@ function ArticleCard({
   publishedAt,
   isGlobal,
   labName,
+  provinceName,
+  cityName,
+  cityType,
+  districtName,
+  villageName,
+  villageType,
 }: {
   title: string;
   slug: string;
@@ -23,6 +31,12 @@ function ArticleCard({
   publishedAt: Date;
   isGlobal: boolean;
   labName: string | null;
+  provinceName: string | null;
+  cityName: string | null;
+  cityType: LabCityTypeValue | null;
+  districtName: string | null;
+  villageName: string | null;
+  villageType: LabVillageTypeValue | null;
 }) {
   const resolvedCover = coverImageUrl ? resolveStoredPhotoUrl(coverImageUrl) : "";
 
@@ -48,10 +62,17 @@ function ArticleCard({
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        <Tag color={isGlobal ? "blue" : "green"} variant="filled">
-          {isGlobal ? "Global DPW" : labName ?? "Artikel Lab"}
-        </Tag>
+      <div className="mt-3">
+        <ArticleOriginMeta
+          isGlobal={isGlobal}
+          labName={labName}
+          provinceName={provinceName}
+          cityName={cityName}
+          cityType={cityType}
+          districtName={districtName}
+          villageName={villageName}
+          villageType={villageType}
+        />
       </div>
 
       <div className="mt-2 text-[12px] text-slate-500">
@@ -91,6 +112,12 @@ export default async function ArticlesPage() {
         select: {
           id: true,
           name: true,
+          provinceName: true,
+          cityName: true,
+          cityType: true,
+          districtName: true,
+          villageName: true,
+          villageType: true,
         },
       },
     },
@@ -137,6 +164,12 @@ export default async function ArticlesPage() {
                 publishedAt={article.publishedAt}
                 isGlobal={article.isGlobal}
                 labName={article.lab?.name ?? null}
+                provinceName={article.lab?.provinceName ?? null}
+                cityName={article.lab?.cityName ?? null}
+                cityType={article.lab?.cityType ?? null}
+                districtName={article.lab?.districtName ?? null}
+                villageName={article.lab?.villageName ?? null}
+                villageType={article.lab?.villageType ?? null}
               />
             ))}
           </section>

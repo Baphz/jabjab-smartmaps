@@ -1,3 +1,5 @@
+import type { LabCityTypeValue, LabVillageTypeValue } from "@/lib/lab-address";
+
 export const CALENDAR_WEEKDAY_LABELS = [
   "Sen",
   "Sel",
@@ -23,6 +25,13 @@ export type ActivitySourceItem = {
   labName: string | null;
   locationName: string | null;
   locationAddress: string | null;
+  addressDetail?: string | null;
+  provinceName?: string | null;
+  cityName?: string | null;
+  cityType?: LabCityTypeValue | null;
+  districtName?: string | null;
+  villageName?: string | null;
+  villageType?: LabVillageTypeValue | null;
   eventLatitude: number | null;
   eventLongitude: number | null;
   articleSlug?: string | null;

@@ -18,6 +18,13 @@ export const siteContent = {
     title: "Peta dan Agenda Laboratorium",
     description: "",
     dashboardAccessNote: "",
+    sections: {
+      mapEyebrow: "Peta",
+      mapTitle: "Sebaran Laboratorium",
+      articlesEyebrow: "Artikel",
+      articlesTitle: "5 Artikel Terbaru",
+      articlesActionLabel: "Lihat semua artikel",
+    },
     metrics: {
       labs: "Laboratorium",
       activeAgenda: "Agenda aktif",

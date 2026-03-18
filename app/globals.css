@@ -1,12 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f3f6fb;
+  --background: #eef4fa;
   --foreground: #0f172a;
   --surface: rgba(255, 255, 255, 0.92);
   --surface-strong: #ffffff;
-  --surface-muted: #edf2f7;
+  --surface-muted: #edf3fa;
+  --surface-blue: #ebf3ff;
+  --surface-green: #eefbf5;
+  --surface-amber: #fff6e4;
+  --surface-violet: #f4f0ff;
   --border: rgba(71, 85, 105, 0.14);
+  --border-strong: rgba(71, 85, 105, 0.18);
+  --border-blue: rgba(96, 165, 250, 0.34);
+  --border-green: rgba(52, 211, 153, 0.34);
+  --border-amber: rgba(251, 191, 36, 0.34);
+  --border-violet: rgba(167, 139, 250, 0.34);
   --accent: #2f6fed;
   --accent-soft: rgba(47, 111, 237, 0.08);
   --accent-ring: rgba(47, 111, 237, 0.16);
@@ -18,6 +27,9 @@
   --accent-event-soft: rgba(44, 159, 179, 0.14);
   --accent-idle: #d64555;
   --accent-idle-soft: rgba(214, 69, 85, 0.16);
+  --text-muted: #5c6d82;
+  --text-soft: #7b8aa1;
+  --map-background: #d5e1ea;
 }
 
 @theme inline {
@@ -41,10 +53,19 @@ body {
 html.theme-dark {
   --background: #0b1220;
   --foreground: #e6edf7;
-  --surface: rgba(18, 26, 43, 0.94);
-  --surface-strong: #121a2b;
-  --surface-muted: #182235;
+  --surface: rgba(20, 29, 45, 0.96);
+  --surface-strong: #162136;
+  --surface-muted: #1b2740;
+  --surface-blue: rgba(27, 60, 122, 0.62);
+  --surface-green: rgba(22, 92, 72, 0.58);
+  --surface-amber: rgba(120, 79, 17, 0.58);
+  --surface-violet: rgba(78, 54, 140, 0.58);
   --border: rgba(110, 131, 160, 0.24);
+  --border-strong: rgba(110, 131, 160, 0.34);
+  --border-blue: rgba(125, 172, 255, 0.46);
+  --border-green: rgba(88, 214, 167, 0.42);
+  --border-amber: rgba(250, 204, 21, 0.42);
+  --border-violet: rgba(189, 163, 255, 0.42);
   --accent: #72a5ff;
   --accent-soft: rgba(114, 165, 255, 0.14);
   --accent-ring: rgba(114, 165, 255, 0.24);
@@ -56,6 +77,9 @@ html.theme-dark {
   --accent-event-soft: rgba(69, 179, 199, 0.18);
   --accent-idle: #e05b68;
   --accent-idle-soft: rgba(224, 91, 104, 0.22);
+  --text-muted: #b1bfd1;
+  --text-soft: #8d9cb0;
+  --map-background: #d5e1ea;
 }
 
 html.theme-dark body {
@@ -83,34 +107,70 @@ html.theme-dark .text-slate-300 {
 }
 
 html.theme-dark [class*="bg-white"],
+html.theme-dark [class*="bg-white"] {
+  background: var(--surface) !important;
+}
+
 html.theme-dark [class*="bg-slate-50"],
 html.theme-dark [class*="bg-slate-100"],
+html.theme-dark [class*="bg-stone-100"] {
+  background: var(--surface-muted) !important;
+}
+
 html.theme-dark [class*="bg-blue-50"],
 html.theme-dark [class*="bg-blue-100"],
 html.theme-dark [class*="bg-sky-50"],
-html.theme-dark [class*="bg-sky-100"],
+html.theme-dark [class*="bg-sky-100"] {
+  background: var(--surface-blue) !important;
+}
+
 html.theme-dark [class*="bg-emerald-50"],
-html.theme-dark [class*="bg-emerald-100"],
+html.theme-dark [class*="bg-emerald-100"] {
+  background: var(--surface-green) !important;
+}
+
 html.theme-dark [class*="bg-amber-50"],
 html.theme-dark [class*="bg-amber-100"],
-html.theme-dark [class*="bg-stone-100"] {
-  background: rgba(15, 23, 42, 0.92) !important;
+html.theme-dark [class*="bg-orange-50"],
+html.theme-dark [class*="bg-yellow-50"] {
+  background: var(--surface-amber) !important;
+}
+
+html.theme-dark [class*="bg-violet-50"],
+html.theme-dark [class*="bg-purple-50"] {
+  background: var(--surface-violet) !important;
 }
 
 html.theme-dark [class*="border-slate-100"],
 html.theme-dark [class*="border-slate-200"],
 html.theme-dark [class*="border-slate-300"],
+html.theme-dark [class*="border-stone-200"],
+html.theme-dark [class*="border-dashed"] {
+  border-color: var(--border-strong) !important;
+}
+
 html.theme-dark [class*="border-blue-100"],
 html.theme-dark [class*="border-blue-200"],
 html.theme-dark [class*="border-sky-100"],
-html.theme-dark [class*="border-sky-200"],
+html.theme-dark [class*="border-sky-200"] {
+  border-color: var(--border-blue) !important;
+}
+
 html.theme-dark [class*="border-emerald-100"],
-html.theme-dark [class*="border-emerald-200"],
+html.theme-dark [class*="border-emerald-200"] {
+  border-color: var(--border-green) !important;
+}
+
 html.theme-dark [class*="border-amber-100"],
 html.theme-dark [class*="border-amber-200"],
-html.theme-dark [class*="border-stone-200"],
-html.theme-dark [class*="border-dashed"] {
-  border-color: rgba(71, 85, 105, 0.78) !important;
+html.theme-dark [class*="border-orange-200"],
+html.theme-dark [class*="border-yellow-200"] {
+  border-color: var(--border-amber) !important;
+}
+
+html.theme-dark [class*="border-violet-200"],
+html.theme-dark [class*="border-purple-200"] {
+  border-color: var(--border-violet) !important;
 }
 
 html.theme-dark .ant-card,
@@ -128,8 +188,8 @@ html.theme-dark .ant-drawer-content,
 html.theme-dark .ant-drawer-header,
 html.theme-dark .ant-alert,
 html.theme-dark .ant-descriptions-view {
-  background: #0f172a !important;
-  border-color: rgba(71, 85, 105, 0.78) !important;
+  background: var(--surface) !important;
+  border-color: var(--border-strong) !important;
   color: #e2e8f0 !important;
 }
 
@@ -154,8 +214,8 @@ html.theme-dark .ant-select-selector,
 html.theme-dark .ant-picker,
 html.theme-dark .ant-btn-default,
 html.theme-dark .ant-upload-wrapper .ant-upload-select {
-  background: #0b1324 !important;
-  border-color: rgba(71, 85, 105, 0.78) !important;
+  background: var(--surface-muted) !important;
+  border-color: var(--border-strong) !important;
   color: #e2e8f0 !important;
 }
 
@@ -170,13 +230,44 @@ html.theme-dark .ant-btn-default:focus,
 html.theme-dark .ant-select-selector:hover,
 html.theme-dark .ant-input:hover,
 html.theme-dark .ant-input-affix-wrapper:hover {
-  border-color: #60a5fa !important;
+  border-color: var(--border-blue) !important;
   color: #f8fafc !important;
 }
 
 html.theme-dark .ant-tag,
 html.theme-dark .ant-empty-description {
   color: #cbd5e1 !important;
+}
+
+html.theme-dark .ant-tag-default {
+  background: var(--surface-muted) !important;
+  border-color: var(--border-strong) !important;
+}
+
+html.theme-dark .ant-tag-blue {
+  background: var(--surface-blue) !important;
+  border-color: var(--border-blue) !important;
+  color: #dbeafe !important;
+}
+
+html.theme-dark .ant-tag-green {
+  background: var(--surface-green) !important;
+  border-color: var(--border-green) !important;
+  color: #dcfce7 !important;
+}
+
+html.theme-dark .ant-tag-red,
+html.theme-dark .ant-tag-volcano {
+  background: rgba(113, 34, 46, 0.72) !important;
+  border-color: rgba(248, 113, 113, 0.36) !important;
+  color: #fee2e2 !important;
+}
+
+html.theme-dark .ant-tag-orange,
+html.theme-dark .ant-tag-gold {
+  background: var(--surface-amber) !important;
+  border-color: var(--border-amber) !important;
+  color: #fef3c7 !important;
 }
 
 html.theme-dark .ant-btn-link {
@@ -229,6 +320,19 @@ html.theme-dark .ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #f8fafc !important;
 }
 
+html.theme-dark .ant-btn-primary {
+  background: #4f83ff !important;
+  border-color: #4f83ff !important;
+  color: #f8fbff !important;
+  box-shadow: 0 10px 24px rgba(47, 111, 237, 0.28) !important;
+}
+
+html.theme-dark .ant-btn-primary:hover,
+html.theme-dark .ant-btn-primary:focus {
+  background: #6a98ff !important;
+  border-color: #6a98ff !important;
+}
+
 html.theme-dark .ant-pagination .ant-pagination-item,
 html.theme-dark .ant-pagination .ant-pagination-prev button,
 html.theme-dark .ant-pagination .ant-pagination-next button {
@@ -250,7 +354,7 @@ html.theme-dark .ant-table-tbody > tr.ant-table-row:hover > td {
 }
 
 html.theme-dark .leaflet-container {
-  background: #0e1728;
+  background: var(--map-background);
   filter: none;
 }
 
@@ -363,6 +467,58 @@ main {
   color: #b45309;
 }
 
+.smartmaps-calendar-kind-pill {
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.18);
+}
+
+.smartmaps-calendar-kind-dot {
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+}
+
+.smartmaps-calendar-kind-pill-event {
+  background: #eefbf5;
+  color: #047857;
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.34);
+}
+
+.smartmaps-calendar-kind-dot-event {
+  background: #10b981;
+}
+
+.smartmaps-calendar-kind-pill-article {
+  background: #eef6ff;
+  color: #0369a1;
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.4);
+}
+
+.smartmaps-calendar-kind-dot-article {
+  background: #0ea5e9;
+}
+
+.smartmaps-calendar-kind-pill-holiday {
+  background: #fff1f2;
+  color: #b91c1c;
+  box-shadow: inset 0 0 0 1px rgba(252, 165, 165, 0.44);
+}
+
+.smartmaps-calendar-kind-dot-holiday {
+  background: #ef4444;
+}
+
+.smartmaps-calendar-kind-pill-leave {
+  background: #fff7ed;
+  color: #c2410c;
+  box-shadow: inset 0 0 0 1px rgba(253, 186, 116, 0.44);
+}
+
+.smartmaps-calendar-kind-dot-leave {
+  background: #f97316;
+}
+
 html.theme-dark .smartmaps-metric-chip-blue {
   border-color: rgba(125, 172, 255, 0.5) !important;
   background: rgba(41, 91, 171, 0.52) !important;
@@ -408,8 +564,8 @@ html.theme-dark .smartmaps-metric-chip-amber .smartmaps-metric-chip-value {
 }
 
 html.theme-dark .smartmaps-header-pill {
-  border-color: rgba(110, 131, 160, 0.42) !important;
-  background: rgba(30, 41, 59, 0.94) !important;
+  border-color: var(--border-strong) !important;
+  background: rgba(27, 39, 64, 0.96) !important;
   color: #dbe4f0 !important;
 }
 
@@ -437,10 +593,50 @@ html.theme-dark .smartmaps-map-pill-search {
   color: #fef3c7 !important;
 }
 
+html.theme-dark .smartmaps-calendar-kind-pill-event {
+  background: rgba(20, 83, 45, 0.9);
+  color: #d1fae5;
+  box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.34);
+}
+
+html.theme-dark .smartmaps-calendar-kind-dot-event {
+  background: #4ade80;
+}
+
+html.theme-dark .smartmaps-calendar-kind-pill-article {
+  background: rgba(12, 74, 110, 0.9);
+  color: #dbeafe;
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.3);
+}
+
+html.theme-dark .smartmaps-calendar-kind-dot-article {
+  background: #38bdf8;
+}
+
+html.theme-dark .smartmaps-calendar-kind-pill-holiday {
+  background: rgba(127, 29, 29, 0.88);
+  color: #fee2e2;
+  box-shadow: inset 0 0 0 1px rgba(252, 165, 165, 0.28);
+}
+
+html.theme-dark .smartmaps-calendar-kind-dot-holiday {
+  background: #f87171;
+}
+
+html.theme-dark .smartmaps-calendar-kind-pill-leave {
+  background: rgba(124, 45, 18, 0.88);
+  color: #ffedd5;
+  box-shadow: inset 0 0 0 1px rgba(253, 186, 116, 0.28);
+}
+
+html.theme-dark .smartmaps-calendar-kind-dot-leave {
+  background: #fb923c;
+}
+
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background: #d5e1ea;
+  background: var(--map-background);
 }
 
 .leaflet-popup-content-wrapper {
@@ -522,7 +718,7 @@ html.theme-dark .smartmaps-logo-frame {
 }
 
 html.theme-dark .smartmaps-empty-panel {
-  background: rgba(15, 23, 42, 0.76);
+  background: rgba(27, 39, 64, 0.76);
 }
 
 html.theme-dark .ant-empty {
