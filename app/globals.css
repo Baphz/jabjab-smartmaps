@@ -16,8 +16,8 @@
   --accent-search-soft: rgba(217, 164, 65, 0.14);
   --accent-event: #2c9fb3;
   --accent-event-soft: rgba(44, 159, 179, 0.14);
-  --accent-idle: #4e647e;
-  --accent-idle-soft: rgba(78, 100, 126, 0.16);
+  --accent-idle: #d64555;
+  --accent-idle-soft: rgba(214, 69, 85, 0.16);
 }
 
 @theme inline {
@@ -54,8 +54,8 @@ html.theme-dark {
   --accent-search-soft: rgba(226, 180, 88, 0.18);
   --accent-event: #45b3c7;
   --accent-event-soft: rgba(69, 179, 199, 0.18);
-  --accent-idle: #69809c;
-  --accent-idle-soft: rgba(105, 128, 156, 0.2);
+  --accent-idle: #e05b68;
+  --accent-idle-soft: rgba(224, 91, 104, 0.22);
 }
 
 html.theme-dark body {
@@ -390,7 +390,7 @@ html.theme-dark .ant-table-placeholder > td {
   border-radius: 9999px;
   background: var(--accent-idle);
   padding: 3px;
-  box-shadow: 0 14px 28px rgba(41, 55, 75, 0.22);
+  box-shadow: 0 14px 28px rgba(153, 27, 27, 0.2);
   transform: scale(1);
   transition:
     transform 150ms ease,
@@ -423,6 +423,10 @@ html.theme-dark .ant-table-placeholder > td {
 
 .lab-pin:hover {
   transform: scale(1.06);
+}
+
+.lab-pin::before {
+  border-color: var(--accent-idle-soft);
 }
 
 .lab-pin-selected {

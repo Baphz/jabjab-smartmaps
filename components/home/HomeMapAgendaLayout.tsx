@@ -173,6 +173,12 @@ export default function HomeMapAgendaLayout({
     setSelectedLabId(item.labId ?? null);
   }
 
+  function handleResetMapView() {
+    setSearchQuery("");
+    setFocusedActivity(null);
+    setSelectedLabId(null);
+  }
+
   return (
     <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white/96 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
@@ -246,7 +252,11 @@ export default function HomeMapAgendaLayout({
                 mutedLabIds={mutedLabIds}
                 focusedActivity={focusedActivity}
                 selectedLabId={effectiveSelectedLabId}
+                hasActiveView={Boolean(
+                  normalizedSearchQuery || focusedActivity || effectiveSelectedLabId
+                )}
                 onSelectLab={handleSelectLab}
+                onResetView={handleResetMapView}
               />
             </div>
           </div>

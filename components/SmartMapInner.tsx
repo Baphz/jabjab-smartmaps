@@ -63,6 +63,8 @@ export type SmartMapInnerProps = {
   focusedActivity?: ActivitySourceItem | null;
   selectedLabId?: string | null;
   onSelectLab?: (labId: string | null) => void;
+  hasActiveView?: boolean;
+  onResetView?: () => void;
 };
 
 function hasValidEventCoordinates(item: ActivitySourceItem | null | undefined) {
@@ -326,6 +328,8 @@ export default function SmartMapInner({
   focusedActivity = null,
   selectedLabId,
   onSelectLab,
+  hasActiveView = false,
+  onResetView,
 }: SmartMapInnerProps) {
   const { mode } = useAppTheme();
   const [isMapReady, setIsMapReady] = useState(false);
@@ -560,11 +564,18 @@ export default function SmartMapInner({
             </div>
           </div>
 
-          {selectedLab || hasFocusedActivityCoordinates ? (
+          {hasActiveView ? (
             <Button
               size="small"
               className="pointer-events-auto"
-              onClick={() => handleSelectLab(null)}
+              onClick={() => {
+                if (onResetView) {
+                  onResetView();
+                  return;
+                }
+
+                handleSelectLab(null);
+              }}
             >
               Reset peta
             </Button>
@@ -575,7 +586,7 @@ export default function SmartMapInner({
           <div className="rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
             <span className="inline-flex items-center gap-3">
               <span className="inline-flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-slate-500" />
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                 Lokasi laboratorium
               </span>
               <span className="inline-flex items-center gap-2">
