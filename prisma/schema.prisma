@@ -137,3 +137,16 @@ model Article {
   @@index([isPublished, publishedAt])
   @@index([isGlobal, publishedAt])
 }
+
+model AppSettings {
+  id               String   @id @default("default")
+  appName          String?
+  shortName        String?
+  logoUrl          String?
+  logoAlt          String?
+  faviconUrl       String?
+  regionLabel      String?
+  organizationName String?
+  footerTagline    String?
+  updatedAt        DateTime @updatedAt
+}

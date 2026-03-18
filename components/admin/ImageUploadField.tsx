@@ -33,9 +33,11 @@ type ImageUploadFieldProps = {
     | "head1-photo"
     | "head2-photo"
     | "article-cover"
-    | "article-inline";
+    | "article-inline"
+    | "app-logo"
+    | "app-favicon";
   labId?: string | null;
-  bucket?: "profile" | "article";
+  bucket?: "profile" | "article" | "branding";
   title?: string;
   disabled?: boolean;
 };

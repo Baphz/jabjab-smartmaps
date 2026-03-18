@@ -5,6 +5,7 @@ import { Card, Space, Typography } from "antd";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import type { AppBranding } from "@/lib/app-branding";
 import { siteContent } from "@/lib/site-content";
 
 const { Paragraph: TypographyParagraph, Title: TypographyTitle } = Typography;
@@ -26,7 +27,7 @@ const clerkAppearance = {
   },
 };
 
-export function LoginForm() {
+export function LoginForm({ branding }: { branding: AppBranding }) {
   const searchParams = useSearchParams();
 
   const redirectUrl =
@@ -57,8 +58,8 @@ export function LoginForm() {
                 }}
               >
                 <Image
-                  src={siteContent.brand.logoUrl}
-                  alt={siteContent.brand.logoAlt}
+                  src={branding.logoUrl}
+                  alt={branding.logoAlt}
                   fill
                   sizes="60px"
                   unoptimized
@@ -90,7 +91,7 @@ export function LoginForm() {
             </div>
 
             <div className="flex items-center justify-between rounded-[18px] border border-slate-200 bg-slate-50/80 px-3.5 py-3 text-xs text-slate-500">
-              <span>© {new Date().getFullYear()} {siteContent.brand.appName}</span>
+              <span>© {new Date().getFullYear()} {branding.appName}</span>
               <Link
                 href="/"
                 className="font-medium text-slate-600 transition hover:text-slate-900"

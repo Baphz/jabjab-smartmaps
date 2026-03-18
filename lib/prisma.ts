@@ -22,6 +22,7 @@ function isCompatiblePrismaClient(client: PrismaClient | undefined) {
     "labEvent",
     "masterHoliday",
     "article",
+    "appSettings",
   ] as const;
 
   const clientRecord = client as unknown as Record<string, unknown>;

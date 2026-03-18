@@ -3,21 +3,35 @@
 import {
   HomeOutlined,
   LogoutOutlined,
+  MoonOutlined,
   PlusOutlined,
+  SunOutlined,
 } from "@ant-design/icons";
-import { App, Button, Card, Space, Tag, Typography } from "antd";
+import { App, Button, Card, Space, Tag, Tooltip, Typography } from "antd";
 import { useClerk } from "@clerk/nextjs";
+import Image from "next/image";
+import { useAppTheme } from "@/components/theme/AppThemeProvider";
 
 const { Text: TypographyText, Title: TypographyTitle } = Typography;
 
 type AdminHeaderProps = {
   isAdmin: boolean;
   labName?: string | null;
+  appName?: string;
+  logoUrl?: string;
+  logoAlt?: string;
 };
 
-export default function AdminHeader({ isAdmin, labName }: AdminHeaderProps) {
+export default function AdminHeader({
+  isAdmin,
+  labName,
+  appName,
+  logoUrl,
+  logoAlt,
+}: AdminHeaderProps) {
   const { signOut } = useClerk();
   const { modal } = App.useApp();
+  const { mode, toggleMode } = useAppTheme();
 
   const handleConfirmLogout = () => {
     modal.confirm({
@@ -51,6 +65,25 @@ export default function AdminHeader({ isAdmin, labName }: AdminHeaderProps) {
           </Space>
 
           <div className="mt-2">
+            {logoUrl ? (
+              <div className="mb-2 flex items-center gap-2">
+                <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  <Image
+                    src={logoUrl}
+                    alt={logoAlt ?? appName ?? "Logo aplikasi"}
+                    fill
+                    sizes="40px"
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+                {appName ? (
+                  <TypographyText style={{ color: "#64748b", fontSize: 12 }}>
+                    {appName}
+                  </TypographyText>
+                ) : null}
+              </div>
+            ) : null}
             <TypographyTitle level={3} style={{ margin: 0 }}>
               Dashboard
             </TypographyTitle>
@@ -61,6 +94,14 @@ export default function AdminHeader({ isAdmin, labName }: AdminHeaderProps) {
         </div>
 
         <Space wrap size={[8, 8]} className="justify-end">
+          <Tooltip title={mode === "dark" ? "Mode terang" : "Mode gelap"}>
+            <Button
+              size="small"
+              shape="circle"
+              icon={mode === "dark" ? <SunOutlined /> : <MoonOutlined />}
+              onClick={toggleMode}
+            />
+          </Tooltip>
           <Button size="small" href="/" icon={<HomeOutlined />}>
             Peta
           </Button>

@@ -2,6 +2,7 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { Alert, Button, Card, Tabs, Tag, type TabsProps } from "antd";
 import ActivityCalendar from "@/components/activity/ActivityCalendar";
+import AdminAppSettingsManager from "@/components/admin/AdminAppSettingsManager";
 import UpcomingActivityList from "@/components/activity/UpcomingActivityList";
 import AdminArticlesManager, {
   type AdminArticleRow,
@@ -20,6 +21,7 @@ import AdminUsersManager, {
 } from "@/components/admin/AdminUsersManager";
 import { formatDateKey } from "@/lib/activity-calendar";
 import { getActivitySources } from "@/lib/activity-server";
+import { getAppBranding } from "@/lib/app-branding";
 import {
   LAB_ADMIN_ROLE,
   requireDashboardPageAccess,
@@ -106,8 +108,9 @@ export default async function AdminDashboardPage() {
   const session = await requireDashboardPageAccess();
   const clerk = session.isAdmin ? await clerkClient() : null;
 
-  const [labs, activity, dashboardEvents, dashboardArticles, holidays, usersResult, invitationsResult] =
+  const [branding, labs, activity, dashboardEvents, dashboardArticles, holidays, usersResult, invitationsResult] =
     await Promise.all([
+      getAppBranding(),
       session.isAdmin
         ? prisma.lab.findMany({
             include: { types: true },
@@ -393,6 +396,11 @@ export default async function AdminDashboardPage() {
         children: <AdminHolidaysManager holidays={holidayRows} />,
       },
       {
+        key: "settings",
+        label: <TabLabel label="Aplikasi" />,
+        children: <AdminAppSettingsManager branding={branding} />,
+      },
+      {
         key: "users",
         label: <TabLabel label="Akun" count={activeUsers.length + pendingInvitations.length} />,
         children: (
@@ -419,9 +427,15 @@ export default async function AdminDashboardPage() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-4 sm:px-6">
+    <main className="smartmaps-admin min-h-screen px-4 py-4 sm:px-6">
       <div className="mx-auto flex max-w-7xl flex-col gap-4">
-        <AdminHeader isAdmin={session.isAdmin} labName={session.labName} />
+        <AdminHeader
+          isAdmin={session.isAdmin}
+          labName={session.labName}
+          appName={branding.appName}
+          logoUrl={branding.logoUrl}
+          logoAlt={branding.logoAlt}
+        />
 
         {missingLinkedLab ? (
           <Alert

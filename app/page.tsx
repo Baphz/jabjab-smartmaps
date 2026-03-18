@@ -5,6 +5,7 @@ import RecentArticlesSection from "@/components/article/RecentArticlesSection";
 import HomeMapAgendaLayout from "@/components/home/HomeMapAgendaLayout";
 import { formatDateKey } from "@/lib/activity-calendar";
 import { getActivitySources } from "@/lib/activity-server";
+import { getAppBranding } from "@/lib/app-branding";
 import { getCurrentClerkSession } from "@/lib/clerk-auth";
 import { prisma } from "@/lib/prisma";
 import { siteContent } from "@/lib/site-content";
@@ -40,7 +41,8 @@ function CompactMetric({
 }
 
 export default async function HomePage() {
-  const [labs, session, activity, recentArticles] = await Promise.all([
+  const [branding, labs, session, activity, recentArticles] = await Promise.all([
+    getAppBranding(),
     prisma.lab.findMany({
       include: { types: true },
       orderBy: { name: "asc" },
@@ -96,8 +98,8 @@ export default async function HomePage() {
                   }}
                 >
                   <Image
-                    src={siteContent.brand.logoUrl}
-                    alt={siteContent.brand.logoAlt}
+                    src={branding.logoUrl}
+                    alt={branding.logoAlt}
                     fill
                     sizes="42px"
                     unoptimized
@@ -129,7 +131,7 @@ export default async function HomePage() {
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-sky-200 bg-sky-100/70 px-3 py-2.5">
                 <span className="inline-flex items-center gap-2 text-[11px] font-medium text-slate-600">
                   <EnvironmentOutlined className="text-slate-400" />
-                  {siteContent.brand.regionLabel}
+                  {branding.regionLabel}
                 </span>
                 <Button
                   href={session.canAccessDashboard ? "/admin" : "/login"}
@@ -181,8 +183,8 @@ export default async function HomePage() {
         />
 
         <div className="flex flex-col gap-1 px-1 pb-1 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <span>© {year} {siteContent.brand.organizationName}.</span>
-          <span>{siteContent.brand.footerTagline}</span>
+          <span>© {year} {branding.organizationName}.</span>
+          <span>{branding.footerTagline}</span>
         </div>
       </div>
     </main>

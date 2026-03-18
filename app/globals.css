@@ -30,6 +30,102 @@ body {
   font-family: var(--font-plus-jakarta-sans), sans-serif;
 }
 
+html.theme-dark {
+  --background: #08101d;
+  --foreground: #e2e8f0;
+  --surface: rgba(15, 23, 42, 0.94);
+  --surface-strong: #0f172a;
+  --surface-muted: #162235;
+  --border: rgba(148, 163, 184, 0.18);
+  --accent: #60a5fa;
+  --accent-soft: rgba(96, 165, 250, 0.12);
+  --accent-ring: rgba(96, 165, 250, 0.2);
+}
+
+html.theme-dark body {
+  background:
+    radial-gradient(circle at top, rgba(37, 99, 235, 0.1), transparent 36%),
+    #08101d;
+}
+
+html.theme-dark .text-slate-950,
+html.theme-dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+html.theme-dark .text-slate-600,
+html.theme-dark .text-slate-500,
+html.theme-dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html.theme-dark [class*="bg-white"],
+html.theme-dark [class*="bg-slate-50"],
+html.theme-dark [class*="bg-sky-50"],
+html.theme-dark [class*="bg-emerald-50"],
+html.theme-dark [class*="bg-amber-50"] {
+  background: rgba(15, 23, 42, 0.92) !important;
+}
+
+html.theme-dark [class*="border-slate-200"],
+html.theme-dark [class*="border-sky-100"],
+html.theme-dark [class*="border-sky-200"],
+html.theme-dark [class*="border-emerald-100"],
+html.theme-dark [class*="border-emerald-200"],
+html.theme-dark [class*="border-amber-100"],
+html.theme-dark [class*="border-amber-200"] {
+  border-color: rgba(71, 85, 105, 0.78) !important;
+}
+
+html.theme-dark .ant-card,
+html.theme-dark .ant-card-head,
+html.theme-dark .ant-table,
+html.theme-dark .ant-table-container,
+html.theme-dark .ant-table-thead > tr > th,
+html.theme-dark .ant-table-tbody > tr > td,
+html.theme-dark .ant-tabs-nav::before,
+html.theme-dark .ant-modal-content,
+html.theme-dark .ant-modal-header,
+html.theme-dark .ant-drawer-content,
+html.theme-dark .ant-drawer-header,
+html.theme-dark .ant-alert,
+html.theme-dark .ant-descriptions-view {
+  background: #0f172a !important;
+  border-color: rgba(71, 85, 105, 0.78) !important;
+  color: #e2e8f0 !important;
+}
+
+html.theme-dark .ant-input,
+html.theme-dark .ant-input-affix-wrapper,
+html.theme-dark .ant-input-number,
+html.theme-dark .ant-input-number-input,
+html.theme-dark .ant-select-selector,
+html.theme-dark .ant-picker,
+html.theme-dark .ant-btn-default,
+html.theme-dark .ant-upload-wrapper .ant-upload-select {
+  background: #0b1324 !important;
+  border-color: rgba(71, 85, 105, 0.78) !important;
+  color: #e2e8f0 !important;
+}
+
+html.theme-dark .ant-btn-default:hover,
+html.theme-dark .ant-btn-default:focus,
+html.theme-dark .ant-select-selector:hover,
+html.theme-dark .ant-input:hover,
+html.theme-dark .ant-input-affix-wrapper:hover {
+  border-color: #60a5fa !important;
+  color: #f8fafc !important;
+}
+
+html.theme-dark .ant-tag,
+html.theme-dark .ant-empty-description {
+  color: #cbd5e1 !important;
+}
+
+html.theme-dark .leaflet-container {
+  filter: brightness(0.82) saturate(0.92);
+}
+
 a {
   color: inherit;
 }
