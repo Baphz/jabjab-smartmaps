@@ -22,12 +22,12 @@ function CompactMetric({
 }) {
   const toneClass =
     tone === "blue"
-      ? "border-sky-200 bg-sky-50/90"
+      ? "border-blue-200 bg-blue-50/90"
       : tone === "green"
-      ? "border-emerald-200 bg-emerald-50/90"
+      ? "border-emerald-200 bg-emerald-50/85"
       : tone === "amber"
-        ? "border-amber-200 bg-amber-50/90"
-        : "border-sky-200 bg-sky-50/90";
+      ? "border-amber-200 bg-amber-50/85"
+        : "border-blue-200 bg-blue-50/90";
 
   return (
     <div className={`rounded-2xl border px-3 py-2 ${toneClass}`}>
@@ -83,7 +83,7 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen px-2.5 py-2.5 sm:px-4 lg:px-5">
       <div className="mx-auto flex max-w-[1480px] flex-col gap-2.5">
-        <section className="rounded-2xl border border-sky-100 bg-sky-50/75 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
+        <section className="rounded-2xl border border-slate-200 bg-white/96 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
           <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end">
             <div className="min-w-0">
               <div className="flex items-start gap-3">
@@ -119,7 +119,7 @@ export default async function HomePage() {
             </div>
 
             <div className="flex flex-col gap-2.5">
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-sky-200 bg-sky-100/70 px-3 py-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-slate-50/90 px-3 py-2.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-2 text-[11px] font-medium text-slate-600">
                     <EnvironmentOutlined className="text-slate-400" />

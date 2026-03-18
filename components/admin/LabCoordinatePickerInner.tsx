@@ -145,8 +145,8 @@ export default function LabCoordinatePickerInner({
   return (
     <div className="relative overflow-hidden rounded-[20px] border border-sky-100 bg-sky-50/80 p-1.5 shadow-[0_14px_30px_rgba(15,23,42,0.05)]">
       {showOverlay ? (
-        <div className="pointer-events-none absolute left-3 top-3 z-[500] flex max-w-[calc(100%-24px)] flex-wrap gap-2">
-          <div className="pointer-events-auto rounded-[16px] border border-slate-200 bg-white/92 px-3 py-2 text-[11px] text-slate-600 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur">
+        <div className="pointer-events-none absolute left-3 top-3 z-500 flex max-w-[calc(100%-24px)] flex-wrap gap-2">
+          <div className="pointer-events-auto rounded-2xl border border-slate-200 bg-white/92 px-3 py-2 text-[11px] text-slate-600 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur">
             <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
               {title}
             </div>
@@ -165,7 +165,7 @@ export default function LabCoordinatePickerInner({
           </Button>
         </div>
       ) : (
-        <div className="pointer-events-none absolute left-3 top-3 z-[500]">
+        <div className="pointer-events-none absolute left-3 top-3 z-500">
           <Button
             size="small"
             className="pointer-events-auto"
@@ -177,7 +177,7 @@ export default function LabCoordinatePickerInner({
       )}
 
       {showCoordinateBadge ? (
-        <div className="pointer-events-none absolute bottom-3 left-3 z-[500]">
+        <div className="pointer-events-none absolute bottom-3 left-3 z-500">
           <div className="pointer-events-auto rounded-[14px] border border-slate-200 bg-white/90 px-3 py-2 text-[11px] text-slate-600 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur">
             <div className="inline-flex items-center gap-2">
               <EnvironmentOutlined className="text-sky-600" />
@@ -189,12 +189,12 @@ export default function LabCoordinatePickerInner({
         </div>
       ) : null}
 
-      <div className="pointer-events-none absolute bottom-3 right-3 z-[500]">
+      <div className="pointer-events-none absolute bottom-3 right-3 z-500">
         <MapAttributionBadge />
       </div>
 
       <div
-        className="overflow-hidden rounded-[16px] border border-slate-200/80 bg-white"
+        className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white"
         style={{ height }}
       >
         {isMapReady ? (

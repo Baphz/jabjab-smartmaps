@@ -13,7 +13,7 @@ export default function MapAttributionBadge({
       tabIndex={0}
       aria-label="Attribution map untuk OpenStreetMap dan CARTO"
     >
-      <div className="rounded-[12px] border border-slate-200/90 bg-white/86 px-2.5 py-1 text-[10.5px] text-slate-500 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur">
+      <div className="rounded-xl border border-slate-200/90 bg-white/86 px-2.5 py-1 text-[10.5px] text-slate-500 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur">
         <span className="font-medium text-slate-600">OpenStreetMap</span>
         <span className="mx-1 text-slate-300">·</span>
         <span className="font-medium text-slate-600">CARTO</span>

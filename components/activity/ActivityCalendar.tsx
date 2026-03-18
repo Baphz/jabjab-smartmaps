@@ -293,7 +293,7 @@ export default function ActivityCalendar({
         </div>
       ) : null}
 
-      <div className={`rounded-[16px] border border-slate-200 bg-slate-50/80 ${compact ? "p-2.5" : "p-3"}`}>
+      <div className={`rounded-2xl border border-slate-200 bg-slate-50/80 ${compact ? "p-2.5" : "p-3"}`}>
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <TypographyTitle level={5} style={{ marginBottom: compact ? 1 : 2 }}>
@@ -356,7 +356,7 @@ export default function ActivityCalendar({
                     key={cell.dateKey}
                     type="button"
                     onClick={() => handleSelectDate(cell.dateKey)}
-                    className={`relative overflow-visible ${compact ? "min-h-[56px] rounded-[13px] px-1 py-1.5" : "min-h-[76px] rounded-[16px] px-2 py-1.5"} border text-left transition ${
+                    className={`relative overflow-visible ${compact ? "min-h-14 rounded-[13px] px-1 py-1.5" : "min-h-[76px] rounded-2xl px-2 py-1.5"} border text-left transition ${
                       cell.isCurrentMonth
                         ? "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
                         : "border-transparent bg-slate-100/70 text-slate-300 hover:border-slate-200"
@@ -364,7 +364,7 @@ export default function ActivityCalendar({
                   >
                     {currentItems.length > 0 ? (
                       <span
-                        className={`absolute z-[2] inline-flex items-center justify-center rounded-full bg-sky-700 text-white shadow-[0_10px_24px_rgba(37,99,235,0.28)] ${
+                        className={`absolute z-2 inline-flex items-center justify-center rounded-full bg-sky-700 text-white shadow-[0_10px_24px_rgba(37,99,235,0.28)] ${
                           compact
                             ? "-right-1 -top-1 min-w-[22px] px-1.5 text-[10px] leading-[22px]"
                             : "-right-1.5 -top-1.5 min-w-[26px] px-1.5 text-[11px] leading-[26px]"

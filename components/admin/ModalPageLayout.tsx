@@ -23,7 +23,7 @@ export function ModalPageLayout({
       <div className="mx-auto max-w-6xl">
         <Card
           variant="borderless"
-          className="rounded-[24px] border border-sky-100 bg-sky-50/70 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
+          className="rounded-3xl border border-sky-100 bg-sky-50/70 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
           styles={{ body: { padding: 18 } }}
         >
           <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

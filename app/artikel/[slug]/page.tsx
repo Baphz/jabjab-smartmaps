@@ -67,7 +67,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
           ) : null}
 
           {resolvedCover ? (
-            <div className="relative mt-5 aspect-[16/9] w-full overflow-hidden rounded-[22px] border border-slate-200">
+            <div className="relative mt-5 aspect-video w-full overflow-hidden rounded-[22px] border border-slate-200">
               <Image
                 src={resolvedCover}
                 alt={article.title}

@@ -17,6 +17,7 @@ import {
   useMap,
 } from "react-leaflet";
 import MapAttributionBadge from "@/components/map/MapAttributionBadge";
+import { useAppTheme } from "@/components/theme/AppThemeProvider";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
 import type { ActivitySourceItem } from "@/lib/activity-calendar";
 import type { LabCityTypeValue, LabVillageTypeValue } from "@/lib/lab-address";
@@ -326,6 +327,7 @@ export default function SmartMapInner({
   selectedLabId,
   onSelectLab,
 }: SmartMapInnerProps) {
+  const { mode } = useAppTheme();
   const [isMapReady, setIsMapReady] = useState(false);
   const [internalSelectedLabId, setInternalSelectedLabId] = useState<string | null>(
     null
@@ -381,6 +383,10 @@ export default function SmartMapInner({
   const activeLabIdSet = useMemo(() => new Set(activeLabIds), [activeLabIds]);
   const mutedLabIdSet = useMemo(() => new Set(mutedLabIds), [mutedLabIds]);
   const hasFocusedActivityCoordinates = hasValidEventCoordinates(focusedActivity);
+  const tileLayerUrl =
+    mode === "dark"
+      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 
   function handleSelectLab(nextLabId: string | null) {
     if (!isControlled) {
@@ -392,7 +398,13 @@ export default function SmartMapInner({
 
   const detailContent = selectedLab ? (
     <div className="flex flex-col gap-3">
-      <div className="rounded-[24px] border border-sky-100 bg-sky-50/75 p-4">
+      <div
+        className="rounded-3xl border p-4"
+        style={{
+          borderColor: "var(--border)",
+          background: "var(--surface-muted)",
+        }}
+      >
         <div className="flex flex-col gap-4 sm:flex-row">
           <PhotoFrame
             src={resolvePhotoUrl(selectedLab.labPhotoUrl)}
@@ -535,7 +547,7 @@ export default function SmartMapInner({
   return (
     <div className="h-full">
       <div className="relative min-h-0 h-full overflow-hidden rounded-[22px]">
-        <div className="pointer-events-none absolute left-3 top-3 z-[500] flex max-w-[calc(100%-24px)] flex-wrap gap-2">
+        <div className="pointer-events-none absolute left-3 top-3 z-500 flex max-w-[calc(100%-24px)] flex-wrap gap-2">
           <div className="pointer-events-auto rounded-[18px] border border-slate-200 bg-white/92 px-3.5 py-2.5 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
             <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Sebaran Aktif
@@ -559,11 +571,11 @@ export default function SmartMapInner({
           ) : null}
         </div>
 
-        <div className="pointer-events-none absolute bottom-3 left-3 z-[500]">
-          <div className="rounded-[16px] border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
+        <div className="pointer-events-none absolute bottom-3 left-3 z-500">
+          <div className="rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
             <span className="inline-flex items-center gap-3">
               <span className="inline-flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-600" />
+                <span className="h-2.5 w-2.5 rounded-full bg-slate-500" />
                 Lokasi laboratorium
               </span>
               <span className="inline-flex items-center gap-2">
@@ -587,8 +599,8 @@ export default function SmartMapInner({
         </div>
 
         {hasFocusedActivityCoordinates && focusedActivity ? (
-          <div className="pointer-events-none absolute left-3 top-[92px] z-[500] max-w-[320px]">
-            <div className="pointer-events-auto rounded-[16px] border border-emerald-200 bg-white/94 px-3.5 py-2.5 text-[12px] text-slate-600 shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur">
+          <div className="pointer-events-none absolute left-3 top-[92px] z-500 max-w-[320px]">
+            <div className="pointer-events-auto rounded-2xl border border-emerald-200 bg-white/94 px-3.5 py-2.5 text-[12px] text-slate-600 shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur">
               <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
                 Agenda Dipilih
               </div>
@@ -602,7 +614,7 @@ export default function SmartMapInner({
           </div>
         ) : null}
 
-        <div className="pointer-events-none absolute bottom-3 right-3 z-[500]">
+        <div className="pointer-events-none absolute bottom-3 right-3 z-500">
           <MapAttributionBadge />
         </div>
 
@@ -623,8 +635,9 @@ export default function SmartMapInner({
             style={{ height: "100%", width: "100%" }}
           >
             <TileLayer
+              key={`smart-map-tiles:${mode}`}
               attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              url={tileLayerUrl}
             />
             <ZoomControl position="topright" />
             <MapViewportController

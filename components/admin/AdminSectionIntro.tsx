@@ -23,7 +23,7 @@ export default function AdminSectionIntro({
   return (
     <Card
       variant="borderless"
-      className="rounded-[24px] border border-emerald-100 bg-emerald-50/60 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
+      className="rounded-3xl border border-emerald-100 bg-emerald-50/60 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
       styles={{ body: { padding: 18 } }}
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

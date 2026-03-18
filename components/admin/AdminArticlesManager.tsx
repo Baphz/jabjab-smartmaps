@@ -318,7 +318,7 @@ export default function AdminArticlesManager({
 
       <Card
         variant="borderless"
-        className="rounded-[24px] border border-slate-200 bg-white/96 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
+        className="rounded-3xl border border-slate-200 bg-white/96 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
       >
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">

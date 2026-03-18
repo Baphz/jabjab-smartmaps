@@ -32,7 +32,7 @@ function ArticleCard({
       className="block rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_18px_38px_rgba(15,23,42,0.04)] transition hover:border-sky-200 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]"
     >
       {resolvedCover ? (
-        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[18px] border border-slate-200">
+        <div className="relative aspect-video w-full overflow-hidden rounded-[18px] border border-slate-200">
           <Image
             src={resolvedCover}
             alt={title}
@@ -43,7 +43,7 @@ function ArticleCard({
           />
         </div>
       ) : (
-        <div className="flex aspect-[16/9] items-center justify-center rounded-[18px] border border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+        <div className="flex aspect-video items-center justify-center rounded-[18px] border border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
           Artikel
         </div>
       )}
@@ -100,7 +100,7 @@ export default async function ArticlesPage() {
   return (
     <main className="min-h-screen px-3 py-4 sm:px-5">
       <div className="mx-auto flex max-w-6xl flex-col gap-4">
-        <section className="rounded-[24px] border border-sky-100 bg-sky-50/65 px-5 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
+        <section className="rounded-3xl border border-sky-100 bg-sky-50/65 px-5 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -119,7 +119,7 @@ export default async function ArticlesPage() {
         </section>
 
         {articles.length === 0 ? (
-          <div className="smartmaps-empty-panel rounded-[24px] px-4 py-10 shadow-[0_18px_38px_rgba(15,23,42,0.04)]">
+          <div className="smartmaps-empty-panel rounded-3xl px-4 py-10 shadow-[0_18px_38px_rgba(15,23,42,0.04)]">
             <Empty
               description="Belum ada artikel."
               image={Empty.PRESENTED_IMAGE_SIMPLE}

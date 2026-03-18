@@ -35,14 +35,14 @@ function ArticleCover({
 
   if (!resolved) {
     return (
-      <div className="flex aspect-[16/9] items-center justify-center rounded-[18px] border border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+      <div className="flex aspect-video items-center justify-center rounded-[18px] border border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
         Artikel
       </div>
     );
   }
 
   return (
-    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[18px] border border-slate-200">
+    <div className="relative aspect-video w-full overflow-hidden rounded-[18px] border border-slate-200">
       <Image src={resolved} alt={title} fill sizes="(min-width: 1280px) 240px, 100vw" className="object-cover" unoptimized />
     </div>
   );
@@ -54,7 +54,7 @@ export default function RecentArticlesSection({
   articles: ArticleCardItem[];
 }) {
   return (
-    <section className="rounded-[24px] border border-sky-100 bg-sky-50/60 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
+    <section className="rounded-3xl border border-sky-100 bg-sky-50/60 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">

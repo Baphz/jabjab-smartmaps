@@ -4,11 +4,11 @@ export type AppThemeMode = "light" | "dark";
 
 const sharedTheme: ThemeConfig = {
   token: {
-    colorPrimary: "#2563eb",
-    colorInfo: "#2563eb",
-    colorSuccess: "#16a34a",
-    colorWarning: "#d97706",
-    colorError: "#dc2626",
+    colorPrimary: "#2f6fed",
+    colorInfo: "#2f6fed",
+    colorSuccess: "#2fa67c",
+    colorWarning: "#d9a441",
+    colorError: "#d95c5c",
     borderRadius: 16,
     fontSize: 13,
     fontSizeLG: 15,
@@ -64,18 +64,18 @@ export function getAntdThemeConfig(mode: AppThemeMode): ThemeConfig {
     algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
     token: {
       ...sharedTheme.token,
-      colorBgBase: isDark ? "#08101d" : "#f5f8fb",
-      colorBgLayout: isDark ? "#08101d" : "#eef4f7",
-      colorBgContainer: isDark ? "#0f172a" : "#f8fbff",
-      colorFillAlter: isDark ? "#162235" : "#edf5ff",
-      colorTextBase: isDark ? "#e2e8f0" : "#0f172a",
-      colorBorderSecondary: isDark ? "#243446" : "#d9e1e8",
+      colorBgBase: isDark ? "#0b1220" : "#f3f6fb",
+      colorBgLayout: isDark ? "#0d1525" : "#eff3f8",
+      colorBgContainer: isDark ? "#121a2b" : "#ffffff",
+      colorFillAlter: isDark ? "#182235" : "#edf2f7",
+      colorTextBase: isDark ? "#e6edf7" : "#0f172a",
+      colorBorderSecondary: isDark ? "#263349" : "#d8e1eb",
     },
     components: {
       ...sharedTheme.components,
       Table: {
-        borderColor: isDark ? "#243446" : "#d9e1e8",
-        headerBg: isDark ? "#111c2f" : "#f7f8fa",
+        borderColor: isDark ? "#263349" : "#d8e1eb",
+        headerBg: isDark ? "#151f33" : "#f7f9fc",
       },
     },
   };

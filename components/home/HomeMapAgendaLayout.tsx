@@ -25,7 +25,7 @@ function MapPill({
 }) {
   const toneClass =
     tone === "focus"
-      ? "border-sky-200 bg-sky-50 text-sky-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : tone === "success"
         ? "border-emerald-200 bg-emerald-50 text-emerald-700"
         : tone === "search"
@@ -175,7 +175,7 @@ export default function HomeMapAgendaLayout({
 
   return (
     <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <section className="overflow-hidden rounded-[24px] border border-sky-100 bg-sky-50/60 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white/96 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
         <div className="border-b border-slate-200/80 px-3.5 py-3">
           <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
@@ -226,7 +226,7 @@ export default function HomeMapAgendaLayout({
               {searchAreaPreview.map((label) => (
                 <span
                   key={label}
-                  className="rounded-full border border-sky-100 bg-white/80 px-2.5 py-1"
+                  className="rounded-full border border-blue-100 bg-blue-50/80 px-2.5 py-1"
                 >
                   {label}
                 </span>
@@ -236,8 +236,8 @@ export default function HomeMapAgendaLayout({
         </div>
 
         <div className="p-2">
-          <div className="rounded-[18px] border border-sky-100 bg-sky-100/45 p-1.5 shadow-[0_14px_30px_rgba(15,23,42,0.04)]">
-            <div className="h-[62vh] min-h-[470px] max-h-[700px] overflow-hidden rounded-[15px] border border-sky-100/90 bg-white">
+          <div className="rounded-[18px] border border-slate-200 bg-slate-100/80 p-1.5 shadow-[0_14px_30px_rgba(15,23,42,0.04)]">
+            <div className="h-[62vh] min-h-[470px] max-h-[700px] overflow-hidden rounded-[15px] border border-slate-200/90 bg-white">
               <SmartMap
                 labs={labs}
                 highlightedLabIds={searchedLabIds}
@@ -255,7 +255,7 @@ export default function HomeMapAgendaLayout({
 
       <aside className="xl:sticky xl:top-4 xl:self-start">
         <div className="flex flex-col gap-3">
-          <section className="rounded-[24px] border border-sky-200 bg-sky-50/75 px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
+          <section className="rounded-3xl border border-blue-200 bg-white/96 px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
             <ActivityCalendar
               items={items}
               title="Kalender"
@@ -269,7 +269,7 @@ export default function HomeMapAgendaLayout({
             />
           </section>
 
-          <section className="rounded-[24px] border border-emerald-200 bg-emerald-50/75 px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
+          <section className="rounded-3xl border border-emerald-200 bg-white/96 px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
             <UpcomingActivityList
               items={items}
               title="Agenda"
