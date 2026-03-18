@@ -22,19 +22,17 @@ function CompactMetric({
 }) {
   const toneClass =
     tone === "blue"
-      ? "border-blue-200 bg-blue-50/90"
+      ? "smartmaps-metric-card smartmaps-metric-card-blue"
       : tone === "green"
-      ? "border-emerald-200 bg-emerald-50/85"
-      : tone === "amber"
-      ? "border-amber-200 bg-amber-50/85"
-        : "border-blue-200 bg-blue-50/90";
+        ? "smartmaps-metric-card smartmaps-metric-card-green"
+        : "smartmaps-metric-card smartmaps-metric-card-amber";
 
   return (
     <div className={`rounded-2xl border px-3 py-2 ${toneClass}`}>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+      <div className="smartmaps-metric-label text-[10px] font-semibold uppercase tracking-[0.14em]">
         {label}
       </div>
-      <div className="mt-1 text-[18px] font-semibold leading-none tracking-tight text-slate-950">
+      <div className="smartmaps-metric-value mt-1 text-[18px] font-semibold leading-none tracking-tight">
         {value}
       </div>
     </div>

@@ -85,6 +85,8 @@ html.theme-dark .text-slate-300 {
 html.theme-dark [class*="bg-white"],
 html.theme-dark [class*="bg-slate-50"],
 html.theme-dark [class*="bg-slate-100"],
+html.theme-dark [class*="bg-blue-50"],
+html.theme-dark [class*="bg-blue-100"],
 html.theme-dark [class*="bg-sky-50"],
 html.theme-dark [class*="bg-sky-100"],
 html.theme-dark [class*="bg-emerald-50"],
@@ -98,6 +100,8 @@ html.theme-dark [class*="bg-stone-100"] {
 html.theme-dark [class*="border-slate-100"],
 html.theme-dark [class*="border-slate-200"],
 html.theme-dark [class*="border-slate-300"],
+html.theme-dark [class*="border-blue-100"],
+html.theme-dark [class*="border-blue-200"],
 html.theme-dark [class*="border-sky-100"],
 html.theme-dark [class*="border-sky-200"],
 html.theme-dark [class*="border-emerald-100"],
@@ -259,6 +263,88 @@ a {
 .ant-app,
 main {
   min-height: 100%;
+}
+
+.smartmaps-metric-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.smartmaps-metric-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -18px -18px auto;
+  width: 58px;
+  height: 58px;
+  border-radius: 9999px;
+  opacity: 0.24;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.smartmaps-metric-card-blue {
+  border-color: #2f6fed;
+  background: #2f6fed;
+}
+
+.smartmaps-metric-card-green {
+  border-color: #2fa67c;
+  background: #2fa67c;
+}
+
+.smartmaps-metric-card-amber {
+  border-color: #e1bf72;
+  background: #fff4da;
+}
+
+.smartmaps-metric-label {
+  position: relative;
+  z-index: 1;
+}
+
+.smartmaps-metric-value {
+  position: relative;
+  z-index: 1;
+}
+
+.smartmaps-metric-card-blue .smartmaps-metric-label,
+.smartmaps-metric-card-green .smartmaps-metric-label {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.smartmaps-metric-card-blue .smartmaps-metric-value,
+.smartmaps-metric-card-green .smartmaps-metric-value {
+  color: #ffffff;
+}
+
+.smartmaps-metric-card-amber .smartmaps-metric-label {
+  color: #8a651f;
+}
+
+.smartmaps-metric-card-amber .smartmaps-metric-value {
+  color: #6f4f15;
+}
+
+html.theme-dark .smartmaps-metric-card-blue {
+  border-color: #4378ea !important;
+  background: #315ec3 !important;
+}
+
+html.theme-dark .smartmaps-metric-card-green {
+  border-color: #3eb48a !important;
+  background: #277c63 !important;
+}
+
+html.theme-dark .smartmaps-metric-card-amber {
+  border-color: #8b6a2e !important;
+  background: #3b2d14 !important;
+}
+
+html.theme-dark .smartmaps-metric-card-amber .smartmaps-metric-label {
+  color: #d7bf8a !important;
+}
+
+html.theme-dark .smartmaps-metric-card-amber .smartmaps-metric-value {
+  color: #fff3d2 !important;
 }
 
 .leaflet-container {

@@ -389,7 +389,7 @@ export default function SmartMapInner({
   const hasFocusedActivityCoordinates = hasValidEventCoordinates(focusedActivity);
   const tileLayerUrl =
     mode === "dark"
-      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 
   function handleSelectLab(nextLabId: string | null) {
