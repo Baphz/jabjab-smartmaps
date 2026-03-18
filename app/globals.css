@@ -212,6 +212,12 @@ html.theme-dark .smartmaps-activity-modal .ant-modal-close:focus {
   color: #e6edf7 !important;
 }
 
+.smartmaps-header-action-button.ant-btn {
+  min-height: 40px;
+  min-width: 40px;
+  border-radius: 9999px;
+}
+
 html.theme-dark .ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #f8fafc !important;
 }

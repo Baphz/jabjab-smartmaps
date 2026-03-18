@@ -11,32 +11,53 @@ import { getCurrentClerkSession } from "@/lib/clerk-auth";
 import { prisma } from "@/lib/prisma";
 import { siteContent } from "@/lib/site-content";
 
-function CompactMetric({
+function CompactMetricChip({
   label,
   value,
   tone = "blue",
 }: {
   label: string;
   value: number;
-  tone?: "blue" | "green" | "amber";
+  tone?: "blue" | "green" | "violet" | "amber";
 }) {
-  const toneClass =
+  const wrapperClass =
     tone === "blue"
-      ? "smartmaps-metric-card smartmaps-metric-card-blue"
+      ? "border-blue-200/90 bg-blue-50/90 text-blue-800"
       : tone === "green"
-        ? "smartmaps-metric-card smartmaps-metric-card-green"
-        : "smartmaps-metric-card smartmaps-metric-card-amber";
+        ? "border-emerald-200/90 bg-emerald-50/90 text-emerald-800"
+        : tone === "violet"
+          ? "border-violet-200/90 bg-violet-50/90 text-violet-800"
+          : "border-amber-200/90 bg-amber-50/90 text-amber-800";
+  const valueClass =
+    tone === "blue"
+      ? "bg-blue-600 text-white"
+      : tone === "green"
+        ? "bg-emerald-600 text-white"
+        : tone === "violet"
+          ? "bg-violet-600 text-white"
+          : "bg-amber-500 text-amber-950";
 
   return (
-    <div className={`min-w-[108px] rounded-2xl border px-3 py-2.5 ${toneClass}`}>
-      <div className="smartmaps-metric-label text-[10px] font-semibold uppercase tracking-[0.14em]">
+    <div
+      className={`inline-flex min-w-fit items-center gap-2 rounded-full border px-2.5 py-1.5 ${wrapperClass}`}
+    >
+      <div className="text-[10px] font-semibold uppercase tracking-[0.14em]">
         {label}
       </div>
-      <div className="smartmaps-metric-value mt-1.5 text-[18px] font-semibold leading-none tracking-tight">
+      <div
+        className={`inline-flex min-w-7 items-center justify-center rounded-full px-2 py-0.5 text-[12px] font-semibold leading-none ${valueClass}`}
+      >
         {value}
       </div>
     </div>
   );
+}
+
+function matchesProvinceName(value: string | null | undefined, keyword: string) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .includes(keyword.toLowerCase());
 }
 
 export default async function HomePage() {
@@ -69,13 +90,14 @@ export default async function HomePage() {
 
   const year = new Date().getFullYear();
   const todayKey = formatDateKey(new Date());
-  const publicAgendaCount = activity.sources.filter(
-    (item) => item.kind === "lab_event" && item.endDate >= todayKey
+  const bantenLabCount = labs.filter((lab) =>
+    matchesProvinceName(lab.provinceName, "banten")
   ).length;
-  const activeHolidayCount = activity.sources.filter(
-    (item) =>
-      (item.kind === "libur_nasional" || item.kind === "cuti_bersama") &&
-      item.startDate >= todayKey
+  const dkiLabCount = labs.filter((lab) =>
+    matchesProvinceName(lab.provinceName, "dki")
+  ).length;
+  const jabarLabCount = labs.filter((lab) =>
+    matchesProvinceName(lab.provinceName, "jawa barat")
   ).length;
 
   return (
@@ -115,36 +137,45 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <div className="mt-3 flex flex-wrap gap-2">
-                <CompactMetric
-                  label={siteContent.publicHome.metrics.labs}
+              <div className="mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <CompactMetricChip
+                  label="Total"
                   value={labs.length}
                   tone="blue"
                 />
-                <CompactMetric
-                  label={siteContent.publicHome.metrics.activeAgenda}
-                  value={publicAgendaCount}
+                <CompactMetricChip
+                  label="Banten"
+                  value={bantenLabCount}
                   tone="green"
                 />
-                <CompactMetric
-                  label={siteContent.publicHome.metrics.holidays}
-                  value={activeHolidayCount}
+                <CompactMetricChip
+                  label="DKI"
+                  value={dkiLabCount}
+                  tone="violet"
+                />
+                <CompactMetricChip
+                  label="Jabar"
+                  value={jabarLabCount}
                   tone="amber"
                 />
               </div>
             </div>
 
             <div className="xl:w-auto">
-              <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/90 p-2">
-                <span className="inline-flex min-h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-medium text-slate-600">
+              <div className="flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-slate-200 bg-slate-50/85 p-2.5">
+                <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-[11px] font-medium text-slate-600 shadow-[0_1px_0_rgba(255,255,255,0.5)]">
                     <EnvironmentOutlined className="text-slate-400" />
-                    {branding.regionLabel}
+                    <span className="whitespace-nowrap">{branding.regionLabel}</span>
                 </span>
-                <ThemeModeToggle />
+                <ThemeModeToggle
+                  size="middle"
+                  className="smartmaps-header-action-button"
+                />
                 <Button
                   href={session.canAccessDashboard ? "/admin" : "/login"}
                   type="primary"
-                  size="small"
+                  size="middle"
+                  className="smartmaps-header-action-button rounded-full"
                 >
                   {session.canAccessDashboard ? "Dashboard" : "Login"}
                 </Button>

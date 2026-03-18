@@ -95,6 +95,30 @@ function MapViewportController({
   const previousFocusKeyRef = useRef("");
 
   useEffect(() => {
+    function animateToBounds(
+      bounds: L.LatLngBounds,
+      options: { padding: [number, number]; maxZoom: number; duration?: number }
+    ) {
+      map.stop();
+
+      if (!hasInitializedRef.current) {
+        map.fitBounds(bounds, {
+          padding: options.padding,
+          maxZoom: options.maxZoom,
+          animate: false,
+        });
+        return;
+      }
+
+      map.flyToBounds(bounds, {
+        padding: options.padding,
+        maxZoom: options.maxZoom,
+        animate: true,
+        duration: options.duration ?? 1,
+        easeLinearity: 0.18,
+      });
+    }
+
     const activityFocusKey =
       focusedActivity && hasValidEventCoordinates(focusedActivity)
         ? `${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`
@@ -135,10 +159,10 @@ function MapViewportController({
         previousSelectedLabIdRef.current ||
         previousFocusKeyRef.current !== focusKey
       ) {
-        map.fitBounds(focusedLabsBounds, {
+        animateToBounds(focusedLabsBounds, {
           padding: [52, 52],
           maxZoom: 10,
-          animate: true,
+          duration: 0.95,
         });
         previousSelectedLabIdRef.current = null;
         previousActivityFocusKeyRef.current = "";
@@ -158,10 +182,10 @@ function MapViewportController({
       previousSelectedLabIdRef.current ||
       previousFocusKeyRef.current
     ) {
-      map.fitBounds(labsBounds, {
+      animateToBounds(labsBounds, {
         padding: [44, 44],
         maxZoom: 8,
-        animate: true,
+        duration: 1.15,
       });
       previousSelectedLabIdRef.current = null;
       previousActivityFocusKeyRef.current = "";
