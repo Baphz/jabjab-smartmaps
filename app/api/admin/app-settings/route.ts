@@ -24,6 +24,8 @@ export async function POST(req: Request) {
       regionLabel?: string;
       organizationName?: string;
       footerTagline?: string;
+      publicHomeTitle?: string;
+      publicMapTitle?: string;
     };
 
     const settings = await prisma.appSettings.upsert({
@@ -37,6 +39,8 @@ export async function POST(req: Request) {
         regionLabel: normalizeOptionalString(body.regionLabel),
         organizationName: normalizeOptionalString(body.organizationName),
         footerTagline: normalizeOptionalString(body.footerTagline),
+        publicHomeTitle: normalizeOptionalString(body.publicHomeTitle),
+        publicMapTitle: normalizeOptionalString(body.publicMapTitle),
       },
       create: {
         id: "default",
@@ -48,6 +52,8 @@ export async function POST(req: Request) {
         regionLabel: normalizeOptionalString(body.regionLabel),
         organizationName: normalizeOptionalString(body.organizationName),
         footerTagline: normalizeOptionalString(body.footerTagline),
+        publicHomeTitle: normalizeOptionalString(body.publicHomeTitle),
+        publicMapTitle: normalizeOptionalString(body.publicMapTitle),
       },
     });
 

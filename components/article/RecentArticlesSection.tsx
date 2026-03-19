@@ -45,7 +45,7 @@ function ArticleCover({
   if (!resolved) {
     return (
       <div className="flex aspect-video items-center justify-center rounded-[18px] border border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-        Artikel
+        {siteContent.publicHome.articles.fallbackCoverLabel}
       </div>
     );
   }
@@ -63,7 +63,7 @@ export default function RecentArticlesSection({
   articles: ArticleCardItem[];
 }) {
   return (
-    <section className="rounded-3xl border border-sky-100 bg-sky-50/60 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
+    <section className="rounded-3xl border border-sky-200 bg-sky-50/82 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -80,7 +80,7 @@ export default function RecentArticlesSection({
       {articles.length === 0 ? (
         <div className="smartmaps-empty-panel mt-4 rounded-[20px] px-4 py-8">
           <Empty
-            description="Belum ada artikel."
+            description={siteContent.publicHome.articles.emptyLabel}
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         </div>
@@ -90,7 +90,7 @@ export default function RecentArticlesSection({
             <Link
               key={article.id}
               href={`/artikel/${article.slug}`}
-              className="block rounded-[20px] border border-slate-200 bg-white/90 p-3 transition hover:border-sky-200 hover:shadow-[0_18px_34px_rgba(15,23,42,0.08)]"
+              className="block rounded-[20px] border border-slate-200 bg-white p-3 transition hover:border-sky-200 hover:shadow-[0_18px_34px_rgba(15,23,42,0.08)]"
             >
               <ArticleCover title={article.title} coverImageUrl={article.coverImageUrl} />
 

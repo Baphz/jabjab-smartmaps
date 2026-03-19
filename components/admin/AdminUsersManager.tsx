@@ -256,7 +256,8 @@ export default function AdminUsersManager({
 
       <Card
         variant="borderless"
-        className="rounded-[20px] border border-slate-200 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.04)]"
+        className="smartmaps-admin-panel"
+        styles={{ body: { padding: 14 } }}
       >
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <TypographyTitle level={4} style={{ margin: 0 }}>
@@ -273,6 +274,7 @@ export default function AdminUsersManager({
         </div>
 
         <Tabs
+          className="smartmaps-admin-tabs"
           size="small"
           items={[
             {
@@ -308,6 +310,7 @@ export default function AdminUsersManager({
       </Card>
 
       <Modal
+        className="smartmaps-admin-modal"
         open={isInviteOpen}
         onCancel={closeInvite}
         title="Undang Akun Labkesda"

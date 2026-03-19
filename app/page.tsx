@@ -86,13 +86,14 @@ export default async function HomePage() {
   const jabarLabCount = labs.filter((lab) =>
     matchesProvinceName(lab.provinceName, "jawa barat")
   ).length;
+  const publicHomeContent = siteContent.publicHome;
 
   return (
     <main className="min-h-screen px-2.5 py-2.5 sm:px-4 lg:px-5">
       <div className="mx-auto flex max-w-[1480px] flex-col gap-2.5">
-        <section className="rounded-2xl border border-slate-200 bg-white/96 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-            <div className="min-w-0 flex-1">
+        <section className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+            <div className="min-w-0">
               <div className="flex items-center gap-3">
                 <div
                   className="smartmaps-logo-frame"
@@ -119,38 +120,15 @@ export default async function HomePage() {
                     {siteContent.publicHome.eyebrow}
                   </div>
                   <h1 className="mt-0.5 text-[22px] font-semibold tracking-tight text-slate-950 sm:text-[28px]">
-                    {siteContent.publicHome.title}
+                    {branding.publicHomeTitle}
                   </h1>
                 </div>
               </div>
-
-              <div className="mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <CompactMetricChip
-                  label="Total"
-                  value={labs.length}
-                  tone="green"
-                />
-                <CompactMetricChip
-                  label="Jabar"
-                  value={jabarLabCount}
-                  tone="blue"
-                />
-                <CompactMetricChip
-                  label="DKI"
-                  value={dkiLabCount}
-                  tone="amber"
-                />
-                <CompactMetricChip
-                  label="Banten"
-                  value={bantenLabCount}
-                  tone="violet"
-                />
-              </div>
             </div>
 
-            <div className="xl:w-auto">
-              <div className="flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-slate-200 bg-slate-50/85 p-2.5">
-                <span className="smartmaps-header-pill inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 text-[11px] font-medium shadow-[0_1px_0_rgba(255,255,255,0.5)]">
+            <div className="min-w-0 xl:w-auto">
+              <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto] xl:flex xl:flex-wrap xl:items-center xl:justify-end rounded-2xl border border-slate-200 bg-slate-50/95 p-2.5">
+                <span className="smartmaps-header-pill inline-flex min-h-10 w-full items-center gap-2 rounded-full border px-3.5 text-[11px] font-medium shadow-[0_1px_0_rgba(255,255,255,0.5)] sm:w-auto">
                     <EnvironmentOutlined className="text-slate-400" />
                     <span className="whitespace-nowrap">{branding.regionLabel}</span>
                 </span>
@@ -162,10 +140,37 @@ export default async function HomePage() {
                   href={session.canAccessDashboard ? "/admin" : "/login"}
                   type="primary"
                   size="middle"
-                  className="smartmaps-header-action-button rounded-full"
+                  className="smartmaps-header-action-button w-full rounded-full sm:w-auto"
                 >
-                  {session.canAccessDashboard ? "Dashboard" : "Login"}
+                  {session.canAccessDashboard
+                    ? publicHomeContent.toolbar.dashboardLabel
+                    : publicHomeContent.toolbar.loginLabel}
                 </Button>
+              </div>
+            </div>
+
+            <div className="xl:col-span-2">
+              <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <CompactMetricChip
+                  label={publicHomeContent.metrics.total}
+                  value={labs.length}
+                  tone="green"
+                />
+                <CompactMetricChip
+                  label={publicHomeContent.metrics.westJava}
+                  value={jabarLabCount}
+                  tone="blue"
+                />
+                <CompactMetricChip
+                  label={publicHomeContent.metrics.jakarta}
+                  value={dkiLabCount}
+                  tone="amber"
+                />
+                <CompactMetricChip
+                  label={publicHomeContent.metrics.banten}
+                  value={bantenLabCount}
+                  tone="violet"
+                />
               </div>
             </div>
           </div>
@@ -175,6 +180,7 @@ export default async function HomePage() {
           labs={labs}
           items={activity.sources}
           todayKey={todayKey}
+          mapTitle={branding.publicMapTitle}
         />
 
         <RecentArticlesSection

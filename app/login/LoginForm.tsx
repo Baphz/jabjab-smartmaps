@@ -42,7 +42,7 @@ export function LoginForm({ branding }: { branding: AppBranding }) {
       <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] max-w-[520px] items-center">
         <Card
           variant="borderless"
-          className="w-full rounded-[28px] border border-sky-100 bg-white/98 shadow-[0_24px_54px_rgba(15,23,42,0.08)]"
+          className="w-full overflow-visible rounded-[28px] border border-sky-200 bg-white shadow-[0_24px_54px_rgba(15,23,42,0.08)]"
           styles={{ body: { padding: 24 } }}
         >
           <Space orientation="vertical" size={20} style={{ width: "100%" }}>
@@ -89,7 +89,7 @@ export function LoginForm({ branding }: { branding: AppBranding }) {
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-[18px] border border-slate-200 bg-slate-50/80 px-3.5 py-3 text-xs text-slate-500">
+            <div className="flex items-center justify-between rounded-[18px] border border-slate-200 bg-slate-50/95 px-3.5 py-3 text-xs text-slate-500">
               <span>© {new Date().getFullYear()} {branding.appName}</span>
               <Link
                 href="/"

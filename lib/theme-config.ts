@@ -65,17 +65,17 @@ export function getAntdThemeConfig(mode: AppThemeMode): ThemeConfig {
     token: {
       ...sharedTheme.token,
       colorBgBase: isDark ? "#0b1220" : "#f3f6fb",
-      colorBgLayout: isDark ? "#0d1525" : "#eff3f8",
-      colorBgContainer: isDark ? "#121a2b" : "#ffffff",
-      colorFillAlter: isDark ? "#182235" : "#edf2f7",
+      colorBgLayout: isDark ? "#0f1728" : "#edf3fa",
+      colorBgContainer: isDark ? "#162136" : "#ffffff",
+      colorFillAlter: isDark ? "#1b2740" : "#edf3fa",
       colorTextBase: isDark ? "#e6edf7" : "#0f172a",
-      colorBorderSecondary: isDark ? "#263349" : "#d8e1eb",
+      colorBorderSecondary: isDark ? "#33435d" : "#d8e1eb",
     },
     components: {
       ...sharedTheme.components,
       Table: {
-        borderColor: isDark ? "#263349" : "#d8e1eb",
-        headerBg: isDark ? "#151f33" : "#f7f9fc",
+        borderColor: isDark ? "#33435d" : "#d8e1eb",
+        headerBg: isDark ? "#1b2740" : "#f7f9fc",
       },
     },
   };

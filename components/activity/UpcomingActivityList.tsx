@@ -4,6 +4,7 @@ import { CalendarOutlined, EnvironmentOutlined } from "@ant-design/icons";
 import { Button, Empty, Space, Typography } from "antd";
 import { useMemo } from "react";
 import {
+  type ActivityKind,
   type ActivitySourceItem,
   formatActivityRange,
   getActivityKindLabel,
@@ -25,18 +26,38 @@ type UpcomingActivityListProps = {
   actionHref?: string;
   actionLabel?: string;
   onSelectLab?: (labId: string) => void;
+  kindLabels?: Partial<Record<ActivityKind, string>>;
+  globalArticleScopeLabel?: string;
+  globalAgendaScopeLabel?: string;
+  viewMapLabel?: string;
 };
 
 function getItemPillClass(kind: ActivitySourceItem["kind"]) {
   if (kind === "libur_nasional") {
-    return "border-red-200 bg-red-50 text-red-700";
+    return {
+      pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-holiday",
+      dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-holiday",
+    };
   }
 
   if (kind === "cuti_bersama") {
-    return "border-orange-200 bg-orange-50 text-orange-700";
+    return {
+      pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-leave",
+      dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-leave",
+    };
   }
 
-  return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (kind === "article") {
+    return {
+      pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-article",
+      dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-article",
+    };
+  }
+
+  return {
+    pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-event",
+    dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-event",
+  };
 }
 
 export default function UpcomingActivityList({
@@ -50,6 +71,10 @@ export default function UpcomingActivityList({
   actionHref,
   actionLabel,
   onSelectLab,
+  kindLabels,
+  globalArticleScopeLabel,
+  globalAgendaScopeLabel,
+  viewMapLabel = "Lihat di peta",
 }: UpcomingActivityListProps) {
   const upcomingItems = useMemo(
     () =>
@@ -68,6 +93,22 @@ export default function UpcomingActivityList({
       villageName: item.villageName,
       villageType: item.villageType,
     });
+  }
+
+  function getDisplayKindLabel(kind: ActivityKind) {
+    return kindLabels?.[kind] ?? getActivityKindLabel(kind);
+  }
+
+  function getDisplayScopeLabel(item: ActivitySourceItem) {
+    if (item.kind === "article" && item.isGlobal && globalArticleScopeLabel) {
+      return globalArticleScopeLabel;
+    }
+
+    if (item.kind === "lab_event" && item.isGlobal && globalAgendaScopeLabel) {
+      return globalAgendaScopeLabel;
+    }
+
+    return getActivityScopeLabel(item);
   }
 
   return (
@@ -108,26 +149,30 @@ export default function UpcomingActivityList({
         </div>
       ) : (
         <Space orientation="vertical" size={compact ? 6 : 8} style={{ width: "100%" }}>
-          {upcomingItems.map((item) => (
-            <div
-              key={item.id}
-              className={`rounded-[14px] border border-slate-200/90 bg-slate-50/65 ${
-                compact ? "px-2.5 py-2" : "px-3 py-2.5"
-              }`}
-            >
-              <Space orientation="vertical" size={compact ? 5 : 6} style={{ width: "100%" }}>
-                <div className="flex flex-wrap gap-1.5">
-                  <span
-                    className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${getItemPillClass(item.kind)}`}
-                  >
-                    {getActivityKindLabel(item.kind)}
-                  </span>
-                  {getActivityScopeLabel(item) ? (
-                    <span className="inline-flex rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                      {getActivityScopeLabel(item)}
+          {upcomingItems.map((item) => {
+            const kindPill = getItemPillClass(item.kind);
+
+            return (
+              <div
+                key={item.id}
+                className={`rounded-[14px] border border-slate-200/90 bg-slate-50/65 ${
+                  compact ? "px-2.5 py-2" : "px-3 py-2.5"
+                }`}
+              >
+                <Space orientation="vertical" size={compact ? 5 : 6} style={{ width: "100%" }}>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span
+                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 ${kindPill.pill}`}
+                    >
+                      <span className={kindPill.dot} />
+                      {getDisplayKindLabel(item.kind)}
                     </span>
-                  ) : null}
-                </div>
+                    {getDisplayScopeLabel(item) ? (
+                      <span className="inline-flex rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                        {getDisplayScopeLabel(item)}
+                      </span>
+                    ) : null}
+                  </div>
 
                 <div>
                   <TypographyText strong style={{ fontSize: compact ? 13 : 14 }}>
@@ -190,19 +235,20 @@ export default function UpcomingActivityList({
                   ) : null}
                 </Space>
 
-                {item.labId && onSelectLab ? (
-                  <Button
-                    type="link"
-                    size="small"
-                    style={{ paddingInline: 0, height: "auto" }}
-                    onClick={() => onSelectLab(item.labId!)}
-                  >
-                    Lihat di peta
-                  </Button>
-                ) : null}
-              </Space>
-            </div>
-          ))}
+                  {item.labId && onSelectLab ? (
+                    <Button
+                      type="link"
+                      size="small"
+                      style={{ paddingInline: 0, height: "auto" }}
+                      onClick={() => onSelectLab(item.labId!)}
+                    >
+                      {viewMapLabel}
+                    </Button>
+                  ) : null}
+                </Space>
+              </div>
+            );
+          })}
         </Space>
       )}
     </Space>

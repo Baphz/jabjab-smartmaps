@@ -148,5 +148,7 @@ model AppSettings {
   regionLabel      String?
   organizationName String?
   footerTagline    String?
+  publicHomeTitle  String?
+  publicMapTitle   String?
   updatedAt        DateTime @updatedAt
 }

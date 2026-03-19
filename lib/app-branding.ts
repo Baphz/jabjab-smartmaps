@@ -13,6 +13,8 @@ export type AppBranding = {
   regionLabel: string;
   organizationName: string;
   footerTagline: string;
+  publicHomeTitle: string;
+  publicMapTitle: string;
 };
 
 export const defaultAppBranding: AppBranding = {
@@ -24,6 +26,8 @@ export const defaultAppBranding: AppBranding = {
   regionLabel: siteContent.brand.regionLabel,
   organizationName: siteContent.brand.organizationName,
   footerTagline: siteContent.brand.footerTagline,
+  publicHomeTitle: siteContent.publicHome.title,
+  publicMapTitle: siteContent.publicHome.sections.mapTitle,
 };
 
 function normalizeString(value: string | null | undefined, fallback: string) {
@@ -55,6 +59,14 @@ export const getAppBranding = cache(async (): Promise<AppBranding> => {
       footerTagline: normalizeString(
         settings.footerTagline,
         defaultAppBranding.footerTagline
+      ),
+      publicHomeTitle: normalizeString(
+        settings.publicHomeTitle,
+        defaultAppBranding.publicHomeTitle
+      ),
+      publicMapTitle: normalizeString(
+        settings.publicMapTitle,
+        defaultAppBranding.publicMapTitle
       ),
     };
   } catch (error) {

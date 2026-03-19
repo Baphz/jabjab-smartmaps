@@ -6,6 +6,7 @@ import {
   type LabCityTypeValue,
   type LabVillageTypeValue,
 } from "@/lib/lab-address";
+import { siteContent } from "@/lib/site-content";
 
 type ArticleOriginMetaProps = {
   isGlobal: boolean;
@@ -62,6 +63,7 @@ export default function ArticleOriginMeta({
   villageType,
   mode = "compact",
 }: ArticleOriginMetaProps) {
+  const articleContent = siteContent.publicHome.articles;
   const locationParts = isGlobal
     ? []
     : mode === "full"
@@ -82,7 +84,7 @@ export default function ArticleOriginMeta({
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <Tag color={isGlobal ? "blue" : "green"} variant="filled">
-        {isGlobal ? "Global DPW" : labName ?? "Artikel Lab"}
+        {isGlobal ? articleContent.globalOriginLabel : labName ?? articleContent.labOriginFallbackLabel}
       </Tag>
 
       {locationParts.map((part) => (

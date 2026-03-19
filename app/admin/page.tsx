@@ -37,21 +37,14 @@ function AdminMetricCard({
   value: number | string;
   tone?: "slate" | "green" | "amber" | "blue";
 }) {
-  const toneClass =
-    tone === "green"
-      ? "border-emerald-200 bg-emerald-50/85"
-      : tone === "amber"
-        ? "border-amber-200 bg-amber-50/85"
-        : tone === "blue"
-          ? "border-sky-200 bg-sky-50/85"
-          : "border-slate-200 bg-slate-50/85";
+  const toneClass = `smartmaps-admin-metric smartmaps-admin-metric-${tone}`;
 
   return (
-    <div className={`rounded-[20px] border px-4 py-3 ${toneClass}`}>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+    <div className={toneClass}>
+      <div className="smartmaps-admin-metric-label">
         {label}
       </div>
-      <div className="mt-2 text-[24px] font-semibold leading-none tracking-tight text-slate-950">
+      <div className="smartmaps-admin-metric-value">
         {value}
       </div>
     </div>
@@ -69,7 +62,7 @@ function TabLabel({
     <span className="inline-flex items-center gap-2">
       <span>{label}</span>
       {typeof count === "number" ? (
-        <span className="inline-flex min-w-[20px] items-center justify-center rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600">
+        <span className="smartmaps-admin-tab-counter">
           {count}
         </span>
       ) : null}
@@ -325,10 +318,7 @@ export default async function AdminDashboardPage() {
       key: "lab",
       label: <TabLabel label="Laboratorium Saya" />,
       children: (
-        <Card
-          variant="borderless"
-          className="rounded-[20px] border border-slate-200 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.04)]"
-        >
+        <Card variant="borderless" className="smartmaps-admin-panel">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
               <h2 className="mb-1 text-xl font-semibold text-slate-900">{primaryLab.name}</h2>
@@ -412,10 +402,7 @@ export default async function AdminDashboardPage() {
         key: "labs",
         label: <TabLabel label="Laboratorium" count={labRows.length} />,
         children: (
-          <Card
-            variant="borderless"
-            className="rounded-[20px] border border-slate-200 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.04)]"
-          >
+          <Card variant="borderless" className="smartmaps-admin-panel">
             <AdminLabsTable labs={labRows} canDelete />
           </Card>
         ),
@@ -445,7 +432,7 @@ export default async function AdminDashboardPage() {
         {session.isLabAdmin && primaryLab ? (
           <Card
             variant="borderless"
-            className="rounded-[22px] border border-emerald-100 bg-emerald-50/65 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
+            className="smartmaps-admin-panel smartmaps-admin-panel-soft-green"
             styles={{ body: { padding: 14 } }}
           >
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -490,7 +477,7 @@ export default async function AdminDashboardPage() {
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
           <Card
             variant="borderless"
-            className="rounded-[22px] border border-sky-100 bg-sky-50/70 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
+            className="smartmaps-admin-panel smartmaps-admin-panel-soft-blue"
             styles={{ body: { padding: 14 } }}
           >
             <ActivityCalendar
@@ -506,7 +493,7 @@ export default async function AdminDashboardPage() {
 
           <Card
             variant="borderless"
-            className="rounded-[22px] border border-emerald-100 bg-emerald-50/65 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
+            className="smartmaps-admin-panel smartmaps-admin-panel-soft-green"
             styles={{ body: { padding: 14 } }}
           >
             <UpcomingActivityList
@@ -522,10 +509,11 @@ export default async function AdminDashboardPage() {
 
         <Card
           variant="borderless"
-          className="rounded-[22px] border border-slate-200 bg-white/96 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
+          className="smartmaps-admin-panel"
           styles={{ body: { padding: 14 } }}
         >
           <Tabs
+            className="smartmaps-admin-tabs"
             size="small"
             defaultActiveKey={session.isAdmin ? "events" : primaryLab ? "lab" : "events"}
             items={managementTabs}

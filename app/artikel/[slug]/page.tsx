@@ -49,55 +49,61 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen px-3 py-4 sm:px-5">
-      <div className="mx-auto flex max-w-4xl flex-col gap-4">
+      <div className="mx-auto flex max-w-[1180px] flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
           <Button href="/artikel">Kembali ke artikel</Button>
           <Button href="/">Kembali ke peta</Button>
         </div>
 
-        <article className="rounded-[26px] border border-slate-200 bg-white px-5 py-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:px-7 sm:py-7">
-          <div className="flex flex-wrap gap-1.5">
-            <ArticleOriginMeta
-              isGlobal={article.isGlobal}
-              labName={article.lab?.name ?? null}
-              provinceName={article.lab?.provinceName ?? null}
-              cityName={article.lab?.cityName ?? null}
-              cityType={article.lab?.cityType ?? null}
-              districtName={article.lab?.districtName ?? null}
-              villageName={article.lab?.villageName ?? null}
-              villageType={article.lab?.villageType ?? null}
-              mode="full"
-            />
-            <Tag>{formatMediumDate(formatDate(article.publishedAt))}</Tag>
-          </div>
+        <article className="rounded-[28px] border border-slate-200 bg-white px-5 py-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:px-7 sm:py-7">
+          <div className={`grid gap-6 ${resolvedCover ? "xl:grid-cols-[minmax(0,1.08fr)_minmax(340px,0.92fr)] xl:items-center" : ""}`}>
+            <div className="min-w-0">
+              <div className="flex flex-wrap gap-1.5">
+                <ArticleOriginMeta
+                  isGlobal={article.isGlobal}
+                  labName={article.lab?.name ?? null}
+                  provinceName={article.lab?.provinceName ?? null}
+                  cityName={article.lab?.cityName ?? null}
+                  cityType={article.lab?.cityType ?? null}
+                  districtName={article.lab?.districtName ?? null}
+                  villageName={article.lab?.villageName ?? null}
+                  villageType={article.lab?.villageType ?? null}
+                  mode="full"
+                />
+                <Tag>{formatMediumDate(formatDate(article.publishedAt))}</Tag>
+              </div>
 
-          <h1 className="mt-3 text-[30px] font-semibold tracking-tight text-slate-950 sm:text-[38px]">
-            {article.title}
-          </h1>
+              <h1 className="mt-4 text-[30px] font-semibold tracking-tight text-slate-950 sm:text-[40px]">
+                {article.title}
+              </h1>
 
-          {article.excerpt ? (
-            <p className="mt-3 mb-0 text-[15px] leading-7 text-slate-600">
-              {article.excerpt}
-            </p>
-          ) : null}
-
-          {resolvedCover ? (
-            <div className="relative mt-5 aspect-video w-full overflow-hidden rounded-[22px] border border-slate-200">
-              <Image
-                src={resolvedCover}
-                alt={article.title}
-                fill
-                sizes="(min-width: 1024px) 896px, 100vw"
-                className="object-cover"
-                unoptimized
-              />
+              {article.excerpt ? (
+                <p className="mt-4 mb-0 max-w-3xl text-[15px] leading-7 text-slate-600 sm:text-[16px]">
+                  {article.excerpt}
+                </p>
+              ) : null}
             </div>
-          ) : null}
 
-          <div className="mt-6">
-            <ArticleContent html={article.contentHtml} />
+            {resolvedCover ? (
+              <div className="relative aspect-video w-full overflow-hidden rounded-[24px] border border-slate-200">
+                <Image
+                  src={resolvedCover}
+                  alt={article.title}
+                  fill
+                  sizes="(min-width: 1024px) 40vw, 100vw"
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            ) : null}
           </div>
         </article>
+
+        <section className="rounded-[28px] border border-slate-200 bg-white px-5 py-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:px-7 sm:py-7">
+          <div className="mx-auto max-w-[760px]">
+            <ArticleContent html={article.contentHtml} />
+          </div>
+        </section>
       </div>
     </main>
   );

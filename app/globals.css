@@ -308,12 +308,41 @@ html.theme-dark .smartmaps-activity-modal .ant-modal-close:focus {
   min-height: 40px;
   min-width: 44px;
   border-radius: 14px;
+  border-color: var(--border-strong);
+  background: var(--surface-strong);
+  color: var(--foreground);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
 }
 
 .smartmaps-header-action-button.ant-btn {
   min-height: 40px;
   min-width: 40px;
   border-radius: 9999px;
+  box-shadow: 0 10px 24px rgba(47, 111, 237, 0.18);
+}
+
+html.theme-dark .smartmaps-theme-toggle.ant-btn,
+html.theme-dark .smartmaps-header-toggle-button.ant-btn {
+  border-color: var(--border-strong) !important;
+  background: rgba(27, 39, 64, 0.96) !important;
+  color: #e6edf7 !important;
+  box-shadow: 0 10px 24px rgba(6, 11, 24, 0.34) !important;
+}
+
+html.theme-dark .smartmaps-theme-toggle.ant-btn:hover,
+html.theme-dark .smartmaps-theme-toggle.ant-btn:focus,
+html.theme-dark .smartmaps-header-toggle-button.ant-btn:hover,
+html.theme-dark .smartmaps-header-toggle-button.ant-btn:focus {
+  border-color: var(--border-blue) !important;
+  background: rgba(33, 50, 82, 0.98) !important;
+  color: #f8fbff !important;
+}
+
+html.theme-dark .smartmaps-header-action-button.ant-btn.ant-btn-primary {
+  background: #4f83ff !important;
+  border-color: #4f83ff !important;
+  color: #f8fbff !important;
+  box-shadow: 0 12px 26px rgba(47, 111, 237, 0.3) !important;
 }
 
 html.theme-dark .ant-tabs-tab-active .ant-tabs-tab-btn {
@@ -467,6 +496,20 @@ main {
   color: #b45309;
 }
 
+.smartmaps-map-reset-button.ant-btn {
+  border-color: rgba(96, 165, 250, 0.26);
+  background: #f5f9ff;
+  color: #1d4ed8;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.06);
+}
+
+.smartmaps-map-reset-button.ant-btn:hover,
+.smartmaps-map-reset-button.ant-btn:focus {
+  border-color: rgba(96, 165, 250, 0.42) !important;
+  background: #edf4ff !important;
+  color: #1d4ed8 !important;
+}
+
 .smartmaps-calendar-kind-pill {
   box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.18);
 }
@@ -517,6 +560,34 @@ main {
 
 .smartmaps-calendar-kind-dot-leave {
   background: #f97316;
+}
+
+.smartmaps-activity-kind-badge {
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.18);
+}
+
+.smartmaps-activity-kind-badge-event {
+  background: #eefbf5;
+  color: #047857;
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.34);
+}
+
+.smartmaps-activity-kind-badge-article {
+  background: #eef6ff;
+  color: #0369a1;
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.4);
+}
+
+.smartmaps-activity-kind-badge-holiday {
+  background: #fff1f2;
+  color: #b91c1c;
+  box-shadow: inset 0 0 0 1px rgba(252, 165, 165, 0.44);
+}
+
+.smartmaps-activity-kind-badge-leave {
+  background: #fff7ed;
+  color: #c2410c;
+  box-shadow: inset 0 0 0 1px rgba(253, 186, 116, 0.44);
 }
 
 html.theme-dark .smartmaps-metric-chip-blue {
@@ -593,6 +664,20 @@ html.theme-dark .smartmaps-map-pill-search {
   color: #fef3c7 !important;
 }
 
+html.theme-dark .smartmaps-map-reset-button.ant-btn {
+  border-color: rgba(125, 172, 255, 0.36) !important;
+  background: rgba(26, 50, 88, 0.86) !important;
+  color: #dbeafe !important;
+  box-shadow: 0 10px 22px rgba(9, 16, 31, 0.28) !important;
+}
+
+html.theme-dark .smartmaps-map-reset-button.ant-btn:hover,
+html.theme-dark .smartmaps-map-reset-button.ant-btn:focus {
+  border-color: rgba(125, 172, 255, 0.54) !important;
+  background: rgba(39, 68, 116, 0.92) !important;
+  color: #f8fbff !important;
+}
+
 html.theme-dark .smartmaps-calendar-kind-pill-event {
   background: rgba(20, 83, 45, 0.9);
   color: #d1fae5;
@@ -631,6 +716,30 @@ html.theme-dark .smartmaps-calendar-kind-pill-leave {
 
 html.theme-dark .smartmaps-calendar-kind-dot-leave {
   background: #fb923c;
+}
+
+html.theme-dark .smartmaps-activity-kind-badge-event {
+  background: rgba(20, 83, 45, 0.9);
+  color: #d1fae5;
+  box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.34);
+}
+
+html.theme-dark .smartmaps-activity-kind-badge-article {
+  background: rgba(12, 74, 110, 0.9);
+  color: #dbeafe;
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.3);
+}
+
+html.theme-dark .smartmaps-activity-kind-badge-holiday {
+  background: rgba(127, 29, 29, 0.88);
+  color: #fee2e2;
+  box-shadow: inset 0 0 0 1px rgba(252, 165, 165, 0.28);
+}
+
+html.theme-dark .smartmaps-activity-kind-badge-leave {
+  background: rgba(124, 45, 18, 0.88);
+  color: #ffedd5;
+  box-shadow: inset 0 0 0 1px rgba(253, 186, 116, 0.28);
 }
 
 .leaflet-container {
@@ -710,6 +819,34 @@ html.theme-dark .smartmaps-logo-frame {
 .smartmaps-detail-section.ant-card {
   border-color: var(--border) !important;
   background: var(--surface) !important;
+}
+
+.smartmaps-role-pill {
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.16);
+}
+
+.smartmaps-role-pill-head {
+  background: #eef4ff;
+  color: #1d4ed8;
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.34);
+}
+
+.smartmaps-role-pill-tu {
+  background: #eefbf5;
+  color: #047857;
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.34);
+}
+
+html.theme-dark .smartmaps-role-pill-head {
+  background: rgba(41, 91, 171, 0.58);
+  color: #dbeafe;
+  box-shadow: inset 0 0 0 1px rgba(125, 172, 255, 0.42);
+}
+
+html.theme-dark .smartmaps-role-pill-tu {
+  background: rgba(23, 100, 76, 0.58);
+  color: #dcfce7;
+  box-shadow: inset 0 0 0 1px rgba(88, 214, 167, 0.42);
 }
 
 .smartmaps-empty-panel {
@@ -855,6 +992,23 @@ html.theme-dark .ant-table-placeholder > td {
   border-color: rgba(255, 251, 235, 0.95);
 }
 
+.lab-pin-best-match::before {
+  border-color: rgba(245, 180, 42, 0.58);
+  opacity: 1;
+  transform: scale(0.98);
+}
+
+.lab-pin-best-match {
+  transform: scale(1.1);
+  box-shadow:
+    0 18px 34px rgba(171, 124, 29, 0.28),
+    0 0 0 8px rgba(217, 164, 65, 0.22);
+}
+
+.lab-pin-best-match .lab-pin-photo {
+  border-color: rgba(255, 251, 235, 0.98);
+}
+
 .lab-pin-muted {
   background: #8ba0b8;
   box-shadow: 0 12px 24px rgba(71, 85, 105, 0.14);
@@ -939,6 +1093,81 @@ html.theme-dark .ant-table-placeholder > td {
   gap: 8px;
 }
 
+.map-marker-label-wrap {
+  display: flex;
+  height: 144px;
+  width: 236px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.map-marker-label {
+  position: relative;
+  min-width: 160px;
+  max-width: 228px;
+  padding: 10px 12px 13px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(10px);
+  text-align: center;
+}
+
+.map-marker-label::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 11px solid rgba(255, 255, 255, 0.96);
+}
+
+.map-marker-label-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #0f172a;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.map-marker-label-action {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #2563eb;
+}
+
+.map-marker-label-selected {
+  border-color: rgba(96, 165, 250, 0.34);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.map-marker-label-selected .map-marker-label-action {
+  color: #2563eb;
+}
+
+.map-marker-label-event {
+  border-color: rgba(45, 212, 191, 0.36);
+  background: rgba(240, 253, 250, 0.98);
+}
+
+.map-marker-label-event .map-marker-label-action {
+  color: #0f766e;
+}
+
+.map-marker-label-event::after {
+  border-top-color: rgba(240, 253, 250, 0.98);
+}
+
 .activity-focus-bubble {
   max-width: 148px;
   padding: 6px 10px;
@@ -955,6 +1184,37 @@ html.theme-dark .ant-table-placeholder > td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+html.theme-dark .map-marker-label {
+  border-color: rgba(96, 165, 250, 0.26);
+  background: rgba(15, 23, 42, 0.94);
+  box-shadow: 0 18px 38px rgba(2, 6, 23, 0.34);
+}
+
+html.theme-dark .map-marker-label::after {
+  border-top-color: rgba(15, 23, 42, 0.94);
+}
+
+html.theme-dark .map-marker-label-title {
+  color: #e5eefc;
+}
+
+html.theme-dark .map-marker-label-action {
+  color: #7dd3fc;
+}
+
+html.theme-dark .map-marker-label-event {
+  border-color: rgba(45, 212, 191, 0.24);
+  background: rgba(11, 44, 56, 0.94);
+}
+
+html.theme-dark .map-marker-label-event .map-marker-label-action {
+  color: #5eead4;
+}
+
+html.theme-dark .map-marker-label-event::after {
+  border-top-color: rgba(11, 44, 56, 0.94);
 }
 
 .activity-focus-pin {
@@ -1000,6 +1260,176 @@ html.theme-dark .ant-table-placeholder > td {
   border-radius: 9999px;
   border: 2px solid rgba(236, 254, 255, 0.96);
   background: radial-gradient(circle at center, #ffffff 0 34%, #c8f0f5 35% 100%);
+}
+
+.smartmaps-admin-panel.ant-card {
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.05);
+}
+
+.smartmaps-admin-panel-soft-blue.ant-card {
+  background: color-mix(in srgb, var(--surface-blue) 72%, var(--surface-strong)) !important;
+}
+
+.smartmaps-admin-panel-soft-green.ant-card {
+  background: color-mix(in srgb, var(--surface-green) 74%, var(--surface-strong)) !important;
+}
+
+.smartmaps-admin-panel-soft-amber.ant-card {
+  background: color-mix(in srgb, var(--surface-amber) 72%, var(--surface-strong)) !important;
+}
+
+.smartmaps-admin-metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 12px 14px;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.04);
+}
+
+.smartmaps-admin-metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.smartmaps-admin-metric-value {
+  display: inline-flex;
+  min-width: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.smartmaps-admin-metric-slate {
+  background: color-mix(in srgb, var(--surface-muted) 78%, var(--surface-strong));
+}
+
+.smartmaps-admin-metric-slate .smartmaps-admin-metric-value {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.smartmaps-admin-metric-green {
+  background: color-mix(in srgb, var(--surface-green) 76%, var(--surface-strong));
+}
+
+.smartmaps-admin-metric-green .smartmaps-admin-metric-value {
+  background: #059669;
+  color: #ffffff;
+}
+
+.smartmaps-admin-metric-blue {
+  background: color-mix(in srgb, var(--surface-blue) 76%, var(--surface-strong));
+}
+
+.smartmaps-admin-metric-blue .smartmaps-admin-metric-value {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.smartmaps-admin-metric-amber {
+  background: color-mix(in srgb, var(--surface-amber) 76%, var(--surface-strong));
+}
+
+.smartmaps-admin-metric-amber .smartmaps-admin-metric-value {
+  background: #d97706;
+  color: #fff7ed;
+}
+
+.smartmaps-admin-tab-counter {
+  display: inline-flex;
+  min-width: 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--surface-blue) 62%, var(--surface-strong));
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.smartmaps-admin-tabs .ant-tabs-nav {
+  margin-bottom: 14px !important;
+}
+
+.smartmaps-admin-tabs .ant-tabs-tab {
+  border-radius: 999px !important;
+  padding: 8px 12px !important;
+}
+
+.smartmaps-admin-tabs .ant-tabs-tab-active {
+  background: color-mix(in srgb, var(--surface-blue) 76%, var(--surface-strong));
+}
+
+html.theme-dark .smartmaps-admin-panel.ant-card {
+  box-shadow: 0 16px 34px rgba(4, 9, 20, 0.28) !important;
+}
+
+html.theme-dark .smartmaps-admin-metric {
+  border-color: var(--border-strong);
+  background: rgba(22, 33, 54, 0.94);
+  box-shadow: 0 12px 24px rgba(4, 9, 20, 0.24);
+}
+
+html.theme-dark .smartmaps-admin-metric-slate .smartmaps-admin-metric-value {
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
+html.theme-dark .smartmaps-admin-metric-green .smartmaps-admin-metric-value {
+  background: #4ade80;
+  color: #063b2c;
+}
+
+html.theme-dark .smartmaps-admin-metric-blue .smartmaps-admin-metric-value {
+  background: #7db2ff;
+  color: #10254a;
+}
+
+html.theme-dark .smartmaps-admin-metric-amber .smartmaps-admin-metric-value {
+  background: #facc15;
+  color: #422006;
+}
+
+html.theme-dark .smartmaps-admin-tab-counter {
+  background: rgba(41, 91, 171, 0.58);
+  color: #dbeafe;
+}
+
+html.theme-dark .smartmaps-admin-tabs .ant-tabs-tab-active {
+  background: rgba(27, 60, 122, 0.52);
+}
+
+.smartmaps-admin-modal .ant-modal-content {
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  box-shadow: 0 24px 54px rgba(2, 6, 23, 0.18);
+}
+
+.smartmaps-admin-modal .ant-modal-header,
+.smartmaps-admin-modal .ant-modal-footer {
+  border-color: var(--border);
+  background: transparent;
+}
+
+html.theme-dark .smartmaps-admin-modal .ant-modal-content {
+  box-shadow: 0 26px 54px rgba(3, 7, 18, 0.34);
 }
 
 @keyframes labPinPulse {
@@ -1154,12 +1584,15 @@ html.theme-dark .ant-table-placeholder > td {
 .smartmaps-clerk .cl-page {
   width: 100%;
   max-width: none;
+  overflow: visible;
 }
 
 .smartmaps-clerk {
   width: 100%;
   max-width: 440px;
   margin: 0 auto;
+  padding-inline: 6px;
+  overflow: visible;
 }
 
 .smartmaps-clerk .cl-cardBox,
@@ -1175,6 +1608,7 @@ html.theme-dark .ant-table-placeholder > td {
   width: 100%;
   max-width: 440px;
   margin: 0 auto;
+  overflow: visible;
 }
 
 .smartmaps-clerk .cl-main {
@@ -1201,6 +1635,7 @@ html.theme-dark .ant-table-placeholder > td {
 .smartmaps-clerk .cl-formButtonPrimary,
 .smartmaps-clerk .cl-formFieldInput {
   width: 100%;
+  box-sizing: border-box;
 }
 
 .smartmaps-clerk .cl-formButtonPrimary {
@@ -1208,10 +1643,12 @@ html.theme-dark .ant-table-placeholder > td {
   border-radius: 14px;
   background: #2563eb;
   box-shadow: none;
+  overflow: visible;
 }
 
 .smartmaps-clerk .cl-formFieldRow {
   display: block;
+  overflow: visible;
 }
 
 .smartmaps-clerk .cl-formField {
@@ -1223,6 +1660,7 @@ html.theme-dark .ant-table-placeholder > td {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow: visible;
 }
 
 .smartmaps-clerk .cl-formButtonPrimary:hover {

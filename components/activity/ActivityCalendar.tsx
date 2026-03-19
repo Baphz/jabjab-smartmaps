@@ -43,33 +43,38 @@ type ActivityCalendarProps = {
   actionLabel?: string;
   onSelectLab?: (labId: string) => void;
   onSelectActivityLocation?: (item: ActivitySourceItem) => void;
+  kindLabels?: Partial<Record<ActivityKind, string>>;
+  weekdayLabels?: readonly string[];
+  globalArticleScopeLabel?: string;
+  globalAgendaScopeLabel?: string;
+  todayLabel?: string;
+  detailTitlePrefix?: string;
+  closeLabel?: string;
+  emptyDayLabel?: string;
+  readArticleLabel?: string;
+  viewMapLabel?: string;
 };
 
 const KIND_STYLES: Record<
   ActivityKind,
   {
-    cell: string;
     pill: string;
     dot: string;
   }
 > = {
   lab_event: {
-    cell: "border-emerald-200 bg-emerald-50 text-emerald-700",
     pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-event",
     dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-event",
   },
   article: {
-    cell: "border-sky-200 bg-sky-50 text-sky-700",
     pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-article",
     dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-article",
   },
   libur_nasional: {
-    cell: "border-red-200 bg-red-50 text-red-700",
     pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-holiday",
     dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-holiday",
   },
   cuti_bersama: {
-    cell: "border-orange-200 bg-orange-50 text-orange-700",
     pill: "smartmaps-calendar-kind-pill smartmaps-calendar-kind-pill-leave",
     dot: "smartmaps-calendar-kind-dot smartmaps-calendar-kind-dot-leave",
   },
@@ -134,6 +139,16 @@ export default function ActivityCalendar({
   actionLabel,
   onSelectLab,
   onSelectActivityLocation,
+  kindLabels,
+  weekdayLabels = CALENDAR_WEEKDAY_LABELS,
+  globalArticleScopeLabel,
+  globalAgendaScopeLabel,
+  todayLabel = "Hari Ini",
+  detailTitlePrefix = "Detail",
+  closeLabel = "Tutup",
+  emptyDayLabel = "Belum ada item.",
+  readArticleLabel = "Baca artikel",
+  viewMapLabel = "Lihat di peta",
 }: ActivityCalendarProps) {
   const sortedItems = useMemo(
     () =>
@@ -189,6 +204,22 @@ export default function ActivityCalendar({
       villageName: item.villageName,
       villageType: item.villageType,
     });
+  }
+
+  function getDisplayKindLabel(kind: ActivityKind) {
+    return kindLabels?.[kind] ?? getActivityKindLabel(kind);
+  }
+
+  function getDisplayScopeLabel(item: ActivitySourceItem) {
+    if (item.kind === "article" && item.isGlobal && globalArticleScopeLabel) {
+      return globalArticleScopeLabel;
+    }
+
+    if (item.kind === "lab_event" && item.isGlobal && globalAgendaScopeLabel) {
+      return globalAgendaScopeLabel;
+    }
+
+    return getActivityScopeLabel(item);
   }
 
   function moveMonth(direction: number) {
@@ -270,7 +301,7 @@ export default function ActivityCalendar({
         <div className={`grid gap-2 ${compact ? "grid-cols-2 sm:grid-cols-4" : "sm:grid-cols-4"}`}>
           <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-2.5 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Agenda Lab
+              {getDisplayKindLabel("lab_event")}
             </div>
             <div className="mt-1 text-base font-semibold tracking-tight text-slate-900">
               {counts.lab_event}
@@ -279,7 +310,7 @@ export default function ActivityCalendar({
 
           <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-2.5 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Artikel
+              {getDisplayKindLabel("article")}
             </div>
             <div className="mt-1 text-base font-semibold tracking-tight text-slate-900">
               {counts.article}
@@ -288,7 +319,7 @@ export default function ActivityCalendar({
 
           <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-2.5 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Libur Nasional
+              {getDisplayKindLabel("libur_nasional")}
             </div>
             <div className="mt-1 text-base font-semibold tracking-tight text-slate-900">
               {counts.libur_nasional}
@@ -297,7 +328,7 @@ export default function ActivityCalendar({
 
           <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-2.5 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Cuti Bersama
+              {getDisplayKindLabel("cuti_bersama")}
             </div>
             <div className="mt-1 text-base font-semibold tracking-tight text-slate-900">
               {counts.cuti_bersama}
@@ -328,7 +359,7 @@ export default function ActivityCalendar({
                 });
               }}
             >
-              Hari Ini
+              {todayLabel}
             </Button>
           </Space>
         </div>
@@ -342,7 +373,7 @@ export default function ActivityCalendar({
               <span
                 className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${KIND_STYLES[kind].dot}`}
               />
-              {getActivityKindLabel(kind)}
+              {getDisplayKindLabel(kind)}
             </span>
           ))}
         </div>
@@ -350,7 +381,7 @@ export default function ActivityCalendar({
         <div className={`${compact ? "mt-2" : "mt-2.5"}`}>
           <div className={compact ? "w-full" : "min-w-[720px]"}>
             <div className={`grid grid-cols-7 ${compact ? "gap-1.5" : "gap-2"}`}>
-              {CALENDAR_WEEKDAY_LABELS.map((label) => (
+              {weekdayLabels.map((label) => (
                 <div
                   key={label}
                   className={`text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 ${compact ? "px-1.5 py-1" : "px-2 py-1.5"}`}
@@ -414,7 +445,7 @@ export default function ActivityCalendar({
         className="smartmaps-activity-modal"
         open={isDetailOpen}
         onCancel={() => setIsDetailOpen(false)}
-        title={`Detail ${formatFullDate(selectedDateKey)}`}
+        title={`${detailTitlePrefix} ${formatFullDate(selectedDateKey)}`}
         width={620}
         closeIcon={<CloseOutlined className="text-slate-400" />}
         styles={{
@@ -454,7 +485,7 @@ export default function ActivityCalendar({
             </Button>
           ) : null,
           <Button key="close" type="primary" onClick={() => setIsDetailOpen(false)}>
-            Tutup
+            {closeLabel}
           </Button>,
         ].filter(Boolean)}
       >
@@ -462,7 +493,7 @@ export default function ActivityCalendar({
           {selectedItems.length === 0 ? (
             <div className="smartmaps-empty-panel rounded-[20px] px-4 py-8">
               <Empty
-                description="Belum ada item."
+                description={emptyDayLabel}
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               />
             </div>
@@ -480,11 +511,12 @@ export default function ActivityCalendar({
                   <Space orientation="vertical" size={6} style={{ width: "100%" }}>
                     <div className="flex flex-wrap gap-1.5">
                       <span
-                        className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${KIND_STYLES[item.kind].cell}`}
+                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 ${KIND_STYLES[item.kind].pill}`}
                       >
-                        {getActivityKindLabel(item.kind)}
+                        <span className={KIND_STYLES[item.kind].dot} />
+                        {getDisplayKindLabel(item.kind)}
                       </span>
-                      {getActivityScopeLabel(item) ? (
+                      {getDisplayScopeLabel(item) ? (
                         <span
                           className="inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium text-slate-600"
                           style={{
@@ -492,7 +524,7 @@ export default function ActivityCalendar({
                             background: "var(--surface-strong)",
                           }}
                         >
-                          {getActivityScopeLabel(item)}
+                          {getDisplayScopeLabel(item)}
                         </span>
                       ) : null}
                     </div>
@@ -564,7 +596,7 @@ export default function ActivityCalendar({
                         href={`/artikel/${item.articleSlug}`}
                         style={{ paddingInline: 0, height: "auto" }}
                       >
-                        Baca artikel
+                        {readArticleLabel}
                       </Button>
                     ) : null}
 
@@ -583,7 +615,7 @@ export default function ActivityCalendar({
                           setIsDetailOpen(false);
                         }}
                       >
-                        Lihat di peta
+                        {viewMapLabel}
                       </Button>
                     ) : null}
                   </Space>

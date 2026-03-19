@@ -5,7 +5,7 @@ import {
   GlobalOutlined,
   PhoneOutlined,
 } from "@ant-design/icons";
-import { Card, Descriptions, Drawer, Empty, Grid, Space, Typography } from "antd";
+import { Card, Drawer, Empty, Grid, Typography } from "antd";
 import Image from "next/image";
 import L from "leaflet";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -25,6 +25,7 @@ import {
   type LabCityTypeValue,
   type LabVillageTypeValue,
 } from "@/lib/lab-address";
+import { siteContent } from "@/lib/site-content";
 import "leaflet/dist/leaflet.css";
 
 const { Paragraph: TypographyParagraph } = Typography;
@@ -63,6 +64,7 @@ export type SmartMapInnerProps = {
   activeLabIds?: string[];
   focusedLabIds?: string[];
   mutedLabIds?: string[];
+  bestMatchLabId?: string | null;
   focusedActivity?: ActivitySourceItem | null;
   selectedLabId?: string | null;
   onSelectLab?: (labId: string | null) => void;
@@ -214,12 +216,29 @@ function normalizeWebsiteUrl(value: string | null): string | null {
   return `https://${trimmed}`;
 }
 
+function formatWebsiteDisplay(value: string | null): string | null {
+  const normalized = normalizeWebsiteUrl(value);
+  if (!normalized) return null;
+
+  try {
+    const parsed = new URL(normalized);
+    const pathname =
+      parsed.pathname && parsed.pathname !== "/"
+        ? parsed.pathname.replace(/\/$/, "")
+        : "";
+    return `${parsed.hostname}${pathname}`;
+  } catch {
+    return value?.trim() || null;
+  }
+}
+
 function createLabIcon(
   photoValue: string,
   selected: boolean,
   highlighted: boolean,
   active: boolean,
-  muted: boolean
+  muted: boolean,
+  bestMatch: boolean
 ) {
   const photoUrl = resolvePhotoUrl(photoValue);
   const style = photoUrl ? `background-image:url('${photoUrl}')` : "";
@@ -228,6 +247,7 @@ function createLabIcon(
     selected ? "lab-pin-selected" : "",
     active ? "lab-pin-active" : "",
     highlighted ? "lab-pin-search" : "",
+    bestMatch ? "lab-pin-best-match" : "",
     muted ? "lab-pin-muted" : "",
   ]
     .filter(Boolean)
@@ -247,7 +267,9 @@ function createLabIcon(
 }
 
 function createActivityFocusIcon(label?: string | null) {
-  const safeLabel = String(label ?? "Lokasi Agenda")
+  const safeLabel = String(
+    label ?? siteContent.publicHome.map.defaultAgendaLocationLabel
+  )
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
@@ -264,6 +286,38 @@ function createActivityFocusIcon(label?: string | null) {
     `,
     iconSize: [148, 82],
     iconAnchor: [74, 68],
+  });
+}
+
+function escapeMapLabel(value: string) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function createMarkerLabelIcon(
+  title: string,
+  actionLabel: string,
+  tone: "selected" | "event" = "selected"
+) {
+  const safeTitle = escapeMapLabel(title);
+  const safeAction = escapeMapLabel(actionLabel);
+  const toneClass =
+    tone === "event" ? "map-marker-label map-marker-label-event" : "map-marker-label map-marker-label-selected";
+
+  return L.divIcon({
+    className: "",
+    html: `
+      <div class="map-marker-label-wrap">
+        <div class="${toneClass}">
+          <div class="map-marker-label-title">${safeTitle}</div>
+          <div class="map-marker-label-action">${safeAction}</div>
+        </div>
+      </div>
+    `,
+    iconSize: [236, 144],
+    iconAnchor: [118, 144],
   });
 }
 
@@ -336,11 +390,43 @@ function DetailSection({
         background: "var(--surface)",
       }}
     >
-      <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+      <div className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-slate-500">
         {eyebrow}
       </div>
       {children}
     </Card>
+  );
+}
+
+function DetailInfoRow({
+  icon,
+  label,
+  children,
+}: {
+  icon: ReactNode;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className="flex items-start gap-2.5 rounded-[18px] border px-3 py-2.5"
+      style={{
+        borderColor: "var(--border)",
+        background: "var(--surface-strong)",
+      }}
+    >
+      <div className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-[15px] text-slate-500">
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+          {label}
+        </div>
+        <div className="mt-1 break-words text-[13px] font-medium leading-5 text-slate-900">
+          {children}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -349,13 +435,15 @@ function StructurePersonCard({
   name,
   role,
   roleClassName,
+  emptyLabel = "Belum diisi",
 }: {
   photoUrl: string;
   name: string | null;
   role: string;
   roleClassName: string;
+  emptyLabel?: string;
 }) {
-  const displayName = name?.trim() || "Belum diisi";
+  const displayName = name?.trim() || emptyLabel;
 
   return (
     <div className="rounded-[18px] border border-slate-200 bg-slate-50/80 p-4">
@@ -398,10 +486,12 @@ export default function SmartMapInner({
   activeLabIds = [],
   focusedLabIds = [],
   mutedLabIds = [],
+  bestMatchLabId = null,
   focusedActivity = null,
   selectedLabId,
   onSelectLab,
 }: SmartMapInnerProps) {
+  const mapContent = siteContent.publicHome.map;
   const { mode } = useAppTheme();
   const [isMapReady, setIsMapReady] = useState(false);
   const [internalSelectedLabId, setInternalSelectedLabId] = useState<string | null>(
@@ -476,6 +566,16 @@ export default function SmartMapInner({
         : [],
     [selectedLab]
   );
+  const selectedLabAddressLead = selectedLab
+    ? selectedLab.addressDetail?.trim() || selectedLab.address
+    : "";
+  const selectedLabNavigationUrl = selectedLab
+    ? `https://www.google.com/maps/search/?api=1&query=${selectedLab.latitude},${selectedLab.longitude}`
+    : null;
+  const focusedActivityNavigationUrl =
+    focusedActivity && hasFocusedActivityCoordinates
+      ? `https://www.google.com/maps/search/?api=1&query=${focusedActivity.eventLatitude},${focusedActivity.eventLongitude}`
+      : null;
 
   function handleSelectLab(nextLabId: string | null) {
     if (!isControlled) {
@@ -485,8 +585,43 @@ export default function SmartMapInner({
     onSelectLab?.(nextLabId);
   }
 
+  function openExternalUrl(url: string | null) {
+    if (!url) return;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
   const detailContent = selectedLab ? (
     <div className="flex flex-col gap-3">
+      <DetailSection eyebrow={mapContent.labDetail.photoSectionTitle}>
+        <PhotoFrame
+          src={resolvePhotoUrl(selectedLab.labPhotoUrl)}
+          alt={selectedLab.name}
+          width="100%"
+          height={240}
+          rounded={18}
+        />
+      </DetailSection>
+
+      <DetailSection eyebrow={mapContent.labDetail.structureSectionTitle}>
+        <div className="grid gap-3 md:grid-cols-2">
+          <StructurePersonCard
+            photoUrl={resolvePhotoUrl(selectedLab.head1PhotoUrl)}
+            name={selectedLab.head1Name}
+            role={mapContent.labDetail.headRoleLabel}
+            roleClassName="smartmaps-role-pill smartmaps-role-pill-head"
+            emptyLabel={mapContent.labDetail.emptyValueLabel}
+          />
+
+          <StructurePersonCard
+            photoUrl={resolvePhotoUrl(selectedLab.head2PhotoUrl)}
+            name={selectedLab.head2Name}
+            role={mapContent.labDetail.adminRoleLabel}
+            roleClassName="smartmaps-role-pill smartmaps-role-pill-tu"
+            emptyLabel={mapContent.labDetail.emptyValueLabel}
+          />
+        </div>
+      </DetailSection>
+
       <div
         className="rounded-3xl border p-4"
         style={{
@@ -494,149 +629,123 @@ export default function SmartMapInner({
           background: "var(--surface-muted)",
         }}
       >
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <PhotoFrame
-            src={resolvePhotoUrl(selectedLab.labPhotoUrl)}
-            alt={selectedLab.name}
-            width={104}
-            height={104}
-            rounded={20}
-          />
-
-          <div className="min-w-0 flex-1">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Profil Laboratorium
-            </div>
-            <div
-              className="mt-1 overflow-hidden text-[28px] font-semibold leading-[1.15] tracking-tight text-slate-950"
-              style={{
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical",
-              }}
-              title={selectedLab.name}
-            >
-              {selectedLab.name}
-            </div>
+        <div className="min-w-0">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            {mapContent.labDetail.profileEyebrow}
+          </div>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {selectedLab.types.map((type) => (
+              <span
+                key={type.id}
+                className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${getLabTypePillClass(type.name)}`}
+              >
+                {type.name}
+              </span>
+            ))}
+          </div>
+          <div
+            className="mt-2 overflow-hidden text-[17px] font-semibold leading-[1.28] tracking-tight text-slate-950 sm:text-[18px]"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+            }}
+            title={selectedLab.name}
+          >
+            {selectedLab.name}
+          </div>
+          {selectedLabAddressLead ? (
             <TypographyParagraph
-              ellipsis={{ rows: 3 }}
-              style={{ marginTop: 8, marginBottom: 10, lineHeight: 1.55 }}
+              ellipsis={{ rows: 1 }}
+              style={{
+                marginTop: 8,
+                marginBottom: 0,
+                fontSize: 13,
+                lineHeight: 1.5,
+                color: "var(--text-muted)",
+              }}
             >
-              {selectedLab.address}
+              {selectedLabAddressLead}
             </TypographyParagraph>
-            {selectedLabAreaParts.length > 0 ? (
-              <div className="mb-2 flex flex-wrap gap-1.5">
-                {selectedLabAreaParts.map((part) => (
-                  <span
-                    key={part}
-                    className="inline-flex rounded-full border border-slate-200 bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-600"
-                  >
-                    {part}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-            <div className="flex flex-wrap gap-2">
-              {selectedLab.types.map((type) => (
+          ) : null}
+          {selectedLabAreaParts.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {selectedLabAreaParts.map((part) => (
                 <span
-                  key={type.id}
-                  className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${getLabTypePillClass(type.name)}`}
+                  key={part}
+                  className="inline-flex rounded-full border border-slate-200 bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-600"
                 >
-                  {type.name}
+                  {part}
                 </span>
               ))}
             </div>
-          </div>
+          ) : null}
         </div>
       </div>
 
-      <DetailSection eyebrow="Kontak & Lokasi">
-        <Descriptions
-          size="small"
-          column={1}
-          items={[
-            {
-              key: "address",
-              label: (
-                <Space size={4}>
-                  <EnvironmentOutlined />
-                  <span>Alamat</span>
-                </Space>
-              ),
-              children: selectedLab.address || "-",
-            },
-            {
-              key: "phone",
-              label: (
-                <Space size={4}>
-                  <PhoneOutlined />
-                  <span>Telepon</span>
-                </Space>
-              ),
-              children: selectedLab.phone ? (
-                <a href={`tel:${selectedLab.phone.replace(/\s+/g, "")}`}>
-                  {selectedLab.phone}
-                </a>
-              ) : (
-                "-"
-              ),
-            },
-            {
-              key: "website",
-              label: (
-                <Space size={4}>
-                  <GlobalOutlined />
-                  <span>Website</span>
-                </Space>
-              ),
-              children: selectedLab.websiteUrl ? (
-                <a
-                  href={normalizeWebsiteUrl(selectedLab.websiteUrl) ?? "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {selectedLab.websiteUrl}
-                </a>
-              ) : (
-                "-"
-              ),
-            },
-            {
-              key: "coordinate",
-              label: (
-                "Koordinat"
-              ),
-              children: `${selectedLab.latitude}, ${selectedLab.longitude}`,
-            },
-          ]}
-        />
-      </DetailSection>
+      <DetailSection eyebrow={mapContent.labDetail.contactSectionTitle}>
+        <div className="flex flex-col gap-2">
+          <DetailInfoRow
+            icon={<PhoneOutlined />}
+            label={mapContent.labDetail.phoneLabel}
+          >
+            {selectedLab.phone ? (
+              <a
+                href={`tel:${selectedLab.phone.replace(/\s+/g, "")}`}
+                className="text-slate-900"
+              >
+                {selectedLab.phone}
+              </a>
+            ) : (
+              <span className="font-normal text-slate-500">{mapContent.labDetail.emptyValueLabel}</span>
+            )}
+          </DetailInfoRow>
 
-      <DetailSection eyebrow="Foto Laboratorium">
-        <PhotoFrame
-          src={resolvePhotoUrl(selectedLab.labPhotoUrl)}
-          alt={selectedLab.name}
-          width="100%"
-          height={220}
-          rounded={18}
-        />
-      </DetailSection>
+          <DetailInfoRow
+            icon={<GlobalOutlined />}
+            label={mapContent.labDetail.websiteLabel}
+          >
+            {selectedLab.websiteUrl ? (
+              <a
+                href={normalizeWebsiteUrl(selectedLab.websiteUrl) ?? "#"}
+                target="_blank"
+                rel="noreferrer"
+                className="block break-all text-slate-900"
+                title={normalizeWebsiteUrl(selectedLab.websiteUrl) ?? selectedLab.websiteUrl}
+              >
+                {formatWebsiteDisplay(selectedLab.websiteUrl) ?? selectedLab.websiteUrl}
+              </a>
+            ) : (
+              <span className="font-normal text-slate-500">{mapContent.labDetail.emptyValueLabel}</span>
+            )}
+          </DetailInfoRow>
 
-      <DetailSection eyebrow="Struktur Utama">
-        <div className="grid gap-3 md:grid-cols-2">
-          <StructurePersonCard
-            photoUrl={resolvePhotoUrl(selectedLab.head1PhotoUrl)}
-            name={selectedLab.head1Name}
-            role="Kepala Laboratorium"
-            roleClassName="border-sky-200 bg-sky-50 text-sky-700"
-          />
+          <DetailInfoRow
+            icon={<EnvironmentOutlined />}
+            label={mapContent.labDetail.coordinatesLabel}
+          >
+            <span className="text-slate-900">
+              {selectedLab.latitude}, {selectedLab.longitude}
+            </span>
+          </DetailInfoRow>
 
-          <StructurePersonCard
-            photoUrl={resolvePhotoUrl(selectedLab.head2PhotoUrl)}
-            name={selectedLab.head2Name}
-            role="Kepala Sub Bagian TU"
-            roleClassName="border-slate-200 bg-white text-slate-600"
-          />
+          <DetailInfoRow
+            icon={<EnvironmentOutlined />}
+            label={mapContent.labDetail.locationAccessLabel}
+          >
+            {selectedLabNavigationUrl ? (
+              <a
+                href={selectedLabNavigationUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-slate-900"
+              >
+                {mapContent.labDetail.openMapsLabel}
+              </a>
+            ) : (
+              <span className="font-normal text-slate-500">{mapContent.labDetail.unavailableValueLabel}</span>
+            )}
+          </DetailInfoRow>
         </div>
       </DetailSection>
     </div>
@@ -645,63 +754,32 @@ export default function SmartMapInner({
   return (
     <div className="h-full">
       <div className="relative min-h-0 h-full overflow-hidden rounded-[22px]">
-        <div className="pointer-events-none absolute left-3 top-3 z-500 flex max-w-[calc(100%-24px)] flex-wrap gap-2">
-          <div className="pointer-events-auto rounded-[18px] border border-slate-200 bg-white/92 px-3.5 py-2.5 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Sebaran Aktif
-            </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-xl font-semibold tracking-tight text-slate-950">
-                {labs.length}
-              </span>
-              <span className="text-xs text-slate-600">titik laboratorium</span>
-            </div>
-          </div>
-
-        </div>
-
         <div className="pointer-events-none absolute bottom-3 left-3 z-500">
           <div className="rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
             <span className="inline-flex items-center gap-3">
               <span className="inline-flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                Lokasi laboratorium
+                {mapContent.legend.labLocation}
               </span>
               <span className="inline-flex items-center gap-2">
                 <span className="map-legend-pulse map-legend-pulse-active" />
-                Agenda aktif
+                {mapContent.legend.activeAgenda}
               </span>
               {highlightedLabIds.length > 0 ? (
                 <span className="inline-flex items-center gap-2">
                   <span className="map-legend-pulse map-legend-pulse-search" />
-                  Hasil pencarian
+                  {mapContent.legend.searchResults}
                 </span>
               ) : null}
               {hasFocusedActivityCoordinates ? (
                 <span className="inline-flex items-center gap-2">
                   <span className="map-legend-pulse map-legend-pulse-event" />
-                  Lokasi agenda
+                  {mapContent.legend.agendaLocation}
                 </span>
               ) : null}
             </span>
           </div>
         </div>
-
-        {hasFocusedActivityCoordinates && focusedActivity ? (
-          <div className="pointer-events-none absolute left-3 top-[92px] z-500 max-w-[320px]">
-            <div className="pointer-events-auto rounded-2xl border border-emerald-200 bg-white/94 px-3.5 py-2.5 text-[12px] text-slate-600 shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                Agenda Dipilih
-              </div>
-              <div className="mt-1 font-semibold text-slate-900">{focusedActivity.title}</div>
-              {focusedActivity.locationName ? (
-                <div className="mt-1 text-[11.5px] text-slate-500">
-                  {focusedActivity.locationName}
-                </div>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
 
         <div className="pointer-events-none absolute bottom-3 right-3 z-500">
           <MapAttributionBadge />
@@ -738,12 +816,49 @@ export default function SmartMapInner({
             />
 
             {hasFocusedActivityCoordinates && focusedActivity ? (
+              <>
+                <Marker
+                  key={`activity-focus:${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`}
+                  position={[focusedActivity.eventLatitude!, focusedActivity.eventLongitude!]}
+                  icon={createActivityFocusIcon(
+                    focusedActivity.locationName || mapContent.defaultAgendaLocationLabel
+                  )}
+                  zIndexOffset={1200}
+                  eventHandlers={{
+                    click: () => openExternalUrl(focusedActivityNavigationUrl),
+                  }}
+                />
+                <Marker
+                  key={`activity-focus-label:${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`}
+                  position={[focusedActivity.eventLatitude!, focusedActivity.eventLongitude!]}
+                  icon={createMarkerLabelIcon(
+                    focusedActivity.locationName ||
+                      focusedActivity.title ||
+                      mapContent.defaultAgendaLocationLabel,
+                    mapContent.labDetail.openMapsLabel,
+                    "event"
+                  )}
+                  zIndexOffset={1700}
+                  eventHandlers={{
+                    click: () => openExternalUrl(focusedActivityNavigationUrl),
+                  }}
+                />
+              </>
+            ) : null}
+
+            {selectedLab && !hasFocusedActivityCoordinates ? (
               <Marker
-                key={`activity-focus:${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`}
-                position={[focusedActivity.eventLatitude!, focusedActivity.eventLongitude!]}
-                icon={createActivityFocusIcon(
-                  focusedActivity.locationName || "Lokasi Agenda"
+                key={`selected-lab-label:${selectedLab.id}:${selectedLab.latitude}:${selectedLab.longitude}`}
+                position={[selectedLab.latitude, selectedLab.longitude]}
+                icon={createMarkerLabelIcon(
+                  selectedLab.name,
+                  mapContent.labDetail.openMapsLabel,
+                  "selected"
                 )}
+                zIndexOffset={1600}
+                eventHandlers={{
+                  click: () => openExternalUrl(selectedLabNavigationUrl),
+                }}
               />
             ) : null}
 
@@ -752,18 +867,32 @@ export default function SmartMapInner({
               const isHighlighted = highlightedLabIdSet.has(lab.id);
               const isActive = activeLabIdSet.has(lab.id);
               const isMuted = mutedLabIdSet.has(lab.id);
+              const isBestMatch = bestMatchLabId === lab.id;
+              const zIndexOffset = isSelected
+                ? 960
+                : isBestMatch
+                  ? 760
+                  : isHighlighted
+                    ? 640
+                    : isActive
+                      ? 520
+                      : isMuted
+                        ? -120
+                        : 0;
 
               return (
                 <Marker
-                  key={`${lab.id}:${isSelected ? "selected" : "idle"}:${isHighlighted ? "search" : "no-search"}:${isActive ? "active" : "no-active"}:${isMuted ? "muted" : "normal"}`}
+                  key={`${lab.id}:${isSelected ? "selected" : "idle"}:${isHighlighted ? "search" : "no-search"}:${isBestMatch ? "best" : "regular"}:${isActive ? "active" : "no-active"}:${isMuted ? "muted" : "normal"}`}
                   position={[lab.latitude, lab.longitude]}
                   icon={createLabIcon(
                     lab.labPhotoUrl,
                     isSelected,
                     isHighlighted,
                     isActive,
-                    isMuted
+                    isMuted,
+                    isBestMatch
                   )}
+                  zIndexOffset={zIndexOffset}
                   eventHandlers={{
                     click: () => handleSelectLab(lab.id),
                   }}
@@ -780,7 +909,7 @@ export default function SmartMapInner({
         <Drawer
           open={Boolean(selectedLab)}
           onClose={() => handleSelectLab(null)}
-          title="Detail Laboratorium"
+          title={mapContent.detailDrawerTitle}
           placement={screens.lg ? "left" : "bottom"}
           size={screens.lg ? 430 : "72vh"}
           mask={!screens.lg}

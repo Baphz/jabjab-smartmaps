@@ -19,6 +19,8 @@ type AppSettingsFormValues = {
   regionLabel: string;
   organizationName: string;
   footerTagline: string;
+  publicHomeTitle: string;
+  publicMapTitle: string;
 };
 
 type Props = {
@@ -42,6 +44,8 @@ export default function AdminAppSettingsManager({ branding }: Props) {
     regionLabel: branding.regionLabel,
     organizationName: branding.organizationName,
     footerTagline: branding.footerTagline,
+    publicHomeTitle: branding.publicHomeTitle,
+    publicMapTitle: branding.publicMapTitle,
   };
 
   const openEditor = () => {
@@ -136,6 +140,18 @@ export default function AdminAppSettingsManager({ branding }: Props) {
                 </div>
                 <div className="mt-1 text-sm font-semibold text-slate-950">{branding.footerTagline}</div>
               </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Judul Beranda
+                </div>
+                <div className="mt-1 text-sm font-semibold text-slate-950">{branding.publicHomeTitle}</div>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Judul Peta
+                </div>
+                <div className="mt-1 text-sm font-semibold text-slate-950">{branding.publicMapTitle}</div>
+              </div>
             </div>
           </div>
 
@@ -198,6 +214,14 @@ export default function AdminAppSettingsManager({ branding }: Props) {
 
             <FormItem label="Tagline footer" name="footerTagline">
               <Input placeholder="Smart Maps • Direktori laboratorium kesehatan daerah" />
+            </FormItem>
+
+            <FormItem label="Judul beranda" name="publicHomeTitle">
+              <Input placeholder="Peta dan Agenda Laboratorium" />
+            </FormItem>
+
+            <FormItem label="Judul peta" name="publicMapTitle">
+              <Input placeholder="Sebaran Laboratorium" />
             </FormItem>
           </div>
 

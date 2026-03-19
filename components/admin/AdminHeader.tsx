@@ -45,10 +45,10 @@ export default function AdminHeader({
   return (
     <Card
       variant="borderless"
-      className="rounded-[22px] border border-sky-100 bg-sky-50/70 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
+      className="smartmaps-admin-panel smartmaps-admin-panel-soft-blue"
       styles={{ body: { padding: 14 } }}
     >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <Space wrap size={[6, 6]}>
             <Tag color={isAdmin ? "blue" : "green"} variant="filled">
@@ -62,8 +62,8 @@ export default function AdminHeader({
           </Space>
 
           <div className="mt-2">
-            {logoUrl ? (
-              <div className="mb-2 flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {logoUrl ? (
                 <div
                   className="smartmaps-logo-frame relative h-10 w-10 overflow-hidden rounded-xl"
                 >
@@ -76,21 +76,23 @@ export default function AdminHeader({
                     unoptimized
                   />
                 </div>
+              ) : null}
+              <div className="min-w-0">
                 {appName ? (
                   <TypographyText style={{ fontSize: 12 }}>
                     {appName}
                   </TypographyText>
                 ) : null}
+                <TypographyTitle level={3} style={{ margin: 0 }}>
+                  Dashboard
+                </TypographyTitle>
               </div>
-            ) : null}
-            <TypographyTitle level={3} style={{ margin: 0 }}>
-              Dashboard
-            </TypographyTitle>
+            </div>
           </div>
         </div>
 
         <Space wrap size={[8, 8]} className="justify-end">
-          <ThemeModeToggle />
+          <ThemeModeToggle className="smartmaps-header-toggle-button" />
           <Button size="small" href="/" icon={<HomeOutlined />}>
             Peta
           </Button>

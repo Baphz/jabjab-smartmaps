@@ -253,7 +253,11 @@ export default function AdminHolidaysManager({ holidays }: Props) {
       {contextHolder}
 
       <Space orientation="vertical" size={20} style={{ width: "100%" }}>
-        <Card variant="borderless">
+        <Card
+          variant="borderless"
+          className="smartmaps-admin-panel"
+          styles={{ body: { padding: 14 } }}
+        >
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <TypographyTitle level={4} style={{ margin: 0 }}>
               Hari Libur
@@ -281,6 +285,7 @@ export default function AdminHolidaysManager({ holidays }: Props) {
       </Space>
 
       <Modal
+        className="smartmaps-admin-modal"
         open={isEditorOpen}
         onCancel={closeEditor}
         title={editingId ? "Edit Hari Libur" : "Tambah Hari Libur"}
