@@ -41,6 +41,7 @@ function resolveExtension(fileName: string, mimeType: string) {
     return extension.toLowerCase();
   }
 
+  if (mimeType === "application/pdf") return ".pdf";
   if (mimeType === "image/png") return ".png";
   if (mimeType === "image/webp") return ".webp";
   if (mimeType === "image/gif") return ".gif";
@@ -93,7 +94,7 @@ async function ensureBucketExists() {
   const created = await client.storage.createBucket(config.bucket, {
     public: true,
     fileSizeLimit: String(config.maxBytes),
-    allowedMimeTypes: ["image/*"],
+    allowedMimeTypes: ["image/*", "application/pdf"],
   });
 
   if (created.error) {
@@ -158,6 +159,52 @@ export async function uploadImageToSupabaseStorage(args: {
 
   if (!args.mimeType.startsWith("image/")) {
     throw new Error("Hanya file gambar yang boleh di-upload.");
+  }
+
+  if (args.fileBuffer.byteLength > config.maxBytes) {
+    throw new Error(
+      `Ukuran file melebihi batas ${Math.round(config.maxBytes / 1024 / 1024)}MB.`
+    );
+  }
+
+  await ensureBucketExists();
+  const client = createSupabaseAdminClient();
+  const objectPath = buildObjectPath({
+    labId: args.labId,
+    bucket: args.bucket,
+    kind: args.kind,
+    originalFileName: args.originalFileName,
+    mimeType: args.mimeType,
+  });
+
+  const uploaded = await client.storage.from(config.bucket).upload(objectPath, args.fileBuffer, {
+    contentType: args.mimeType,
+    cacheControl: "3600",
+    upsert: false,
+  });
+
+  if (uploaded.error) {
+    throw new Error(uploaded.error.message);
+  }
+
+  return {
+    path: objectPath,
+    publicUrl: buildSupabasePublicObjectUrl(objectPath),
+  } satisfies UploadedSupabaseFile;
+}
+
+export async function uploadFileToSupabaseStorage(args: {
+  fileBuffer: Buffer;
+  originalFileName: string;
+  mimeType: string;
+  kind: string;
+  labId?: string | null;
+  bucket: string;
+}) {
+  const config = getSupabaseStorageConfig();
+
+  if (args.mimeType !== "application/pdf") {
+    throw new Error("Hanya file PDF yang boleh di-upload.");
   }
 
   if (args.fileBuffer.byteLength > config.maxBytes) {

@@ -4,14 +4,19 @@ import {
   AlignCenterOutlined,
   AlignLeftOutlined,
   AlignRightOutlined,
+  BgColorsOutlined,
   BoldOutlined,
   ClearOutlined,
+  DeleteOutlined,
   EditOutlined,
+  FilePdfOutlined,
   ItalicOutlined,
   LinkOutlined,
   OrderedListOutlined,
   PictureOutlined,
+  PlusOutlined,
   RedoOutlined,
+  TableOutlined,
   UndoOutlined,
   UnderlineOutlined,
   UnorderedListOutlined,
@@ -19,11 +24,17 @@ import {
 import Heading from "@tiptap/extension-heading";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import { Table } from "@tiptap/extension-table";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
+import TableRow from "@tiptap/extension-table-row";
 import TextAlign from "@tiptap/extension-text-align";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Button, Input, Modal, Select, Spin, message } from "antd";
 import { useEffect, useRef, useState } from "react";
+import { type CalloutVariant, TipTapCallout } from "@/components/admin/tiptap-callout";
+import { TipTapPdfEmbed } from "@/components/admin/tiptap-pdf-embed";
 import { prepareImageForUpload } from "@/lib/client-image-upload";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
 
@@ -99,6 +110,32 @@ function AlignJustifyIcon() {
   );
 }
 
+function QuoteIcon() {
+  return (
+    <span className="inline-flex h-[14px] w-[14px] items-center justify-center" aria-hidden="true">
+      <svg viewBox="0 0 14 14" width="14" height="14" fill="none">
+        <path
+          d="M3.4 4.2c-.93.44-1.72 1.32-1.72 2.65 0 1.5 1.07 2.45 2.33 2.45 1.3 0 2.18-.95 2.18-2.24 0-1.03-.6-1.83-1.55-2.18.22-.62.72-1.1 1.44-1.46l-.42-.86c-.9.31-1.69.77-2.26 1.64Zm5.1 0c-.93.44-1.72 1.32-1.72 2.65 0 1.5 1.07 2.45 2.33 2.45 1.3 0 2.18-.95 2.18-2.24 0-1.03-.6-1.83-1.55-2.18.22-.62.72-1.1 1.44-1.46l-.42-.86c-.9.31-1.69.77-2.26 1.64Z"
+          fill="currentColor"
+        />
+      </svg>
+    </span>
+  );
+}
+
+function findActiveNodePos(editor: NonNullable<ReturnType<typeof useEditor>>, nodeName: string) {
+  const { $from } = editor.state.selection;
+
+  for (let depth = $from.depth; depth >= 0; depth -= 1) {
+    const node = $from.node(depth);
+    if (node.type.name === nodeName) {
+      return depth === 0 ? 0 : $from.before(depth);
+    }
+  }
+
+  return null;
+}
+
 export default function ArticleRichTextEditor({
   value,
   onChange,
@@ -108,12 +145,22 @@ export default function ArticleRichTextEditor({
 }: ArticleRichTextEditorProps) {
   const onChangeRef = useRef<(value: string) => void>(onChange ?? (() => {}));
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const pdfInputRef = useRef<HTMLInputElement | null>(null);
+  const pdfUploadModeRef = useRef<"insert" | "replace">("insert");
   const selectedImagePosRef = useRef<number | null>(null);
+  const selectedPdfPosRef = useRef<number | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const [isImageSelected, setIsImageSelected] = useState(false);
+  const [isPdfSelected, setIsPdfSelected] = useState(false);
   const [selectedImageCaption, setSelectedImageCaption] = useState("");
+  const [selectedPdfTitle, setSelectedPdfTitle] = useState("Dokumen PDF");
+  const [selectedPdfCaption, setSelectedPdfCaption] = useState("");
   const [captionDraft, setCaptionDraft] = useState("");
   const [isCaptionModalOpen, setIsCaptionModalOpen] = useState(false);
+  const [pdfTitleDraft, setPdfTitleDraft] = useState("");
+  const [pdfCaptionDraft, setPdfCaptionDraft] = useState("");
+  const [isPdfMetaModalOpen, setIsPdfMetaModalOpen] = useState(false);
   const [linkDraft, setLinkDraft] = useState("");
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -128,7 +175,7 @@ export default function ArticleRichTextEditor({
       extensions: [
         StarterKit.configure({
           heading: false,
-          blockquote: false,
+          blockquote: {},
           codeBlock: false,
           horizontalRule: false,
           link: {
@@ -145,6 +192,15 @@ export default function ArticleRichTextEditor({
           inline: false,
           allowBase64: false,
         }),
+        TipTapCallout,
+        TipTapPdfEmbed,
+        Table.configure({
+          resizable: true,
+          lastColumnResizable: false,
+        }),
+        TableRow,
+        TableHeader,
+        TableCell,
         Placeholder.configure({
           placeholder,
         }),
@@ -185,34 +241,54 @@ export default function ArticleRichTextEditor({
   useEffect(() => {
     if (!editor) return;
 
-    const syncSelectedImageState = () => {
+    const syncSelectionState = () => {
       const active = editor.isActive("image");
 
       if (!active && isCaptionModalOpen && selectedImagePosRef.current !== null) {
         setIsImageSelected(true);
+      } else {
+        setIsImageSelected(active);
+
+        if (!active) {
+          selectedImagePosRef.current = null;
+          setSelectedImageCaption("");
+        } else {
+          selectedImagePosRef.current = editor.state.selection.from;
+          const attrs = editor.getAttributes("image") as { title?: string | null };
+          setSelectedImageCaption(String(attrs.title ?? ""));
+        }
+      }
+
+      const pdfPos = findActiveNodePos(editor, "pdfEmbed");
+      const pdfActive = pdfPos !== null;
+
+      if (!pdfActive && isPdfMetaModalOpen && selectedPdfPosRef.current !== null) {
+        setIsPdfSelected(true);
         return;
       }
 
-      setIsImageSelected(active);
+      setIsPdfSelected(pdfActive);
 
-      if (!active) {
-        selectedImagePosRef.current = null;
-        setSelectedImageCaption("");
+      if (!pdfActive) {
+        selectedPdfPosRef.current = null;
+        setSelectedPdfTitle("Dokumen PDF");
+        setSelectedPdfCaption("");
         return;
       }
 
-      selectedImagePosRef.current = editor.state.selection.from;
-      const attrs = editor.getAttributes("image") as { title?: string | null };
-      setSelectedImageCaption(String(attrs.title ?? ""));
+      selectedPdfPosRef.current = pdfPos;
+      const pdfNode = editor.state.doc.nodeAt(pdfPos);
+      setSelectedPdfTitle(String(pdfNode?.attrs?.title ?? "Dokumen PDF"));
+      setSelectedPdfCaption(String(pdfNode?.attrs?.caption ?? ""));
     };
 
-    syncSelectedImageState();
-    editor.on("selectionUpdate", syncSelectedImageState);
+    syncSelectionState();
+    editor.on("selectionUpdate", syncSelectionState);
 
     return () => {
-      editor.off("selectionUpdate", syncSelectedImageState);
+      editor.off("selectionUpdate", syncSelectionState);
     };
-  }, [editor, isCaptionModalOpen]);
+  }, [editor, isCaptionModalOpen, isPdfMetaModalOpen]);
 
   if (!editor) {
     return (
@@ -287,6 +363,96 @@ export default function ArticleRichTextEditor({
     }
   }
 
+  async function handlePdfUpload(file: File) {
+    if (disabled || isUploadingPdf) {
+      return;
+    }
+
+    setIsUploadingPdf(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("kind", "article-pdf");
+      formData.append("bucket", "article");
+
+      if (uploadLabId) {
+        formData.append("labId", uploadLabId);
+      }
+
+      const res = await fetch("/api/uploads/file", {
+        method: "POST",
+        body: formData,
+      });
+
+      const payload = (await res.json()) as {
+        error?: string;
+        fileId?: string;
+        previewUrl?: string;
+      };
+
+      if (!res.ok || !payload.fileId) {
+        throw new Error(payload.error ?? "Gagal upload PDF artikel.");
+      }
+
+      if (!editor) {
+        throw new Error("Editor belum siap.");
+      }
+
+      const nextTitle = file.name.replace(/\.pdf$/i, "") || "Dokumen PDF";
+      const nextSrc = payload.previewUrl ?? payload.fileId;
+
+      if (pdfUploadModeRef.current === "replace" && selectedPdfPosRef.current !== null) {
+        const pdfNode = editor.state.doc.nodeAt(selectedPdfPosRef.current);
+
+        if (!pdfNode || pdfNode.type.name !== "pdfEmbed") {
+          throw new Error("Blok PDF yang dipilih tidak ditemukan.");
+        }
+
+        const transaction = editor.state.tr.setNodeMarkup(
+          selectedPdfPosRef.current,
+          undefined,
+          {
+            ...pdfNode.attrs,
+            src: nextSrc,
+            title: nextTitle,
+            caption: String(pdfNode.attrs.caption ?? ""),
+          }
+        );
+
+        editor.view.dispatch(transaction);
+        setSelectedPdfTitle(nextTitle);
+        messageApi.success("PDF berhasil diganti.");
+      } else {
+        editor
+          .chain()
+          .focus()
+          .insertContent({
+            type: "pdfEmbed",
+            attrs: {
+              src: nextSrc,
+              title: nextTitle,
+              caption: "",
+            },
+          })
+          .run();
+
+        messageApi.success("PDF berhasil dimasukkan ke artikel.");
+      }
+    } catch (error) {
+      const detail =
+        error instanceof Error ? error.message : "Terjadi kesalahan upload PDF.";
+      messageApi.error(detail);
+    } finally {
+      setIsUploadingPdf(false);
+      pdfUploadModeRef.current = "insert";
+
+      if (pdfInputRef.current) {
+        pdfInputRef.current.value = "";
+      }
+    }
+  }
+
   function updateSelectedImageCaption(nextCaption: string) {
     if (!editor) return;
 
@@ -324,6 +490,82 @@ export default function ArticleRichTextEditor({
       setIsImageSelected(false);
       setSelectedImageCaption("");
     }
+  }
+
+  function updateSelectedPdfMeta(nextTitle: string, nextCaption: string) {
+    if (!editor) return;
+
+    const pdfPos = selectedPdfPosRef.current;
+    if (pdfPos === null) return;
+
+    const pdfNode = editor.state.doc.nodeAt(pdfPos);
+
+    if (!pdfNode || pdfNode.type.name !== "pdfEmbed") {
+      return;
+    }
+
+    const transaction = editor.state.tr.setNodeMarkup(pdfPos, undefined, {
+      ...pdfNode.attrs,
+      title: nextTitle.trim() || "Dokumen PDF",
+      caption: nextCaption.trim() || "",
+    });
+
+    editor.view.dispatch(transaction);
+  }
+
+  function openPdfMetaModal() {
+    if (!isPdfSelected || selectedPdfPosRef.current === null) {
+      return;
+    }
+
+    setPdfTitleDraft(selectedPdfTitle);
+    setPdfCaptionDraft(selectedPdfCaption);
+    setIsPdfMetaModalOpen(true);
+  }
+
+  function closePdfMetaModal() {
+    setIsPdfMetaModalOpen(false);
+
+    if (!editor || findActiveNodePos(editor, "pdfEmbed") === null) {
+      selectedPdfPosRef.current = null;
+      setIsPdfSelected(false);
+      setSelectedPdfTitle("Dokumen PDF");
+      setSelectedPdfCaption("");
+    }
+  }
+
+  function replaceSelectedPdf() {
+    if (!isPdfSelected || selectedPdfPosRef.current === null) {
+      return;
+    }
+
+    pdfUploadModeRef.current = "replace";
+    pdfInputRef.current?.click();
+  }
+
+  function removeSelectedPdf() {
+    if (!editor) return;
+
+    const pdfPos = selectedPdfPosRef.current;
+    if (pdfPos === null) return;
+
+    const pdfNode = editor.state.doc.nodeAt(pdfPos);
+    if (!pdfNode || pdfNode.type.name !== "pdfEmbed") {
+      return;
+    }
+
+    const transaction = editor.state.tr.delete(
+      pdfPos,
+      pdfPos + pdfNode.nodeSize
+    );
+
+    editor.view.dispatch(transaction);
+    selectedPdfPosRef.current = null;
+    setIsPdfSelected(false);
+    setSelectedPdfTitle("Dokumen PDF");
+    setSelectedPdfCaption("");
+    setIsPdfMetaModalOpen(false);
+    messageApi.success("PDF berhasil dihapus dari artikel.");
   }
 
   function openLinkModal() {
@@ -387,6 +629,78 @@ export default function ArticleRichTextEditor({
     closeLinkModal();
   }
 
+  function insertCallout(variant: CalloutVariant = "info") {
+    if (!editor) return;
+
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "callout",
+        attrs: { variant },
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Tulis informasi penting di sini." }],
+          },
+        ],
+      })
+      .run();
+  }
+
+  function getActiveCalloutVariant(): CalloutVariant {
+    if (!editor) return "info";
+
+    const calloutPos = findActiveNodePos(editor, "callout");
+    const activeNode = calloutPos !== null ? editor.state.doc.nodeAt(calloutPos) : null;
+    const variant = String(activeNode?.attrs?.variant ?? "info");
+
+    if (variant === "success" || variant === "warning") {
+      return variant;
+    }
+
+    return "info";
+  }
+
+  function updateCalloutVariant(variant: CalloutVariant) {
+    if (!editor) return;
+
+    const calloutPos = findActiveNodePos(editor, "callout");
+    if (calloutPos === null) return;
+
+    const activeNode = editor.state.doc.nodeAt(calloutPos);
+    if (!activeNode || activeNode.type.name !== "callout") {
+      return;
+    }
+
+    const transaction = editor.state.tr.setNodeMarkup(calloutPos, undefined, {
+      ...activeNode.attrs,
+      variant,
+    });
+
+    editor.view.dispatch(transaction);
+  }
+
+  function removeActiveCallout() {
+    if (!editor) return;
+
+    const calloutPos = findActiveNodePos(editor, "callout");
+    if (calloutPos === null) return;
+
+    const activeNode = editor.state.doc.nodeAt(calloutPos);
+    if (!activeNode || activeNode.type.name !== "callout") {
+      return;
+    }
+
+    const transaction = editor.state.tr.replaceWith(
+      calloutPos,
+      calloutPos + activeNode.nodeSize,
+      activeNode.content
+    );
+
+    editor.view.dispatch(transaction);
+  }
+
   const headingValue = editor.isActive("heading", { level: 1 })
     ? "h1"
     : editor.isActive("heading", { level: 2 })
@@ -408,6 +722,18 @@ export default function ArticleRichTextEditor({
           const file = event.target.files?.[0];
           if (file) {
             void handleImageUpload(file);
+          }
+        }}
+      />
+      <input
+        ref={pdfInputRef}
+        type="file"
+        accept="application/pdf,.pdf"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) {
+            void handlePdfUpload(file);
           }
         }}
       />
@@ -477,6 +803,44 @@ export default function ArticleRichTextEditor({
             icon={<LinkOutlined />}
           />
           <ToolbarButton
+            title="Blockquote"
+            disabled={disabled}
+            active={editor.isActive("blockquote")}
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            icon={<QuoteIcon />}
+          />
+          <ToolbarButton
+            title="Callout"
+            disabled={disabled}
+            active={editor.isActive("callout")}
+            onClick={() => insertCallout()}
+            icon={<BgColorsOutlined />}
+          />
+          {editor.isActive("callout") ? (
+            <>
+              <Select
+                size="small"
+                value={getActiveCalloutVariant()}
+                style={{ width: 112 }}
+                disabled={disabled}
+                onChange={(nextValue) => updateCalloutVariant(nextValue as CalloutVariant)}
+                options={[
+                  { value: "info", label: "Info" },
+                  { value: "success", label: "Sukses" },
+                  { value: "warning", label: "Penting" },
+                ]}
+              />
+              <Button
+                size="small"
+                danger
+                disabled={disabled}
+                onClick={removeActiveCallout}
+              >
+                Lepas
+              </Button>
+            </>
+          ) : null}
+          <ToolbarButton
             title="Rata kiri"
             disabled={disabled}
             active={editor.isActive({ textAlign: "left" })}
@@ -525,6 +889,91 @@ export default function ArticleRichTextEditor({
             icon={<PictureOutlined />}
           />
           <ToolbarButton
+            title="Sisipkan PDF"
+            disabled={disabled || isUploadingPdf}
+            onClick={() => {
+              pdfUploadModeRef.current = "insert";
+              pdfInputRef.current?.click();
+            }}
+            icon={<FilePdfOutlined />}
+          />
+          {isPdfSelected ? (
+            <>
+              <ToolbarButton
+                title="Detail PDF"
+                disabled={disabled}
+                active={isPdfMetaModalOpen}
+                onClick={openPdfMetaModal}
+                icon={<EditOutlined />}
+              />
+              <Button
+                size="small"
+                disabled={disabled || isUploadingPdf}
+                onClick={replaceSelectedPdf}
+              >
+                Ganti PDF
+              </Button>
+              <Button
+                size="small"
+                danger
+                disabled={disabled}
+                onClick={removeSelectedPdf}
+                icon={<DeleteOutlined />}
+              >
+                Hapus PDF
+              </Button>
+            </>
+          ) : null}
+          <ToolbarButton
+            title="Tabel"
+            disabled={disabled}
+            active={editor.isActive("table")}
+            onClick={() =>
+              editor
+                .chain()
+                .focus()
+                .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                .run()
+            }
+            icon={<TableOutlined />}
+          />
+          {editor.isActive("table") ? (
+            <>
+              <Button
+                size="small"
+                disabled={disabled}
+                icon={<PlusOutlined />}
+                onClick={() => editor.chain().focus().addRowAfter().run()}
+              >
+                Baris
+              </Button>
+              <Button
+                size="small"
+                disabled={disabled}
+                icon={<PlusOutlined />}
+                onClick={() => editor.chain().focus().addColumnAfter().run()}
+              >
+                Kolom
+              </Button>
+              <Button
+                size="small"
+                disabled={disabled}
+                onClick={() => editor.chain().focus().toggleHeaderRow().run()}
+              >
+                Header
+              </Button>
+              <Button
+                size="small"
+                danger
+                disabled={disabled}
+                icon={<DeleteOutlined />}
+                onClick={() => editor.chain().focus().deleteTable().run()}
+              >
+                Hapus
+              </Button>
+            </>
+          ) : null}
+          <ToolbarButton
             title="Caption gambar"
             disabled={disabled || !isImageSelected}
             active={isCaptionModalOpen}
@@ -562,6 +1011,35 @@ export default function ArticleRichTextEditor({
           placeholder="Tulis caption untuk gambar yang dipilih"
           onChange={(event) => setCaptionDraft(event.target.value)}
         />
+      </Modal>
+
+      <Modal
+        open={isPdfMetaModalOpen}
+        title="Detail PDF"
+        okText="Simpan"
+        cancelText="Batal"
+        onCancel={closePdfMetaModal}
+        onOk={() => {
+          updateSelectedPdfMeta(pdfTitleDraft, pdfCaptionDraft);
+          setSelectedPdfTitle(pdfTitleDraft.trim() || "Dokumen PDF");
+          setSelectedPdfCaption(pdfCaptionDraft.trim());
+          closePdfMetaModal();
+        }}
+      >
+        <div className="flex flex-col gap-3">
+          <Input
+            autoFocus
+            value={pdfTitleDraft}
+            placeholder="Judul PDF"
+            onChange={(event) => setPdfTitleDraft(event.target.value)}
+          />
+          <Input.TextArea
+            value={pdfCaptionDraft}
+            placeholder="Caption PDF (opsional)"
+            autoSize={{ minRows: 3, maxRows: 6 }}
+            onChange={(event) => setPdfCaptionDraft(event.target.value)}
+          />
+        </div>
       </Modal>
 
       <Modal
@@ -622,12 +1100,116 @@ export default function ArticleRichTextEditor({
           margin: 0 0 1rem;
           padding-left: 1.3rem;
         }
+        .smartmaps-article-editor-content blockquote {
+          margin: 1rem 0;
+          padding: 0.9rem 1rem;
+          border-left: 4px solid #2563eb;
+          border-radius: 0 16px 16px 0;
+          background: linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(248, 250, 252, 0.96));
+          color: #334155;
+        }
+        .smartmaps-article-editor-content .smartmaps-callout {
+          margin: 1rem 0;
+          padding: 1rem 1rem 0.15rem;
+          border-radius: 18px;
+          border: 1px solid rgba(191, 219, 254, 0.92);
+          background: rgba(239, 246, 255, 0.84);
+        }
+        .smartmaps-article-editor-content .smartmaps-callout--success {
+          border-color: rgba(110, 231, 183, 0.9);
+          background: rgba(220, 252, 231, 0.84);
+        }
+        .smartmaps-article-editor-content .smartmaps-callout--warning {
+          border-color: rgba(252, 211, 77, 0.9);
+          background: rgba(254, 243, 199, 0.88);
+        }
+        .smartmaps-article-editor-content table {
+          width: 100%;
+          margin: 1rem 0;
+          border-collapse: collapse;
+          table-layout: fixed;
+          overflow: hidden;
+          border-radius: 14px;
+          border: 1px solid rgba(226, 232, 240, 0.92);
+        }
+        .smartmaps-article-editor-content th,
+        .smartmaps-article-editor-content td {
+          min-width: 96px;
+          padding: 0.7rem 0.8rem;
+          border: 1px solid rgba(226, 232, 240, 0.92);
+          vertical-align: top;
+        }
+        .smartmaps-article-editor-content th {
+          background: rgba(239, 246, 255, 0.86);
+          color: #0f172a;
+          font-weight: 700;
+        }
         .smartmaps-article-editor-content img {
           display: block;
           max-width: 100%;
           height: auto;
           margin: 1rem 0;
           border-radius: 16px;
+        }
+        .smartmaps-article-editor-content [data-pdf-embed] {
+          position: relative;
+          display: block;
+          margin: 1rem 0;
+          border-radius: 18px;
+          border: 1px solid rgba(96, 165, 250, 0.28);
+          background: linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(255, 255, 255, 0.98));
+          padding: 1rem 1rem 0.95rem;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+        .smartmaps-article-editor-content .smartmaps-pdf-embed-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 22px;
+          border-radius: 999px;
+          border: 1px solid rgba(59, 130, 246, 0.22);
+          background: #eef4ff;
+          padding: 0 9px;
+          font-size: 10px;
+          font-weight: 800;
+          line-height: 1;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #1d4ed8;
+        }
+        .smartmaps-article-editor-content .smartmaps-pdf-embed-title {
+          display: block;
+          margin-top: 0.75rem;
+          font-size: 14px;
+          line-height: 1.55;
+          font-weight: 700;
+          color: #0f172a;
+          white-space: normal;
+          overflow-wrap: anywhere;
+        }
+        .smartmaps-article-editor-content .smartmaps-pdf-embed-caption {
+          margin: 0.42rem 0 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: #64748b;
+          white-space: normal;
+          overflow-wrap: anywhere;
+        }
+        html.theme-dark .smartmaps-article-editor-content [data-pdf-embed] {
+          border-color: rgba(125, 172, 255, 0.22);
+          background: linear-gradient(180deg, rgba(19, 35, 61, 0.98), rgba(15, 23, 42, 0.98));
+          box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.08);
+        }
+        html.theme-dark .smartmaps-article-editor-content .smartmaps-pdf-embed-badge {
+          border-color: rgba(125, 172, 255, 0.28);
+          background: rgba(39, 68, 116, 0.86);
+          color: #dbeafe;
+        }
+        html.theme-dark .smartmaps-article-editor-content .smartmaps-pdf-embed-title {
+          color: #e8f1fd;
+        }
+        html.theme-dark .smartmaps-article-editor-content .smartmaps-pdf-embed-caption {
+          color: #a6b6cc;
         }
         .smartmaps-article-editor-content img[style*="text-align: center"] {
           margin-left: auto;
