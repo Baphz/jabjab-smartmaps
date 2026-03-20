@@ -6,6 +6,7 @@ import {
   AlignRightOutlined,
   BoldOutlined,
   ClearOutlined,
+  EditOutlined,
   ItalicOutlined,
   OrderedListOutlined,
   PictureOutlined,
@@ -20,7 +21,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Button, Input, Select, Spin, message } from "antd";
+import { Button, Input, Modal, Select, Spin, message } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { prepareImageForUpload } from "@/lib/client-image-upload";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
@@ -78,10 +79,11 @@ export default function ArticleRichTextEditor({
   const onChangeRef = useRef<(value: string) => void>(onChange ?? (() => {}));
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const selectedImagePosRef = useRef<number | null>(null);
-  const isCaptionInputFocusedRef = useRef(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isImageSelected, setIsImageSelected] = useState(false);
   const [selectedImageCaption, setSelectedImageCaption] = useState("");
+  const [captionDraft, setCaptionDraft] = useState("");
+  const [isCaptionModalOpen, setIsCaptionModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
@@ -149,7 +151,7 @@ export default function ArticleRichTextEditor({
     const syncSelectedImageState = () => {
       const active = editor.isActive("image");
 
-      if (!active && isCaptionInputFocusedRef.current && selectedImagePosRef.current !== null) {
+      if (!active && isCaptionModalOpen && selectedImagePosRef.current !== null) {
         setIsImageSelected(true);
         return;
       }
@@ -173,7 +175,7 @@ export default function ArticleRichTextEditor({
     return () => {
       editor.off("selectionUpdate", syncSelectedImageState);
     };
-  }, [editor]);
+  }, [editor, isCaptionModalOpen]);
 
   if (!editor) {
     return (
@@ -266,6 +268,25 @@ export default function ArticleRichTextEditor({
     });
 
     editor.view.dispatch(transaction);
+  }
+
+  function openCaptionModal() {
+    if (!isImageSelected || selectedImagePosRef.current === null) {
+      return;
+    }
+
+    setCaptionDraft(selectedImageCaption);
+    setIsCaptionModalOpen(true);
+  }
+
+  function closeCaptionModal() {
+    setIsCaptionModalOpen(false);
+
+    if (!editor || !editor.isActive("image")) {
+      selectedImagePosRef.current = null;
+      setIsImageSelected(false);
+      setSelectedImageCaption("");
+    }
   }
 
   const headingValue = editor.isActive("heading", { level: 1 })
@@ -399,6 +420,13 @@ export default function ArticleRichTextEditor({
             icon={<PictureOutlined />}
           />
           <ToolbarButton
+            title="Caption gambar"
+            disabled={disabled || !isImageSelected}
+            active={isCaptionModalOpen}
+            onClick={openCaptionModal}
+            icon={<EditOutlined />}
+          />
+          <ToolbarButton
             title="Clear formatting"
             disabled={disabled}
             onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
@@ -406,38 +434,28 @@ export default function ArticleRichTextEditor({
           />
         </div>
 
-        {isImageSelected ? (
-          <div className="border-b border-slate-200 bg-white px-3 py-2.5">
-            <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
-              Caption Gambar
-            </div>
-            <Input
-              size="small"
-              disabled={disabled}
-              value={selectedImageCaption}
-              placeholder="Tulis caption untuk gambar yang dipilih"
-              className="mt-2"
-              onFocus={() => {
-                isCaptionInputFocusedRef.current = true;
-              }}
-              onBlur={() => {
-                isCaptionInputFocusedRef.current = false;
-                if (!editor.isActive("image")) {
-                  selectedImagePosRef.current = null;
-                  setIsImageSelected(false);
-                }
-              }}
-              onChange={(event) => {
-                const nextCaption = event.target.value;
-                setSelectedImageCaption(nextCaption);
-                updateSelectedImageCaption(nextCaption);
-              }}
-            />
-          </div>
-        ) : null}
-
         <EditorContent editor={editor} />
       </div>
+
+      <Modal
+        open={isCaptionModalOpen}
+        title="Caption gambar"
+        okText="Simpan"
+        cancelText="Batal"
+        onCancel={closeCaptionModal}
+        onOk={() => {
+          updateSelectedImageCaption(captionDraft);
+          setSelectedImageCaption(captionDraft);
+          closeCaptionModal();
+        }}
+      >
+        <Input
+          autoFocus
+          value={captionDraft}
+          placeholder="Tulis caption untuk gambar yang dipilih"
+          onChange={(event) => setCaptionDraft(event.target.value)}
+        />
+      </Modal>
 
       <style jsx global>{`
         .smartmaps-article-editor-content p {
