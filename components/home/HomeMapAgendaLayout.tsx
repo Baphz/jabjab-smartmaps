@@ -41,6 +41,7 @@ type HomeMapAgendaLayoutProps = {
   items: ActivitySourceItem[];
   todayKey: string;
   mapTitle?: string;
+  articlesSlot?: React.ReactNode;
 };
 
 function getSearchPriority(lab: LabWithTypes, normalizedQuery: string) {
@@ -78,6 +79,7 @@ export default function HomeMapAgendaLayout({
   items,
   todayKey,
   mapTitle,
+  articlesSlot,
 }: HomeMapAgendaLayoutProps) {
   const publicHomeContent = siteContent.publicHome;
   const [searchQuery, setSearchQuery] = useState("");
@@ -223,99 +225,103 @@ export default function HomeMapAgendaLayout({
   }
 
   return (
-    <div className="grid gap-2.5 xl:grid-cols-[minmax(0,1.18fr)_372px] 2xl:grid-cols-[minmax(0,1.24fr)_392px]">
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
-        <div className="border-b border-slate-200/80 px-3 py-2.5 sm:px-3.5 sm:py-3">
-          <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,460px)] lg:items-end">
-            <div className="max-w-3xl">
-              <div className="smartmaps-overline">
-                {siteContent.publicHome.sections.mapEyebrow}
+    <div className="grid gap-2.5 xl:items-start xl:grid-cols-[minmax(0,1.18fr)_372px] 2xl:grid-cols-[minmax(0,1.24fr)_392px]">
+      <div className="flex min-w-0 flex-col gap-2.5">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
+          <div className="border-b border-slate-200/80 px-3 py-2.5 sm:px-3.5 sm:py-3">
+            <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,460px)] lg:items-end">
+              <div className="max-w-3xl">
+                <div className="smartmaps-overline">
+                  {siteContent.publicHome.sections.mapEyebrow}
+                </div>
+                <h2 className="smartmaps-title-section mt-0.5">
+                  {mapTitle ?? siteContent.publicHome.sections.mapTitle}
+                </h2>
               </div>
-              <h2 className="smartmaps-title-section mt-0.5">
-                {mapTitle ?? siteContent.publicHome.sections.mapTitle}
-              </h2>
+
+              <div className="flex w-full flex-col gap-2 sm:flex-row lg:justify-self-end">
+                <Input
+                  allowClear
+                  size="middle"
+                  value={searchQuery}
+                  prefix={<SearchOutlined className="text-slate-400" />}
+                  placeholder={publicHomeContent.map.searchPlaceholder}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                  }}
+                />
+                {normalizedSearchQuery || focusedActivity || effectiveSelectedLabId ? (
+                  <Button
+                    type="default"
+                    size="middle"
+                    icon={<ReloadOutlined />}
+                    onClick={handleResetMapView}
+                    className="smartmaps-map-reset-button min-h-10 sm:min-w-[136px] sm:self-stretch"
+                  >
+                    {publicHomeContent.map.resetLabel}
+                  </Button>
+                ) : null}
+              </div>
             </div>
 
-            <div className="flex w-full flex-col gap-2 sm:flex-row lg:justify-self-end">
-              <Input
-                allowClear
-                size="middle"
-                value={searchQuery}
-                prefix={<SearchOutlined className="text-slate-400" />}
-                placeholder={publicHomeContent.map.searchPlaceholder}
-                onChange={(event) => {
-                  setSearchQuery(event.target.value);
-                }}
-              />
-              {normalizedSearchQuery || focusedActivity || effectiveSelectedLabId ? (
-                <Button
-                  type="default"
-                  size="middle"
-                  icon={<ReloadOutlined />}
-                  onClick={handleResetMapView}
-                  className="smartmaps-map-reset-button min-h-10 sm:min-w-[136px] sm:self-stretch"
-                >
-                  {publicHomeContent.map.resetLabel}
-                </Button>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              {activeAgendaLabIds.length > 0 ? (
+                <MapPill tone="success">
+                  {activeAgendaLabIds.length} {publicHomeContent.map.activeAgendaSuffix}
+                </MapPill>
+              ) : null}
+              {normalizedSearchQuery ? (
+                <MapPill tone="search">
+                  {matchedSearchEntries.length > 0
+                    ? `${matchedSearchEntries.length} ${publicHomeContent.map.resultsLabel}`
+                    : publicHomeContent.map.noResultsLabel}
+                </MapPill>
+              ) : null}
+              {selectedLab ? (
+                <MapPill tone="focus">
+                  <PushpinOutlined />
+                  <span className="truncate">
+                    {publicHomeContent.map.focusPrefix}: {selectedLab.name}
+                  </span>
+                </MapPill>
               ) : null}
             </div>
-          </div>
 
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            {activeAgendaLabIds.length > 0 ? (
-              <MapPill tone="success">
-                {activeAgendaLabIds.length} {publicHomeContent.map.activeAgendaSuffix}
-              </MapPill>
-            ) : null}
-            {normalizedSearchQuery ? (
-              <MapPill tone="search">
-                {matchedSearchEntries.length > 0
-                  ? `${matchedSearchEntries.length} ${publicHomeContent.map.resultsLabel}`
-                  : publicHomeContent.map.noResultsLabel}
-              </MapPill>
-            ) : null}
-            {selectedLab ? (
-              <MapPill tone="focus">
-                <PushpinOutlined />
-                <span className="truncate">
-                  {publicHomeContent.map.focusPrefix}: {selectedLab.name}
-                </span>
-              </MapPill>
+            {normalizedSearchQuery && matchedSearchEntries.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] text-slate-500">
+                {searchAreaPreview.map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-full border border-blue-100 bg-blue-50/80 px-2.5 py-1"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
             ) : null}
           </div>
 
-          {normalizedSearchQuery && matchedSearchEntries.length > 0 ? (
-            <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] text-slate-500">
-              {searchAreaPreview.map((label) => (
-                <span
-                  key={label}
-                  className="rounded-full border border-blue-100 bg-blue-50/80 px-2.5 py-1"
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </div>
-
-        <div className="p-1.5 sm:p-2">
-          <div className="rounded-[18px] border border-slate-200 bg-slate-100/90 p-1.5 shadow-[0_14px_30px_rgba(15,23,42,0.04)]">
-            <div className="h-[48vh] min-h-[340px] max-h-[620px] overflow-hidden rounded-[15px] border border-slate-200/90 bg-white sm:h-[56vh] sm:min-h-[420px] lg:h-[62vh]">
-              <SmartMap
-                labs={labs}
-                highlightedLabIds={searchedLabIds}
-                activeLabIds={activeAgendaLabIds}
-                focusedLabIds={searchedLabIds}
-                mutedLabIds={mutedLabIds}
-                bestMatchLabId={bestMatchLabId}
-                focusedActivity={focusedActivity}
-                selectedLabId={effectiveSelectedLabId}
-                onSelectLab={handleSelectLab}
-              />
+          <div className="p-1.5 sm:p-2">
+            <div className="rounded-[18px] border border-slate-200 bg-slate-100/90 p-1.5 shadow-[0_14px_30px_rgba(15,23,42,0.04)]">
+              <div className="h-[48vh] min-h-[340px] max-h-[620px] overflow-hidden rounded-[15px] border border-slate-200/90 bg-white sm:h-[56vh] sm:min-h-[420px] lg:h-[62vh]">
+                <SmartMap
+                  labs={labs}
+                  highlightedLabIds={searchedLabIds}
+                  activeLabIds={activeAgendaLabIds}
+                  focusedLabIds={searchedLabIds}
+                  mutedLabIds={mutedLabIds}
+                  bestMatchLabId={bestMatchLabId}
+                  focusedActivity={focusedActivity}
+                  selectedLabId={effectiveSelectedLabId}
+                  onSelectLab={handleSelectLab}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {articlesSlot ? <div className="hidden xl:block">{articlesSlot}</div> : null}
+      </div>
 
       <aside className="xl:sticky xl:top-4 xl:self-start">
         <div className="flex flex-col gap-2.5">
@@ -366,6 +372,8 @@ export default function HomeMapAgendaLayout({
           </section>
         </div>
       </aside>
+
+      {articlesSlot ? <div className="xl:hidden">{articlesSlot}</div> : null}
     </div>
   );
 }

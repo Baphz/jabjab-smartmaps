@@ -181,25 +181,27 @@ export default async function HomePage() {
           items={activity.sources}
           todayKey={todayKey}
           mapTitle={branding.publicMapTitle}
-        />
-
-        <RecentArticlesSection
-          articles={recentArticles.map((article) => ({
-            id: article.id,
-            slug: article.slug,
-            title: article.title,
-            excerpt: article.excerpt,
-            coverImageUrl: article.coverImageUrl,
-            publishedAt: article.publishedAt,
-            isGlobal: article.isGlobal,
-            labName: article.lab?.name ?? null,
-            provinceName: article.lab?.provinceName ?? null,
-            cityName: article.lab?.cityName ?? null,
-            cityType: article.lab?.cityType ?? null,
-            districtName: article.lab?.districtName ?? null,
-            villageName: article.lab?.villageName ?? null,
-            villageType: article.lab?.villageType ?? null,
-          }))}
+          articlesSlot={
+            <RecentArticlesSection
+              compact
+              articles={recentArticles.map((article) => ({
+                id: article.id,
+                slug: article.slug,
+                title: article.title,
+                excerpt: article.excerpt,
+                coverImageUrl: article.coverImageUrl,
+                publishedAt: article.publishedAt,
+                isGlobal: article.isGlobal,
+                labName: article.lab?.name ?? null,
+                provinceName: article.lab?.provinceName ?? null,
+                cityName: article.lab?.cityName ?? null,
+                cityType: article.lab?.cityType ?? null,
+                districtName: article.lab?.districtName ?? null,
+                villageName: article.lab?.villageName ?? null,
+                villageType: article.lab?.villageType ?? null,
+              }))}
+            />
+          }
         />
 
         <div className="flex flex-col gap-1.5 px-1 pb-1 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
