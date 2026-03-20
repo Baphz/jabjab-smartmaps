@@ -32,12 +32,6 @@
   --map-background: #d5e1ea;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: "Manrope";
-}
-
 html,
 body {
   height: 100%;
@@ -1216,7 +1210,7 @@ html.theme-dark .ant-table-placeholder > td {
 
 .map-marker-label-wrap {
   display: flex;
-  height: 124px;
+  height: 80px;
   width: 236px;
   align-items: flex-start;
   justify-content: center;
@@ -1255,7 +1249,7 @@ html.theme-dark .ant-table-placeholder > td {
   font-weight: 700;
   line-height: 1.3;
   color: #0f172a;
-  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
