@@ -317,8 +317,8 @@ function createMarkerLabelIcon(
         </div>
       </div>
     `,
-    iconSize: [236, 188],
-    iconAnchor: [118, 188],
+    iconSize: [236, 124],
+    iconAnchor: [118, 124],
   });
 }
 
