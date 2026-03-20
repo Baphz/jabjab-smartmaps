@@ -71,6 +71,7 @@ model LabEvent {
   id              String   @id @default(cuid())
   labId           String?
   isGlobal        Boolean  @default(false)
+  relatedArticleId String?
   title           String
   description     String?
   locationName    String?
@@ -96,8 +97,10 @@ model LabEvent {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   lab             Lab?     @relation(fields: [labId], references: [id], onDelete: Cascade)
+  relatedArticle  Article? @relation("EventRelatedArticle", fields: [relatedArticleId], references: [id], onDelete: SetNull)
 
   @@index([labId, startDate])
+  @@index([relatedArticleId])
   @@index([isPublished, startDate])
   @@index([isGlobal, startDate])
 }
@@ -132,6 +135,7 @@ model Article {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   lab             Lab?     @relation(fields: [labId], references: [id], onDelete: Cascade)
+  relatedEvents   LabEvent[] @relation("EventRelatedArticle")
 
   @@index([labId, publishedAt])
   @@index([isPublished, publishedAt])

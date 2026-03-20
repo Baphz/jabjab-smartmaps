@@ -83,6 +83,7 @@ export const siteContent = {
       closeLabel: "Tutup",
       emptyDayLabel: "Belum ada item.",
       readArticleLabel: "Baca artikel",
+      readRelatedArticleLabel: "Baca artikel terkait",
       viewMapLabel: "Lihat di peta",
       kinds: {
         lab_event: "Agenda Lab",

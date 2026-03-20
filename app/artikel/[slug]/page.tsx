@@ -73,12 +73,12 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 <Tag>{formatMediumDate(formatDate(article.publishedAt))}</Tag>
               </div>
 
-              <h1 className="mt-4 text-[30px] font-semibold tracking-tight text-slate-950 sm:text-[40px]">
+              <h1 className="smartmaps-title-display mt-4">
                 {article.title}
               </h1>
 
               {article.excerpt ? (
-                <p className="mt-4 mb-0 max-w-3xl text-[15px] leading-7 text-slate-600 sm:text-[16px]">
+                <p className="smartmaps-copy-lead mt-4 mb-0 max-w-3xl">
                   {article.excerpt}
                 </p>
               ) : null}

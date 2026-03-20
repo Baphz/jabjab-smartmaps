@@ -55,3 +55,58 @@ export async function ensureUniqueArticleSlug(title: string, articleId?: string 
     suffix += 1;
   }
 }
+
+type ResolveRelatedArticleArgs = {
+  articleId: string | null;
+  eventLabId: string | null;
+  isGlobalEvent: boolean;
+  viewerLabId?: string | null;
+  isAdmin?: boolean;
+};
+
+export async function resolveRelatedArticleForEvent({
+  articleId,
+  eventLabId,
+  isGlobalEvent,
+  viewerLabId,
+  isAdmin = false,
+}: ResolveRelatedArticleArgs) {
+  if (!articleId) {
+    return null;
+  }
+
+  const article = await prisma.article.findUnique({
+    where: { id: articleId },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      labId: true,
+      isGlobal: true,
+    },
+  });
+
+  if (!article) {
+    throw new Error("Artikel terkait tidak ditemukan.");
+  }
+
+  if (!isAdmin) {
+    if (!article.isGlobal && article.labId !== viewerLabId) {
+      throw new Error("Artikel terkait tidak dapat dipakai oleh akun ini.");
+    }
+  }
+
+  if (isGlobalEvent) {
+    if (!article.isGlobal) {
+      throw new Error("Agenda global hanya dapat ditautkan ke artikel global.");
+    }
+
+    return article;
+  }
+
+  if (!article.isGlobal && article.labId !== eventLabId) {
+    throw new Error("Artikel terkait harus berasal dari lab yang sama.");
+  }
+
+  return article;
+}

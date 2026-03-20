@@ -77,13 +77,17 @@ export default function AdminHeader({
                   />
                 </div>
               ) : null}
-              <div className="min-w-0">
+                <div className="min-w-0">
                 {appName ? (
-                  <TypographyText style={{ fontSize: 12 }}>
+                  <TypographyText className="smartmaps-caption">
                     {appName}
                   </TypographyText>
                 ) : null}
-                <TypographyTitle level={3} style={{ margin: 0 }}>
+                <TypographyTitle
+                  level={3}
+                  className="smartmaps-title-section"
+                  style={{ margin: 0 }}
+                >
                   Dashboard
                 </TypographyTitle>
               </div>

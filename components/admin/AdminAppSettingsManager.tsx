@@ -108,49 +108,54 @@ export default function AdminAppSettingsManager({ branding }: Props) {
 
       <Card
         variant="borderless"
-        className="rounded-[20px] border border-slate-200 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.04)]"
+        className="smartmaps-admin-panel"
       >
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
-            <TypographyTitle level={4} style={{ margin: 0 }}>
+            <div className="smartmaps-admin-kicker">Branding</div>
+            <TypographyTitle
+              level={4}
+              className="smartmaps-admin-heading"
+              style={{ margin: 0 }}
+            >
               Identitas Aplikasi
             </TypographyTitle>
             <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="smartmaps-admin-summary-card">
+                <div className="smartmaps-admin-kicker">
                   Nama Aplikasi
                 </div>
-                <div className="mt-1 text-sm font-semibold text-slate-950">{branding.appName}</div>
+                <div className="smartmaps-admin-summary-card-value">{branding.appName}</div>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="smartmaps-admin-summary-card">
+                <div className="smartmaps-admin-kicker">
                   Short Name
                 </div>
-                <div className="mt-1 text-sm font-semibold text-slate-950">{branding.shortName}</div>
+                <div className="smartmaps-admin-summary-card-value">{branding.shortName}</div>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="smartmaps-admin-summary-card">
+                <div className="smartmaps-admin-kicker">
                   Region
                 </div>
-                <div className="mt-1 text-sm font-semibold text-slate-950">{branding.regionLabel}</div>
+                <div className="smartmaps-admin-summary-card-value">{branding.regionLabel}</div>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="smartmaps-admin-summary-card">
+                <div className="smartmaps-admin-kicker">
                   Footer
                 </div>
-                <div className="mt-1 text-sm font-semibold text-slate-950">{branding.footerTagline}</div>
+                <div className="smartmaps-admin-summary-card-value">{branding.footerTagline}</div>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="smartmaps-admin-summary-card">
+                <div className="smartmaps-admin-kicker">
                   Judul Beranda
                 </div>
-                <div className="mt-1 text-sm font-semibold text-slate-950">{branding.publicHomeTitle}</div>
+                <div className="smartmaps-admin-summary-card-value">{branding.publicHomeTitle}</div>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="smartmaps-admin-summary-card">
+                <div className="smartmaps-admin-kicker">
                   Judul Peta
                 </div>
-                <div className="mt-1 text-sm font-semibold text-slate-950">{branding.publicMapTitle}</div>
+                <div className="smartmaps-admin-summary-card-value">{branding.publicMapTitle}</div>
               </div>
             </div>
           </div>
@@ -162,6 +167,7 @@ export default function AdminAppSettingsManager({ branding }: Props) {
       </Card>
 
       <Modal
+        className="smartmaps-admin-modal"
         open={isOpen}
         onCancel={closeEditor}
         title="Pengaturan Aplikasi"
@@ -185,6 +191,7 @@ export default function AdminAppSettingsManager({ branding }: Props) {
         ]}
       >
         <Form
+          className="smartmaps-admin-form"
           form={form}
           layout="vertical"
           requiredMark={false}

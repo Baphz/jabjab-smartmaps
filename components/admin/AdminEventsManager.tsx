@@ -5,6 +5,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
+  ReadOutlined,
 } from "@ant-design/icons";
 import {
   App,
@@ -66,6 +67,15 @@ export type AdminEventLabOption = {
   label: string;
 };
 
+export type AdminEventArticleOption = {
+  value: string;
+  label: string;
+  slug: string;
+  isGlobal: boolean;
+  labId: string | null;
+  scopeLabel: string;
+};
+
 export type AdminEventRow = {
   id: string;
   labId: string | null;
@@ -92,6 +102,9 @@ export type AdminEventRow = {
   endDate: string;
   timeLabel: string | null;
   isPublished: boolean;
+  relatedArticleId: string | null;
+  relatedArticleTitle: string | null;
+  relatedArticleSlug: string | null;
   createdAt: string;
 };
 
@@ -109,10 +122,12 @@ type EventFormValue = {
   endDate: string;
   timeLabel?: string;
   isPublished: boolean;
+  relatedArticleId?: string;
 };
 
 type Props = {
   labs: AdminEventLabOption[];
+  articles: AdminEventArticleOption[];
   events: AdminEventRow[];
   canManageAllLabs: boolean;
   fixedLabId?: string | null;
@@ -141,6 +156,7 @@ function mergeOption<T extends { id: string }>(selected: T | null, options: T[])
 
 export default function AdminEventsManager({
   labs,
+  articles,
   events,
   canManageAllLabs,
   fixedLabId,
@@ -154,10 +170,12 @@ export default function AdminEventsManager({
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const watchedIsGlobal = Form.useWatch("isGlobal", form) ?? false;
+  const watchedLabId = Form.useWatch("labId", form);
   const watchedAddressDetail = Form.useWatch("addressDetail", form);
   const watchedVillageType = Form.useWatch("villageType", form);
   const watchedLatitude = Form.useWatch("latitude", form);
   const watchedLongitude = Form.useWatch("longitude", form);
+  const watchedRelatedArticleId = Form.useWatch("relatedArticleId", form);
 
   const [provinceOptions, setProvinceOptions] = useState<ProvinceOption[]>([]);
   const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
@@ -194,9 +212,30 @@ export default function AdminEventsManager({
       endDate: "",
       timeLabel: "",
       isPublished: true,
+      relatedArticleId: undefined,
     }),
     [fixedLabId, labs]
   );
+
+  const visibleArticleOptions = useMemo(() => {
+    const activeLabId = canManageAllLabs
+      ? watchedIsGlobal
+        ? null
+        : watchedLabId ?? fixedLabId ?? null
+      : fixedLabId ?? null;
+
+    return articles.filter((article) => {
+      if (watchedIsGlobal) {
+        return article.isGlobal;
+      }
+
+      if (!activeLabId) {
+        return article.isGlobal;
+      }
+
+      return article.isGlobal || article.labId === activeLabId;
+    });
+  }, [articles, canManageAllLabs, fixedLabId, watchedIsGlobal, watchedLabId]);
 
   const coordinatePreview = useMemo(
     () => ({
@@ -239,6 +278,18 @@ export default function AdminEventsManager({
       form.setFieldsValue(formDefaults);
     }
   }, [editingId, form, formDefaults, isEditorOpen]);
+
+  useEffect(() => {
+    if (!watchedRelatedArticleId) return;
+
+    const isStillVisible = visibleArticleOptions.some(
+      (article) => article.value === watchedRelatedArticleId
+    );
+
+    if (!isStillVisible) {
+      form.setFieldsValue({ relatedArticleId: undefined });
+    }
+  }, [form, visibleArticleOptions, watchedRelatedArticleId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -411,6 +462,7 @@ export default function AdminEventsManager({
       endDate: event.endDate,
       timeLabel: event.timeLabel ?? "",
       isPublished: event.isPublished,
+      relatedArticleId: event.relatedArticleId ?? undefined,
     });
 
     setIsEditorOpen(true);
@@ -455,6 +507,7 @@ export default function AdminEventsManager({
         title: values.title,
         description: values.description,
         locationName: values.locationName,
+        relatedArticleId: values.relatedArticleId,
         addressDetail: normalizeWhitespace(values.addressDetail ?? ""),
         provinceId: selectedProvince?.id ?? null,
         provinceName: selectedProvince?.nama ?? null,
@@ -518,9 +571,21 @@ export default function AdminEventsManager({
               {row.isPublished ? "Publik" : "Draft"}
             </Tag>
           </div>
-          <TypographyText strong>{row.title}</TypographyText>
+          <div className="smartmaps-admin-item-title">{row.title}</div>
+          {row.relatedArticleTitle ? (
+            <a
+              href={row.relatedArticleSlug ? `/artikel/${row.relatedArticleSlug}` : undefined}
+              target={row.relatedArticleSlug ? "_blank" : undefined}
+              rel={row.relatedArticleSlug ? "noreferrer" : undefined}
+              className="smartmaps-admin-link-chip"
+              title={row.relatedArticleTitle}
+            >
+              <ReadOutlined className="text-[11px]" />
+              <span className="truncate">{row.relatedArticleTitle}</span>
+            </a>
+          ) : null}
           {row.locationName ? (
-            <TypographyText style={{ color: "#64748b" }}>{row.locationName}</TypographyText>
+            <div className="smartmaps-admin-item-copy">{row.locationName}</div>
           ) : null}
         </Space>
       ),
@@ -530,7 +595,9 @@ export default function AdminEventsManager({
       key: "date",
       width: 230,
       render: (_value, row) => (
-        <TypographyText>{formatActivityRange(row.startDate, row.endDate, row.timeLabel)}</TypographyText>
+        <span className="smartmaps-admin-item-copy">
+          {formatActivityRange(row.startDate, row.endDate, row.timeLabel)}
+        </span>
       ),
     },
     ...(canManageAllLabs
@@ -540,7 +607,11 @@ export default function AdminEventsManager({
             key: "lab",
             width: 190,
             render: (_value: unknown, row: AdminEventRow) =>
-              row.isGlobal ? "Agenda Global DPW" : row.labName ?? "-",
+              row.isGlobal ? (
+                <span className="smartmaps-admin-item-copy">Agenda Global DPW</span>
+              ) : (
+                <span className="smartmaps-admin-item-copy">{row.labName ?? "-"}</span>
+              ),
           },
         ]
       : []),
@@ -575,11 +646,14 @@ export default function AdminEventsManager({
         styles={{ body: { padding: 14 } }}
       >
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-slate-900">Agenda</span>
-            <Tag icon={<CalendarOutlined />} color="blue">
-              {events.length}
-            </Tag>
+          <div>
+            <div className="smartmaps-admin-kicker">Agenda</div>
+            <div className="mt-1 flex items-center gap-2">
+              <h3 className="smartmaps-admin-heading">Agenda</h3>
+              <Tag icon={<CalendarOutlined />} color="blue">
+                {events.length}
+              </Tag>
+            </div>
           </div>
 
           <Button
@@ -593,6 +667,7 @@ export default function AdminEventsManager({
         </div>
 
         <Table
+          className="smartmaps-admin-table"
           rowKey="id"
           size="small"
           columns={columns}
@@ -623,6 +698,7 @@ export default function AdminEventsManager({
         ]}
       >
         <Form
+          className="smartmaps-admin-form"
           form={form}
           layout="vertical"
           initialValues={formDefaults}
@@ -663,7 +739,7 @@ export default function AdminEventsManager({
               className="md:col-span-2"
               rules={[{ required: true, message: "Judul wajib diisi." }]}
             >
-              <Input placeholder="Judul kegiatan" />
+              <Input placeholder="Masukkan judul agenda" />
             </FormItem>
 
             <FormItem
@@ -671,11 +747,28 @@ export default function AdminEventsManager({
               name="locationName"
               rules={[{ required: true, message: "Lokasi wajib diisi." }]}
             >
-              <Input placeholder="Nama lokasi kegiatan" />
+              <Input placeholder="Nama lokasi agenda" />
             </FormItem>
 
             <FormItem label="Waktu" name="timeLabel">
               <Input placeholder="08.00 - selesai" />
+            </FormItem>
+
+            <FormItem
+              label="Artikel Terkait"
+              name="relatedArticleId"
+              className="md:col-span-2"
+            >
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                placeholder="Pilih artikel terkait"
+                options={visibleArticleOptions.map((article) => ({
+                  value: article.value,
+                  label: `${article.label} • ${article.scopeLabel}`,
+                }))}
+              />
             </FormItem>
 
             <FormItem
@@ -917,7 +1010,7 @@ export default function AdminEventsManager({
           </div>
 
           <FormItem label="Catatan" name="description" style={{ marginTop: 12, marginBottom: 0 }}>
-            <InputTextArea rows={3} placeholder="Ringkasan kegiatan" />
+            <InputTextArea rows={3} placeholder="Catatan agenda atau informasi tambahan" />
           </FormItem>
         </Form>
       </Modal>

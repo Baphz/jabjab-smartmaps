@@ -89,11 +89,11 @@ function ArticleCard({
         )}
       </div>
 
-      <h2 className="mt-1 text-[20px] font-semibold tracking-tight text-slate-950">{title}</h2>
+      <h2 className="smartmaps-title-card mt-1">{title}</h2>
 
       {excerpt ? (
         <p
-          className="mt-2 text-[13px] leading-6 text-slate-600"
+          className="smartmaps-copy-muted mt-2"
           style={{
             display: "-webkit-box",
             WebkitLineClamp: 3,
@@ -156,16 +156,16 @@ function FeaturedArticleCard({
           villageType={villageType}
         />
 
-        <div className="mt-3 text-[12px] text-slate-500">
+        <div className="smartmaps-copy-muted mt-3">
           {formatMediumDate(formatDate(publishedAt))}
         </div>
 
-        <h2 className="mt-2 text-[28px] font-semibold tracking-tight text-slate-950 sm:text-[34px]">
+        <h2 className="smartmaps-title-page mt-2">
           {title}
         </h2>
 
         {excerpt ? (
-          <p className="mt-3 max-w-2xl text-[14px] leading-7 text-slate-600 sm:text-[15px]">
+          <p className="smartmaps-copy-lead mt-3 max-w-2xl">
             {excerpt}
           </p>
         ) : null}
@@ -221,13 +221,13 @@ export default async function ArticlesPage() {
         <section className="rounded-3xl border border-sky-200 bg-sky-50/82 px-5 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <div className="smartmaps-overline">
                 Artikel
               </div>
-              <h1 className="mb-1 mt-1 text-[28px] font-semibold tracking-tight text-slate-950">
+              <h1 className="smartmaps-title-page mt-1 mb-1">
                 Artikel DPW Aslabkesda
               </h1>
-              <p className="m-0 max-w-3xl text-[13px] leading-6 text-slate-600">
+              <p className="smartmaps-copy-lead max-w-3xl">
                 Kumpulan publikasi terbaru dari DPW dan laboratorium yang terdaftar.
               </p>
             </div>

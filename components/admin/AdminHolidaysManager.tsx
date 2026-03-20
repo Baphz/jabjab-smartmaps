@@ -194,9 +194,9 @@ export default function AdminHolidaysManager({ holidays }: Props) {
       key: "name",
       render: (value: string, row) => (
         <Space orientation="vertical" size={6}>
-          <TypographyText strong>{value}</TypographyText>
+          <div className="smartmaps-admin-item-title">{value}</div>
           {row.source ? (
-            <TypographyText style={{ color: "#64748b" }}>
+            <TypographyText className="smartmaps-admin-item-copy">
               Sumber: {row.source}
             </TypographyText>
           ) : null}
@@ -259,9 +259,16 @@ export default function AdminHolidaysManager({ holidays }: Props) {
           styles={{ body: { padding: 14 } }}
         >
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <TypographyTitle level={4} style={{ margin: 0 }}>
-              Hari Libur
-            </TypographyTitle>
+            <div>
+              <div className="smartmaps-admin-kicker">Kalender Nasional</div>
+              <TypographyTitle
+                level={4}
+                className="smartmaps-admin-heading"
+                style={{ margin: 0 }}
+              >
+                Hari Libur
+              </TypographyTitle>
+            </div>
 
             <div className="flex items-center gap-2">
               <Button type="primary" icon={<SaveOutlined />} onClick={openCreate}>
@@ -274,6 +281,7 @@ export default function AdminHolidaysManager({ holidays }: Props) {
           </div>
 
           <Table
+            className="smartmaps-admin-table"
             rowKey="id"
             size="small"
             columns={columns}
@@ -306,6 +314,7 @@ export default function AdminHolidaysManager({ holidays }: Props) {
         ]}
       >
         <Form
+          className="smartmaps-admin-form"
           form={form}
           layout="vertical"
           initialValues={formDefaults}

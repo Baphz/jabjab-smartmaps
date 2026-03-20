@@ -116,10 +116,10 @@ export default async function HomePage() {
                 </div>
 
                 <div className="min-w-0">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <div className="smartmaps-overline">
                     {siteContent.publicHome.eyebrow}
                   </div>
-                  <h1 className="mt-0.5 text-[22px] font-semibold tracking-tight text-slate-950 sm:text-[28px]">
+                  <h1 className="smartmaps-title-display mt-0.5">
                     {branding.publicHomeTitle}
                   </h1>
                 </div>

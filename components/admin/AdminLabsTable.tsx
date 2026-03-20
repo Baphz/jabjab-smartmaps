@@ -61,7 +61,7 @@ export default function AdminLabsTable({ labs, canDelete }: Props) {
       dataIndex: "name",
       key: "name",
       render: (value: string) => (
-        <TypographyText strong>{value}</TypographyText>
+        <div className="smartmaps-admin-item-title">{value}</div>
       ),
     },
     {
@@ -70,7 +70,7 @@ export default function AdminLabsTable({ labs, canDelete }: Props) {
       key: "address",
       responsive: ["md"],
       render: (value: string) => (
-        <TypographyText style={{ color: "#475569" }}>{value}</TypographyText>
+        <div className="smartmaps-admin-item-copy">{value}</div>
       ),
     },
     {
@@ -87,7 +87,7 @@ export default function AdminLabsTable({ labs, canDelete }: Props) {
             ))}
           </Space>
         ) : (
-          <TypographyText type="secondary">Belum diset</TypographyText>
+          <TypographyText className="smartmaps-admin-item-copy">Belum diset</TypographyText>
         ),
     },
     {
@@ -123,6 +123,7 @@ export default function AdminLabsTable({ labs, canDelete }: Props) {
     <>
       {contextHolder}
       <Table
+        className="smartmaps-admin-table"
         rowKey="id"
         columns={columns}
         dataSource={labs}

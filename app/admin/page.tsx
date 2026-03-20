@@ -8,6 +8,7 @@ import AdminArticlesManager, {
   type AdminArticleRow,
 } from "@/components/admin/AdminArticlesManager";
 import AdminEventsManager, {
+  type AdminEventArticleOption,
   type AdminEventRow,
 } from "@/components/admin/AdminEventsManager";
 import AdminHolidaysManager, {
@@ -139,6 +140,13 @@ export default async function AdminDashboardPage() {
               name: true,
             },
           },
+          relatedArticle: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+            },
+          },
         },
         orderBy: [{ startDate: "asc" }, { title: "asc" }],
       }),
@@ -227,6 +235,9 @@ export default async function AdminDashboardPage() {
     endDate: formatDateKey(event.endDate),
     timeLabel: event.timeLabel,
     isPublished: event.isPublished,
+    relatedArticleId: event.relatedArticle?.id ?? null,
+    relatedArticleTitle: event.relatedArticle?.title ?? null,
+    relatedArticleSlug: event.relatedArticle?.slug ?? null,
     createdAt: event.createdAt.toISOString(),
   }));
 
@@ -252,6 +263,15 @@ export default async function AdminDashboardPage() {
     isPublished: article.isPublished,
     publishedAt: formatDateKey(article.publishedAt),
     createdAt: article.createdAt.toISOString(),
+  }));
+
+  const eventArticleOptions: AdminEventArticleOption[] = dashboardArticles.map((article) => ({
+    value: article.id,
+    label: article.title,
+    slug: article.slug,
+    isGlobal: article.isGlobal,
+    labId: article.lab?.id ?? null,
+    scopeLabel: article.isGlobal ? "Global DPW" : article.lab?.name ?? "Artikel Lab",
   }));
 
   const activeUsers: ActiveLabUserRow[] = (usersResult?.data ?? [])
@@ -353,6 +373,7 @@ export default async function AdminDashboardPage() {
     children: (
       <AdminEventsManager
         labs={eventLabOptions}
+        articles={eventArticleOptions}
         events={eventRows}
         canManageAllLabs={session.isAdmin}
         fixedLabId={session.isLabAdmin ? session.labId : null}

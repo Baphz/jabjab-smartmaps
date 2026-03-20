@@ -228,10 +228,10 @@ export default function HomeMapAgendaLayout({
         <div className="border-b border-slate-200/80 px-3.5 py-3">
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,460px)] lg:items-end">
             <div className="max-w-3xl">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <div className="smartmaps-overline">
                 {siteContent.publicHome.sections.mapEyebrow}
               </div>
-              <h2 className="mt-0.5 mb-0 text-[18px] font-semibold tracking-tight text-slate-950">
+              <h2 className="smartmaps-title-section mt-0.5">
                 {mapTitle ?? siteContent.publicHome.sections.mapTitle}
               </h2>
             </div>
@@ -339,6 +339,9 @@ export default function HomeMapAgendaLayout({
               closeLabel={publicHomeContent.calendar.closeLabel}
               emptyDayLabel={publicHomeContent.calendar.emptyDayLabel}
               readArticleLabel={publicHomeContent.calendar.readArticleLabel}
+              readRelatedArticleLabel={
+                publicHomeContent.calendar.readRelatedArticleLabel
+              }
               viewMapLabel={publicHomeContent.calendar.viewMapLabel}
             />
           </section>
@@ -356,6 +359,9 @@ export default function HomeMapAgendaLayout({
               kindLabels={publicHomeContent.calendar.kinds}
               globalArticleScopeLabel={publicHomeContent.calendar.scopes.globalArticle}
               globalAgendaScopeLabel={publicHomeContent.calendar.scopes.globalAgenda}
+              readRelatedArticleLabel={
+                publicHomeContent.calendar.readRelatedArticleLabel
+              }
               viewMapLabel={publicHomeContent.calendar.viewMapLabel}
             />
           </section>

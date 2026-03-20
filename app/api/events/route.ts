@@ -6,6 +6,7 @@ import {
   normalizeOptionalText,
   normalizeText,
 } from "@/lib/activity-server";
+import { resolveRelatedArticleForEvent } from "@/lib/articles";
 import {
   buildStructuredAddress,
   normalizeWhitespace,
@@ -37,6 +38,7 @@ type EventPayload = {
   endDate?: string;
   timeLabel?: string;
   isPublished?: boolean;
+  relatedArticleId?: string;
 };
 
 function parsePublishedFlag(value: unknown, fallback: boolean) {
@@ -59,6 +61,21 @@ function parseCoordinate(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
+function getEventErrorStatus(message: string) {
+  if (message === "Artikel terkait tidak ditemukan.") {
+    return 404;
+  }
+
+  if (
+    message.startsWith("Artikel terkait") ||
+    message.startsWith("Agenda global hanya")
+  ) {
+    return 400;
+  }
+
+  return 500;
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const labId = normalizeText(url.searchParams.get("labId"));
@@ -74,6 +91,13 @@ export async function GET(req: Request) {
         select: {
           id: true,
           name: true,
+        },
+      },
+      relatedArticle: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
         },
       },
     },
@@ -122,6 +146,7 @@ export async function POST(req: Request) {
     const latitude = parseCoordinate(body.latitude);
     const longitude = parseCoordinate(body.longitude);
     const timeLabel = normalizeOptionalText(body.timeLabel);
+    const relatedArticleId = normalizeOptionalText(body.relatedArticleId);
     const startDateKey = normalizeDateKeyInput(body.startDate);
     const endDateKey =
       normalizeDateKeyInput(body.endDate) ?? normalizeDateKeyInput(body.startDate);
@@ -202,7 +227,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const [lab, startDate, endDate] = await Promise.all([
+    const [lab, startDate, endDate, relatedArticle] = await Promise.all([
       isGlobal
         ? Promise.resolve(null)
         : prisma.lab.findUnique({
@@ -211,6 +236,13 @@ export async function POST(req: Request) {
           }),
       Promise.resolve(dateKeyToUtcDate(startDateKey)),
       Promise.resolve(dateKeyToUtcDate(endDateKey)),
+      resolveRelatedArticleForEvent({
+        articleId: relatedArticleId,
+        eventLabId: isGlobal ? null : labId,
+        isGlobalEvent: isGlobal,
+        viewerLabId: session.labId,
+        isAdmin: session.isAdmin,
+      }),
     ]);
 
     if (!isGlobal && !lab) {
@@ -248,6 +280,7 @@ export async function POST(req: Request) {
         villageType,
         latitude,
         longitude,
+        relatedArticleId: relatedArticle?.id ?? null,
         startDate,
         endDate,
         timeLabel,
@@ -261,6 +294,13 @@ export async function POST(req: Request) {
             name: true,
           },
         },
+        relatedArticle: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
       },
     });
 
@@ -271,6 +311,6 @@ export async function POST(req: Request) {
     const message =
       error instanceof Error ? error.message : "Gagal menambahkan agenda.";
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: getEventErrorStatus(message) });
   }
 }

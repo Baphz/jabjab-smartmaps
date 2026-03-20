@@ -30,6 +30,7 @@ type UpcomingActivityListProps = {
   globalArticleScopeLabel?: string;
   globalAgendaScopeLabel?: string;
   viewMapLabel?: string;
+  readRelatedArticleLabel?: string;
 };
 
 function getItemPillClass(kind: ActivitySourceItem["kind"]) {
@@ -75,6 +76,7 @@ export default function UpcomingActivityList({
   globalArticleScopeLabel,
   globalAgendaScopeLabel,
   viewMapLabel = "Lihat di peta",
+  readRelatedArticleLabel = "Baca artikel terkait",
 }: UpcomingActivityListProps) {
   const upcomingItems = useMemo(
     () =>
@@ -235,16 +237,27 @@ export default function UpcomingActivityList({
                   ) : null}
                 </Space>
 
-                  {item.labId && onSelectLab ? (
-                    <Button
-                      type="link"
-                      size="small"
-                      style={{ paddingInline: 0, height: "auto" }}
-                      onClick={() => onSelectLab(item.labId!)}
-                    >
-                      {viewMapLabel}
-                    </Button>
-                  ) : null}
+                {item.kind === "lab_event" && item.relatedArticleSlug ? (
+                  <Button
+                    type="link"
+                    size="small"
+                    href={`/artikel/${item.relatedArticleSlug}`}
+                    style={{ paddingInline: 0, height: "auto" }}
+                  >
+                    {readRelatedArticleLabel}
+                  </Button>
+                ) : null}
+
+                {item.labId && onSelectLab ? (
+                  <Button
+                    type="link"
+                    size="small"
+                    style={{ paddingInline: 0, height: "auto" }}
+                    onClick={() => onSelectLab(item.labId!)}
+                  >
+                    {viewMapLabel}
+                  </Button>
+                ) : null}
                 </Space>
               </div>
             );

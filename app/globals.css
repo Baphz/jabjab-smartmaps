@@ -35,7 +35,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-plus-jakarta-sans);
+  --font-sans: "Manrope";
 }
 
 html,
@@ -47,7 +47,83 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-plus-jakarta-sans), sans-serif;
+  font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.smartmaps-overline {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.smartmaps-caption {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-soft);
+}
+
+.smartmaps-title-display {
+  margin: 0;
+  font-size: clamp(2rem, 1.6rem + 1.1vw, 2.95rem);
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.smartmaps-title-page {
+  margin: 0;
+  font-size: clamp(1.85rem, 1.5rem + 0.8vw, 2.55rem);
+  line-height: 1.06;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.smartmaps-title-section {
+  margin: 0;
+  font-size: clamp(1.2rem, 1.04rem + 0.45vw, 1.65rem);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.smartmaps-title-card {
+  margin: 0;
+  font-size: clamp(1.02rem, 0.98rem + 0.28vw, 1.3rem);
+  line-height: 1.24;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.smartmaps-copy-lead {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.68;
+  color: var(--text-muted);
+}
+
+.smartmaps-copy-muted {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.62;
+  color: var(--text-muted);
 }
 
 html.theme-dark {
@@ -821,6 +897,51 @@ html.theme-dark .smartmaps-logo-frame {
   background: var(--surface) !important;
 }
 
+.smartmaps-detail-drawer .ant-drawer-header {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+}
+
+.smartmaps-detail-drawer .ant-drawer-header-title {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+}
+
+.smartmaps-detail-drawer .ant-drawer-title {
+  order: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground) !important;
+}
+
+.smartmaps-detail-drawer .ant-drawer-close {
+  order: 2;
+  margin-inline-start: auto !important;
+  margin-inline-end: 0 !important;
+  display: inline-flex;
+  height: 38px;
+  width: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  color: var(--text-muted) !important;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.smartmaps-detail-drawer .ant-drawer-close:hover,
+.smartmaps-detail-drawer .ant-drawer-close:focus {
+  background: color-mix(in srgb, var(--surface-strong) 86%, transparent) !important;
+  color: var(--foreground) !important;
+}
+
 .smartmaps-role-pill {
   box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.16);
 }
@@ -1095,7 +1216,7 @@ html.theme-dark .ant-table-placeholder > td {
 
 .map-marker-label-wrap {
   display: flex;
-  height: 144px;
+  height: 188px;
   width: 236px;
   align-items: flex-start;
   justify-content: center;
@@ -1280,6 +1401,62 @@ html.theme-dark .map-marker-label-event::after {
   background: color-mix(in srgb, var(--surface-amber) 72%, var(--surface-strong)) !important;
 }
 
+.smartmaps-admin-heading {
+  margin: 0;
+  font-size: clamp(1.02rem, 0.96rem + 0.22vw, 1.26rem);
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+}
+
+.smartmaps-admin-kicker {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.smartmaps-admin-muted {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.smartmaps-admin-item-title {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.smartmaps-admin-item-copy {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.smartmaps-admin-summary-card {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-muted) 72%, var(--surface-strong));
+  padding: 12px 14px;
+}
+
+.smartmaps-admin-summary-card-value {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
 .smartmaps-admin-metric {
   display: flex;
   align-items: center;
@@ -1375,8 +1552,73 @@ html.theme-dark .map-marker-label-event::after {
   background: color-mix(in srgb, var(--surface-blue) 76%, var(--surface-strong));
 }
 
+.smartmaps-admin-table .ant-table {
+  background: transparent !important;
+}
+
+.smartmaps-admin-table .ant-table-container {
+  border-radius: 18px !important;
+  overflow: hidden;
+}
+
+.smartmaps-admin-table .ant-table-thead > tr > th {
+  font-size: 10.5px !important;
+  line-height: 1.2;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-soft) !important;
+  background: color-mix(in srgb, var(--surface-muted) 74%, var(--surface-strong)) !important;
+}
+
+.smartmaps-admin-table .ant-table-tbody > tr > td {
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+  vertical-align: top;
+}
+
+.smartmaps-admin-table .ant-pagination {
+  margin: 14px 0 0 !important;
+}
+
+.smartmaps-admin-form .ant-form-item {
+  margin-bottom: 14px;
+}
+
+.smartmaps-admin-form .ant-form-item-label {
+  padding-bottom: 6px !important;
+}
+
+.smartmaps-admin-form .ant-form-item-label > label {
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text-soft) !important;
+}
+
+.smartmaps-admin-link-chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border-blue);
+  background: color-mix(in srgb, var(--surface-blue) 72%, var(--surface-strong));
+  padding: 4px 10px;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #2156c7;
+}
+
 html.theme-dark .smartmaps-admin-panel.ant-card {
   box-shadow: 0 16px 34px rgba(4, 9, 20, 0.28) !important;
+}
+
+html.theme-dark .smartmaps-admin-summary-card {
+  border-color: var(--border-strong);
+  background: rgba(24, 34, 53, 0.96);
 }
 
 html.theme-dark .smartmaps-admin-metric {
@@ -1414,6 +1656,16 @@ html.theme-dark .smartmaps-admin-tabs .ant-tabs-tab-active {
   background: rgba(27, 60, 122, 0.52);
 }
 
+html.theme-dark .smartmaps-admin-table .ant-table-thead > tr > th {
+  background: rgba(27, 39, 64, 0.92) !important;
+}
+
+html.theme-dark .smartmaps-admin-link-chip {
+  border-color: var(--border-blue);
+  background: rgba(27, 60, 122, 0.54);
+  color: #dbeafe;
+}
+
 .smartmaps-admin-modal .ant-modal-content {
   overflow: hidden;
   border-radius: 24px;
@@ -1426,6 +1678,14 @@ html.theme-dark .smartmaps-admin-tabs .ant-tabs-tab-active {
 .smartmaps-admin-modal .ant-modal-footer {
   border-color: var(--border);
   background: transparent;
+}
+
+.smartmaps-admin-modal .ant-modal-title {
+  font-size: 19px !important;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--foreground) !important;
 }
 
 html.theme-dark .smartmaps-admin-modal .ant-modal-content {

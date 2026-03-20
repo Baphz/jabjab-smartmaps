@@ -66,10 +66,10 @@ export default function RecentArticlesSection({
     <section className="rounded-3xl border border-sky-200 bg-sky-50/82 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <div className="smartmaps-overline">
             {siteContent.publicHome.sections.articlesEyebrow}
           </div>
-          <h2 className="mb-0 mt-1 text-[22px] font-semibold tracking-tight text-slate-950">
+          <h2 className="smartmaps-title-section mt-1">
             {siteContent.publicHome.sections.articlesTitle}
           </h2>
         </div>
@@ -111,7 +111,7 @@ export default function RecentArticlesSection({
                 {formatPublishedDate(article.publishedAt)}
               </div>
 
-              <h3 className="mt-1 text-[15px] font-semibold leading-6 text-slate-950">
+              <h3 className="smartmaps-title-card mt-1">
                 {article.title}
               </h3>
 

@@ -35,6 +35,8 @@ export type ActivitySourceItem = {
   eventLatitude: number | null;
   eventLongitude: number | null;
   articleSlug?: string | null;
+  relatedArticleSlug?: string | null;
+  relatedArticleTitle?: string | null;
   coverImageUrl?: string | null;
 };
 

@@ -6,6 +6,7 @@ import {
   normalizeOptionalText,
   normalizeText,
 } from "@/lib/activity-server";
+import { resolveRelatedArticleForEvent } from "@/lib/articles";
 import {
   buildStructuredAddress,
   normalizeWhitespace,
@@ -43,6 +44,7 @@ type EventPayload = {
   endDate?: string;
   timeLabel?: string;
   isPublished?: boolean;
+  relatedArticleId?: string;
 };
 
 function parsePublishedFlag(value: unknown, fallback: boolean) {
@@ -65,6 +67,21 @@ function parseCoordinate(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
+function getEventErrorStatus(message: string) {
+  if (message === "Artikel terkait tidak ditemukan.") {
+    return 404;
+  }
+
+  if (
+    message.startsWith("Artikel terkait") ||
+    message.startsWith("Agenda global hanya")
+  ) {
+    return 400;
+  }
+
+  return 500;
+}
+
 export async function GET(_req: Request, context: RouteContext) {
   const { id } = await context.params;
 
@@ -79,6 +96,13 @@ export async function GET(_req: Request, context: RouteContext) {
         select: {
           id: true,
           name: true,
+        },
+      },
+      relatedArticle: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
         },
       },
     },
@@ -123,6 +147,7 @@ export async function PUT(req: Request, context: RouteContext) {
         id: true,
         labId: true,
         isGlobal: true,
+        relatedArticleId: true,
       },
     });
 
@@ -167,6 +192,7 @@ export async function PUT(req: Request, context: RouteContext) {
     const latitude = parseCoordinate(body.latitude);
     const longitude = parseCoordinate(body.longitude);
     const timeLabel = normalizeOptionalText(body.timeLabel);
+    const relatedArticleId = normalizeOptionalText(body.relatedArticleId);
     const startDateKey = normalizeDateKeyInput(body.startDate);
     const endDateKey =
       normalizeDateKeyInput(body.endDate) ?? normalizeDateKeyInput(body.startDate);
@@ -240,7 +266,7 @@ export async function PUT(req: Request, context: RouteContext) {
       );
     }
 
-    const [lab, startDate, endDate] = await Promise.all([
+    const [lab, startDate, endDate, relatedArticle] = await Promise.all([
       isGlobal
         ? Promise.resolve(null)
         : prisma.lab.findUnique({
@@ -249,6 +275,13 @@ export async function PUT(req: Request, context: RouteContext) {
           }),
       Promise.resolve(dateKeyToUtcDate(startDateKey)),
       Promise.resolve(dateKeyToUtcDate(endDateKey)),
+      resolveRelatedArticleForEvent({
+        articleId: relatedArticleId,
+        eventLabId: isGlobal ? null : labId,
+        isGlobalEvent: isGlobal,
+        viewerLabId: session.labId,
+        isAdmin: session.isAdmin,
+      }),
     ]);
 
     if (!isGlobal && !lab) {
@@ -287,6 +320,7 @@ export async function PUT(req: Request, context: RouteContext) {
         villageType,
         latitude,
         longitude,
+        relatedArticleId: relatedArticle?.id ?? null,
         startDate,
         endDate,
         timeLabel,
@@ -299,6 +333,13 @@ export async function PUT(req: Request, context: RouteContext) {
             name: true,
           },
         },
+        relatedArticle: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
       },
     });
 
@@ -309,7 +350,7 @@ export async function PUT(req: Request, context: RouteContext) {
     const message =
       error instanceof Error ? error.message : "Gagal memperbarui agenda.";
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: getEventErrorStatus(message) });
   }
 }
 

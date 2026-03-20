@@ -13,7 +13,7 @@ const sharedTheme: ThemeConfig = {
     fontSize: 13,
     fontSizeLG: 15,
     fontSizeSM: 12,
-    fontFamily: "var(--font-plus-jakarta-sans), sans-serif",
+    fontFamily: '"Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     wireframe: false,
   },
   components: {

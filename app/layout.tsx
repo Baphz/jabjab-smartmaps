@@ -1,18 +1,16 @@
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { getAppBranding } from "@/lib/app-branding";
 import { siteContent } from "@/lib/site-content";
 import { AppThemeProvider } from "@/components/theme/AppThemeProvider";
+import "@fontsource/manrope/400.css";
+import "@fontsource/manrope/500.css";
+import "@fontsource/manrope/600.css";
+import "@fontsource/manrope/700.css";
 import "antd/dist/reset.css";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-plus-jakarta-sans",
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getAppBranding();
@@ -36,7 +34,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={plusJakartaSans.variable} suppressHydrationWarning>
+    <html lang="id" suppressHydrationWarning>
       <body>
         <ClerkProvider afterSignOutUrl="/login">
           <AntdRegistry>

@@ -265,10 +265,10 @@ export default function AdminArticlesManager({
               </Tag>
             </div>
 
-            <TypographyText strong>{row.title}</TypographyText>
+            <div className="smartmaps-admin-item-title">{row.title}</div>
 
             {row.excerpt ? (
-              <TypographyText style={{ color: "#64748b" }}>{row.excerpt}</TypographyText>
+              <div className="smartmaps-admin-item-copy">{row.excerpt}</div>
             ) : null}
           </Space>
         </div>
@@ -287,7 +287,11 @@ export default function AdminArticlesManager({
             key: "lab",
             width: 220,
             render: (_value: unknown, row: AdminArticleRow) =>
-              row.isGlobal ? "Artikel Global DPW" : row.labName ?? "-",
+              row.isGlobal ? (
+                <span className="smartmaps-admin-item-copy">Artikel Global DPW</span>
+              ) : (
+                <span className="smartmaps-admin-item-copy">{row.labName ?? "-"}</span>
+              ),
           },
         ]
       : []),
@@ -322,11 +326,14 @@ export default function AdminArticlesManager({
         styles={{ body: { padding: 14 } }}
       >
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-slate-900">Artikel</span>
-            <Tag icon={<FileTextOutlined />} color="blue">
-              {articles.length}
-            </Tag>
+          <div>
+            <div className="smartmaps-admin-kicker">Publikasi</div>
+            <div className="mt-1 flex items-center gap-2">
+              <h3 className="smartmaps-admin-heading">Artikel</h3>
+              <Tag icon={<FileTextOutlined />} color="blue">
+                {articles.length}
+              </Tag>
+            </div>
           </div>
 
           <Button
@@ -340,6 +347,7 @@ export default function AdminArticlesManager({
         </div>
 
         <Table
+          className="smartmaps-admin-table"
           rowKey="id"
           size="small"
           columns={columns}
@@ -370,6 +378,7 @@ export default function AdminArticlesManager({
         ]}
       >
         <Form
+          className="smartmaps-admin-form"
           form={form}
           layout="vertical"
           initialValues={formDefaults}
@@ -412,7 +421,7 @@ export default function AdminArticlesManager({
                   className="md:col-span-2"
                   rules={[{ required: true, message: "Judul wajib diisi." }]}
                 >
-                  <Input placeholder="Judul publikasi" />
+                  <Input placeholder="Judul artikel" />
                 </FormItem>
 
                 <FormItem
@@ -430,7 +439,7 @@ export default function AdminArticlesManager({
                 <FormItem label="Ringkasan" name="excerpt" className="md:col-span-2">
                   <InputTextArea
                     rows={3}
-                    placeholder="Ringkasan singkat untuk kartu artikel"
+                    placeholder="Ringkasan singkat untuk daftar artikel"
                   />
                 </FormItem>
               </div>
@@ -451,7 +460,7 @@ export default function AdminArticlesManager({
                 ]}
               >
                 <ArticleRichTextEditor
-                  placeholder="Tulis isi artikel yang siap dibaca publik."
+                  placeholder="Tulis isi artikel untuk dibaca publik."
                   uploadLabId={effectiveUploadLabId}
                 />
               </FormItem>

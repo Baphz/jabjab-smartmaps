@@ -69,7 +69,11 @@ export function LoginForm({ branding }: { branding: AppBranding }) {
                 </div>
 
                 <div className="min-w-0">
-                  <TypographyTitle level={2} style={{ margin: 0 }}>
+                  <TypographyTitle
+                    level={2}
+                    className="smartmaps-title-page"
+                    style={{ margin: 0 }}
+                  >
                     {siteContent.login.title}
                   </TypographyTitle>
                 </div>

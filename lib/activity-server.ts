@@ -66,7 +66,10 @@ function mapHolidayTypeToKind(type: HolidayType): ActivitySourceItem["kind"] {
 }
 
 export function mapLabEventToActivitySource(
-  event: LabEvent & { lab: { id: string; name: string } | null }
+  event: LabEvent & {
+    lab: { id: string; name: string } | null;
+    relatedArticle: { slug: string; title: string } | null;
+  }
 ): ActivitySourceItem {
   return {
     id: event.id,
@@ -90,6 +93,8 @@ export function mapLabEventToActivitySource(
     villageType: event.villageType,
     eventLatitude: event.latitude ?? null,
     eventLongitude: event.longitude ?? null,
+    relatedArticleSlug: event.relatedArticle?.slug ?? null,
+    relatedArticleTitle: event.relatedArticle?.title ?? null,
   };
 }
 
@@ -121,6 +126,8 @@ export function mapHolidayToActivitySource(
     eventLatitude: null,
     eventLongitude: null,
     articleSlug: null,
+    relatedArticleSlug: null,
+    relatedArticleTitle: null,
     coverImageUrl: null,
   };
 }
@@ -153,6 +160,8 @@ export function mapArticleToActivitySource(
     eventLatitude: null,
     eventLongitude: null,
     articleSlug: article.slug,
+    relatedArticleSlug: null,
+    relatedArticleTitle: null,
     coverImageUrl: article.coverImageUrl,
   };
 }
@@ -214,6 +223,12 @@ export async function getActivitySources(args: ActivityQueryArgs = {}) {
           select: {
             id: true,
             name: true,
+          },
+        },
+        relatedArticle: {
+          select: {
+            slug: true,
+            title: true,
           },
         },
       },

@@ -148,11 +148,14 @@ export default function AdminUsersManager({
       title: "Email",
       dataIndex: "email",
       key: "email",
+      render: (value: string) => <div className="smartmaps-admin-item-title">{value}</div>,
     },
     {
       title: "Laboratorium",
       key: "labName",
-      render: (_, row) => row.labName ?? "-",
+      render: (_, row) => (
+        <div className="smartmaps-admin-item-copy">{row.labName ?? "-"}</div>
+      ),
     },
     {
       title: "Status",
@@ -173,11 +176,14 @@ export default function AdminUsersManager({
       title: "Email",
       dataIndex: "email",
       key: "email",
+      render: (value: string) => <div className="smartmaps-admin-item-title">{value}</div>,
     },
     {
       title: "Laboratorium",
       key: "labName",
-      render: (_, row) => row.labName ?? "-",
+      render: (_, row) => (
+        <div className="smartmaps-admin-item-copy">{row.labName ?? "-"}</div>
+      ),
     },
     {
       title: "Status",
@@ -260,9 +266,16 @@ export default function AdminUsersManager({
         styles={{ body: { padding: 14 } }}
       >
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <TypographyTitle level={4} style={{ margin: 0 }}>
-            Akun Labkesda
-          </TypographyTitle>
+          <div>
+            <div className="smartmaps-admin-kicker">Akses</div>
+            <TypographyTitle
+              level={4}
+              className="smartmaps-admin-heading"
+              style={{ margin: 0 }}
+            >
+              Akun Labkesda
+            </TypographyTitle>
+          </div>
 
           <Button
             type="primary"
@@ -282,6 +295,7 @@ export default function AdminUsersManager({
               label: `Akun Aktif (${activeUsers.length})`,
               children: (
                 <Table
+                  className="smartmaps-admin-table"
                   rowKey="id"
                   size="small"
                   columns={activeColumns}
@@ -296,6 +310,7 @@ export default function AdminUsersManager({
               label: `Undangan (${pendingInvitations.length})`,
               children: (
                 <Table
+                  className="smartmaps-admin-table"
                   rowKey="id"
                   size="small"
                   columns={pendingColumns}
@@ -331,6 +346,7 @@ export default function AdminUsersManager({
         ]}
       >
         <Form
+          className="smartmaps-admin-form"
           form={form}
           layout="vertical"
           onFinish={handleInvite}
@@ -347,7 +363,7 @@ export default function AdminUsersManager({
             >
               <Input
                 prefix={<MailOutlined />}
-                placeholder="Alamat email resmi"
+                placeholder="nama@instansi.go.id"
               />
             </FormItem>
 

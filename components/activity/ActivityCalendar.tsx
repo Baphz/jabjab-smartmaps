@@ -52,6 +52,7 @@ type ActivityCalendarProps = {
   closeLabel?: string;
   emptyDayLabel?: string;
   readArticleLabel?: string;
+  readRelatedArticleLabel?: string;
   viewMapLabel?: string;
 };
 
@@ -148,6 +149,7 @@ export default function ActivityCalendar({
   closeLabel = "Tutup",
   emptyDayLabel = "Belum ada item.",
   readArticleLabel = "Baca artikel",
+  readRelatedArticleLabel = "Baca artikel terkait",
   viewMapLabel = "Lihat di peta",
 }: ActivityCalendarProps) {
   const sortedItems = useMemo(
@@ -597,6 +599,17 @@ export default function ActivityCalendar({
                         style={{ paddingInline: 0, height: "auto" }}
                       >
                         {readArticleLabel}
+                      </Button>
+                    ) : null}
+
+                    {item.kind === "lab_event" && item.relatedArticleSlug ? (
+                      <Button
+                        type="link"
+                        size="small"
+                        href={`/artikel/${item.relatedArticleSlug}`}
+                        style={{ paddingInline: 0, height: "auto" }}
+                      >
+                        {readRelatedArticleLabel}
                       </Button>
                     ) : null}
 

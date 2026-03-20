@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CloseOutlined,
   EnvironmentOutlined,
   GlobalOutlined,
   PhoneOutlined,
@@ -298,11 +299,11 @@ function escapeMapLabel(value: string) {
 
 function createMarkerLabelIcon(
   title: string,
-  actionLabel: string,
+  actionLabel?: string | null,
   tone: "selected" | "event" = "selected"
 ) {
   const safeTitle = escapeMapLabel(title);
-  const safeAction = escapeMapLabel(actionLabel);
+  const safeAction = actionLabel ? escapeMapLabel(actionLabel) : "";
   const toneClass =
     tone === "event" ? "map-marker-label map-marker-label-event" : "map-marker-label map-marker-label-selected";
 
@@ -312,12 +313,12 @@ function createMarkerLabelIcon(
       <div class="map-marker-label-wrap">
         <div class="${toneClass}">
           <div class="map-marker-label-title">${safeTitle}</div>
-          <div class="map-marker-label-action">${safeAction}</div>
+          ${safeAction ? `<div class="map-marker-label-action">${safeAction}</div>` : ""}
         </div>
       </div>
     `,
-    iconSize: [236, 144],
-    iconAnchor: [118, 144],
+    iconSize: [236, 188],
+    iconAnchor: [118, 188],
   });
 }
 
@@ -575,6 +576,10 @@ export default function SmartMapInner({
   const focusedActivityNavigationUrl =
     focusedActivity && hasFocusedActivityCoordinates
       ? `https://www.google.com/maps/search/?api=1&query=${focusedActivity.eventLatitude},${focusedActivity.eventLongitude}`
+      : null;
+  const focusedActivityArticleUrl =
+    focusedActivity?.relatedArticleSlug
+      ? `/artikel/${focusedActivity.relatedArticleSlug}`
       : null;
 
   function handleSelectLab(nextLabId: string | null) {
@@ -835,13 +840,19 @@ export default function SmartMapInner({
                     focusedActivity.locationName ||
                       focusedActivity.title ||
                       mapContent.defaultAgendaLocationLabel,
-                    mapContent.labDetail.openMapsLabel,
+                    focusedActivityArticleUrl
+                      ? siteContent.publicHome.calendar.readRelatedArticleLabel
+                      : null,
                     "event"
                   )}
                   zIndexOffset={1700}
-                  eventHandlers={{
-                    click: () => openExternalUrl(focusedActivityNavigationUrl),
-                  }}
+                  eventHandlers={
+                    focusedActivityArticleUrl
+                      ? {
+                          click: () => openExternalUrl(focusedActivityArticleUrl),
+                        }
+                      : undefined
+                  }
                 />
               </>
             ) : null}
@@ -907,9 +918,11 @@ export default function SmartMapInner({
 
       {selectedLab ? (
         <Drawer
+          className="smartmaps-detail-drawer"
           open={Boolean(selectedLab)}
           onClose={() => handleSelectLab(null)}
           title={mapContent.detailDrawerTitle}
+          closeIcon={<CloseOutlined />}
           placement={screens.lg ? "left" : "bottom"}
           size={screens.lg ? 430 : "72vh"}
           mask={!screens.lg}
@@ -917,6 +930,7 @@ export default function SmartMapInner({
             header: {
               padding: "14px 18px",
               borderBottom: "1px solid var(--border)",
+              background: "var(--surface)",
             },
             body: {
               padding: 16,
