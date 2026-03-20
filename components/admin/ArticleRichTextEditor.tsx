@@ -1,6 +1,9 @@
 "use client";
 
 import {
+  AlignCenterOutlined,
+  AlignLeftOutlined,
+  AlignRightOutlined,
   BoldOutlined,
   ClearOutlined,
   ItalicOutlined,
@@ -15,11 +18,12 @@ import Heading from "@tiptap/extension-heading";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
-import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Button, Select, Spin, message } from "antd";
+import { Button, Input, Select, Spin, message } from "antd";
 import { useEffect, useRef, useState } from "react";
+import { prepareImageForUpload } from "@/lib/client-image-upload";
+import { resolveStoredPhotoUrl } from "@/lib/drive-file";
 
 type ArticleRichTextEditorProps = {
   value?: string;
@@ -28,6 +32,16 @@ type ArticleRichTextEditorProps = {
   uploadLabId?: string | null;
   disabled?: boolean;
 };
+
+function resolveInlineImageSources(html: string) {
+  return html.replace(
+    /<img\b([^>]*?)\bsrc=(['"])(.*?)\2([^>]*)>/gi,
+    (_match, beforeSrc, quote, src, afterSrc) => {
+      const resolvedSrc = resolveStoredPhotoUrl(src);
+      return `<img${beforeSrc}src=${quote}${resolvedSrc}${quote}${afterSrc}>`;
+    }
+  );
+}
 
 function ToolbarButton({
   active = false,
@@ -64,6 +78,8 @@ export default function ArticleRichTextEditor({
   const onChangeRef = useRef<(value: string) => void>(onChange ?? (() => {}));
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isImageSelected, setIsImageSelected] = useState(false);
+  const [selectedImageCaption, setSelectedImageCaption] = useState("");
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
@@ -79,11 +95,11 @@ export default function ArticleRichTextEditor({
           blockquote: false,
           codeBlock: false,
           horizontalRule: false,
+          underline: {},
         }),
         Heading.configure({
           levels: [1, 2, 3],
         }),
-        Underline,
         Image.configure({
           inline: false,
           allowBase64: false,
@@ -92,12 +108,12 @@ export default function ArticleRichTextEditor({
           placeholder,
         }),
         TextAlign.configure({
-          types: ["heading", "paragraph"],
-          alignments: ["left"],
+          types: ["heading", "paragraph", "image"],
+          alignments: ["left", "center", "right", "justify"],
           defaultAlignment: "left",
         }),
       ],
-      content: value || "",
+      content: resolveInlineImageSources(value || ""),
       editorProps: {
         attributes: {
           class:
@@ -114,8 +130,9 @@ export default function ArticleRichTextEditor({
   useEffect(() => {
     if (!editor) return;
     const current = editor.getHTML();
-    if (value !== current) {
-      editor.commands.setContent(value || "", { emitUpdate: false });
+    const nextContent = resolveInlineImageSources(value || "");
+    if (nextContent !== current) {
+      editor.commands.setContent(nextContent, { emitUpdate: false });
     }
   }, [editor, value]);
 
@@ -123,6 +140,30 @@ export default function ArticleRichTextEditor({
     if (!editor) return;
     editor.setEditable(!disabled);
   }, [disabled, editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const syncSelectedImageState = () => {
+      const active = editor.isActive("image");
+      setIsImageSelected(active);
+
+      if (!active) {
+        setSelectedImageCaption("");
+        return;
+      }
+
+      const attrs = editor.getAttributes("image") as { title?: string | null };
+      setSelectedImageCaption(String(attrs.title ?? ""));
+    };
+
+    syncSelectedImageState();
+    editor.on("selectionUpdate", syncSelectedImageState);
+
+    return () => {
+      editor.off("selectionUpdate", syncSelectedImageState);
+    };
+  }, [editor]);
 
   if (!editor) {
     return (
@@ -146,8 +187,9 @@ export default function ArticleRichTextEditor({
     setIsUploadingImage(true);
 
     try {
+      const preparedFile = await prepareImageForUpload(file);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", preparedFile);
       formData.append("kind", "article-inline");
       formData.append("bucket", "article");
 
@@ -163,6 +205,7 @@ export default function ArticleRichTextEditor({
       const payload = (await res.json()) as {
         error?: string;
         fileId?: string;
+        previewUrl?: string;
       };
 
       if (!res.ok || !payload.fileId) {
@@ -173,7 +216,14 @@ export default function ArticleRichTextEditor({
         throw new Error("Editor belum siap.");
       }
 
-      editor.chain().focus().setImage({ src: payload.fileId, alt: file.name }).run();
+      editor
+        .chain()
+        .focus()
+        .setImage({
+          src: payload.previewUrl ?? payload.fileId,
+          alt: preparedFile.name,
+        })
+        .run();
       messageApi.success("Gambar berhasil dimasukkan ke artikel.");
     } catch (error) {
       const detail =
@@ -271,6 +321,34 @@ export default function ArticleRichTextEditor({
             icon={<UnderlineOutlined />}
           />
           <ToolbarButton
+            title="Rata kiri"
+            disabled={disabled}
+            active={editor.isActive({ textAlign: "left" })}
+            onClick={() => editor.chain().focus().setTextAlign("left").run()}
+            icon={<AlignLeftOutlined />}
+          />
+          <ToolbarButton
+            title="Rata tengah"
+            disabled={disabled}
+            active={editor.isActive({ textAlign: "center" })}
+            onClick={() => editor.chain().focus().setTextAlign("center").run()}
+            icon={<AlignCenterOutlined />}
+          />
+          <ToolbarButton
+            title="Rata kanan"
+            disabled={disabled}
+            active={editor.isActive({ textAlign: "right" })}
+            onClick={() => editor.chain().focus().setTextAlign("right").run()}
+            icon={<AlignRightOutlined />}
+          />
+          <ToolbarButton
+            title="Rata kiri-kanan"
+            disabled={disabled}
+            active={editor.isActive({ textAlign: "justify" })}
+            onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+            icon={<span className="text-[11px] font-semibold leading-none">J</span>}
+          />
+          <ToolbarButton
             title="Bullet list"
             disabled={disabled}
             active={editor.isActive("bulletList")}
@@ -297,6 +375,32 @@ export default function ArticleRichTextEditor({
             icon={<ClearOutlined />}
           />
         </div>
+
+        {isImageSelected ? (
+          <div className="border-b border-slate-200 bg-white px-3 py-2.5">
+            <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
+              Caption Gambar
+            </div>
+            <Input
+              size="small"
+              disabled={disabled}
+              value={selectedImageCaption}
+              placeholder="Tulis caption untuk gambar yang dipilih"
+              className="mt-2"
+              onChange={(event) => {
+                const nextCaption = event.target.value;
+                setSelectedImageCaption(nextCaption);
+                editor
+                  .chain()
+                  .focus()
+                  .updateAttributes("image", {
+                    title: nextCaption.trim() || null,
+                  })
+                  .run();
+              }}
+            />
+          </div>
+        ) : null}
 
         <EditorContent editor={editor} />
       </div>
@@ -336,6 +440,20 @@ export default function ArticleRichTextEditor({
           height: auto;
           margin: 1rem 0;
           border-radius: 16px;
+        }
+        .smartmaps-article-editor-content img[style*="text-align: center"] {
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .smartmaps-article-editor-content img[style*="text-align: right"] {
+          margin-left: auto;
+        }
+        .smartmaps-article-editor-content [style*="text-align: center"] img {
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .smartmaps-article-editor-content [style*="text-align: right"] img {
+          margin-left: auto;
         }
         .smartmaps-article-editor-content li {
           margin: 0.2rem 0;

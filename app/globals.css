@@ -2173,6 +2173,31 @@ html.theme-dark .smartmaps-clerk .cl-formButtonPrimary {
   border-radius: 20px;
 }
 
+.smartmaps-article-content .smartmaps-article-figure {
+  margin: 1.5rem 0;
+}
+
+.smartmaps-article-content .smartmaps-article-figure img {
+  margin: 0;
+}
+
+.smartmaps-article-content .smartmaps-article-figcaption {
+  margin-top: 0.7rem;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: #64748b;
+  text-align: center;
+}
+
+.smartmaps-article-content [style*="text-align: center"] img {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.smartmaps-article-content [style*="text-align: right"] img {
+  margin-left: auto;
+}
+
 .smartmaps-article-content a {
   color: #2563eb;
   text-decoration: underline;
@@ -2189,6 +2214,10 @@ html.theme-dark .smartmaps-article-content h1,
 html.theme-dark .smartmaps-article-content h2,
 html.theme-dark .smartmaps-article-content h3 {
   color: #f8fafc;
+}
+
+html.theme-dark .smartmaps-article-content .smartmaps-article-figcaption {
+  color: #94a3b8;
 }
 
 html.theme-dark .smartmaps-article-content a {

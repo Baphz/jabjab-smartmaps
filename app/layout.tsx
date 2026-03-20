@@ -1,5 +1,6 @@
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ClerkProvider } from "@clerk/nextjs";
+import { ui } from "@clerk/ui";
 import type { Metadata } from "next";
 import { getAppBranding } from "@/lib/app-branding";
 import { siteContent } from "@/lib/site-content";
@@ -36,7 +37,7 @@ export default async function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <body>
-        <ClerkProvider afterSignOutUrl="/login">
+        <ClerkProvider afterSignOutUrl="/login" ui={ui}>
           <AntdRegistry>
             <AppThemeProvider>{children}</AppThemeProvider>
           </AntdRegistry>

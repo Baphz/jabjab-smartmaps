@@ -17,6 +17,7 @@ import {
   type UploadProps,
 } from "antd";
 import { useMemo, useState } from "react";
+import { prepareImageForUpload } from "@/lib/client-image-upload";
 import {
   extractGoogleDriveFileId,
   isSupabasePublicStorageUrl,
@@ -79,7 +80,7 @@ export default function ImageUploadField({
       return;
     }
 
-    const file =
+    const rawFile =
       sourceFile instanceof File
         ? sourceFile
         : new File([sourceFile], "upload-image", {
@@ -88,6 +89,7 @@ export default function ImageUploadField({
 
     setIsUploading(true);
     try {
+      const file = await prepareImageForUpload(rawFile);
       const formData = new FormData();
       formData.append("file", file);
       formData.append("kind", kind);
@@ -104,6 +106,7 @@ export default function ImageUploadField({
       const payload = (await res.json()) as {
         error?: string;
         fileId?: string;
+        previewUrl?: string;
       };
 
       if (!res.ok || !payload.fileId) {
