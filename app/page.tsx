@@ -89,20 +89,20 @@ export default async function HomePage() {
   const publicHomeContent = siteContent.publicHome;
 
   return (
-    <main className="min-h-screen px-2.5 py-2.5 sm:px-4 lg:px-5">
-      <div className="mx-auto flex max-w-[1480px] flex-col gap-2.5">
-        <section className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:px-5">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+    <main className="min-h-screen px-2 py-2.5 sm:px-4 lg:px-5">
+      <div className="mx-auto flex max-w-[1480px] flex-col gap-2 md:gap-2.5">
+        <section className="rounded-2xl border border-slate-200 bg-white px-3.5 py-3.5 shadow-[0_18px_40px_rgba(15,23,42,0.05)] sm:px-4 sm:py-4 lg:px-5">
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
             <div className="min-w-0">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5 sm:gap-3">
                 <div
                   className="smartmaps-logo-frame"
                   style={{
                     position: "relative",
-                    height: 48,
-                    width: 48,
+                    height: 44,
+                    width: 44,
                     overflow: "hidden",
-                    borderRadius: 14,
+                    borderRadius: 13,
                   }}
                 >
                   <Image
@@ -119,7 +119,7 @@ export default async function HomePage() {
                   <div className="smartmaps-overline">
                     {siteContent.publicHome.eyebrow}
                   </div>
-                  <h1 className="smartmaps-title-display mt-0.5">
+                  <h1 className="smartmaps-title-page mt-0.5 sm:text-[clamp(2rem,1.6rem+1.1vw,2.95rem)] sm:leading-[1.02] sm:tracking-[-0.05em]">
                     {branding.publicHomeTitle}
                   </h1>
                 </div>
@@ -127,10 +127,10 @@ export default async function HomePage() {
             </div>
 
             <div className="min-w-0 xl:w-auto">
-              <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto] xl:flex xl:flex-wrap xl:items-center xl:justify-end rounded-2xl border border-slate-200 bg-slate-50/95 p-2.5">
-                <span className="smartmaps-header-pill inline-flex min-h-10 w-full items-center gap-2 rounded-full border px-3.5 text-[11px] font-medium shadow-[0_1px_0_rgba(255,255,255,0.5)] sm:w-auto">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 rounded-2xl border border-slate-200 bg-slate-50/95 p-2 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:p-2.5 xl:flex xl:flex-wrap xl:items-center xl:justify-end">
+                <span className="smartmaps-header-pill inline-flex min-h-10 w-full items-center gap-2 rounded-full border px-3 text-[11px] font-medium shadow-[0_1px_0_rgba(255,255,255,0.5)] sm:px-3.5 sm:w-auto">
                     <EnvironmentOutlined className="text-slate-400" />
-                    <span className="whitespace-nowrap">{branding.regionLabel}</span>
+                    <span className="truncate sm:whitespace-nowrap">{branding.regionLabel}</span>
                 </span>
                 <ThemeModeToggle
                   size="middle"
@@ -140,7 +140,7 @@ export default async function HomePage() {
                   href={session.canAccessDashboard ? "/admin" : "/login"}
                   type="primary"
                   size="middle"
-                  className="smartmaps-header-action-button w-full rounded-full sm:w-auto"
+                  className="smartmaps-header-action-button col-span-2 w-full rounded-full sm:col-auto sm:w-auto"
                 >
                   {session.canAccessDashboard
                     ? publicHomeContent.toolbar.dashboardLabel
@@ -150,7 +150,7 @@ export default async function HomePage() {
             </div>
 
             <div className="xl:col-span-2">
-              <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2">
                 <CompactMetricChip
                   label={publicHomeContent.metrics.total}
                   value={labs.length}
@@ -202,7 +202,7 @@ export default async function HomePage() {
           }))}
         />
 
-        <div className="flex flex-col gap-1 px-1 pb-1 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1.5 px-1 pb-1 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <span>© {year} {branding.organizationName}.</span>
           <span>{branding.footerTagline}</span>
         </div>

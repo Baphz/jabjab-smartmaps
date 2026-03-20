@@ -27,6 +27,7 @@ import {
   type ActivitySourceItem,
 } from "@/lib/activity-calendar";
 import { buildAdministrativeAddressParts } from "@/lib/lab-address";
+import { siteContent } from "@/lib/site-content";
 
 const { Paragraph: TypographyParagraph, Text: TypographyText, Title: TypographyTitle } = Typography;
 
@@ -41,7 +42,6 @@ type ActivityCalendarProps = {
   note?: string;
   actionHref?: string;
   actionLabel?: string;
-  onSelectLab?: (labId: string) => void;
   onSelectActivityLocation?: (item: ActivitySourceItem) => void;
   kindLabels?: Partial<Record<ActivityKind, string>>;
   weekdayLabels?: readonly string[];
@@ -127,6 +127,47 @@ function sortDayItems(items: ActivitySourceItem[]) {
   });
 }
 
+function hasActivityCoordinates(item: ActivitySourceItem) {
+  return (
+    typeof item.eventLatitude === "number" &&
+    Number.isFinite(item.eventLatitude) &&
+    typeof item.eventLongitude === "number" &&
+    Number.isFinite(item.eventLongitude)
+  );
+}
+
+function buildActivityMapsUrl(item: ActivitySourceItem) {
+  if (item.kind !== "lab_event") {
+    return null;
+  }
+
+  if (hasActivityCoordinates(item)) {
+    return `https://www.google.com/maps/search/?api=1&query=${item.eventLatitude},${item.eventLongitude}`;
+  }
+
+  const query = [
+    item.locationName,
+    item.addressDetail,
+    item.locationAddress,
+    ...buildAdministrativeAddressParts({
+      provinceName: item.provinceName,
+      cityName: item.cityName,
+      cityType: item.cityType,
+      districtName: item.districtName,
+      villageName: item.villageName,
+      villageType: item.villageType,
+    }),
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  if (!query) {
+    return null;
+  }
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
 export default function ActivityCalendar({
   items,
   title,
@@ -138,7 +179,6 @@ export default function ActivityCalendar({
   note = "",
   actionHref,
   actionLabel,
-  onSelectLab,
   onSelectActivityLocation,
   kindLabels,
   weekdayLabels = CALENDAR_WEEKDAY_LABELS,
@@ -150,7 +190,7 @@ export default function ActivityCalendar({
   emptyDayLabel = "Belum ada item.",
   readArticleLabel = "Baca artikel",
   readRelatedArticleLabel = "Baca artikel terkait",
-  viewMapLabel = "Lihat di peta",
+  viewMapLabel = siteContent.publicHome.map.labDetail.openMapsLabel,
 }: ActivityCalendarProps) {
   const sortedItems = useMemo(
     () =>
@@ -258,6 +298,8 @@ export default function ActivityCalendar({
 
       if (firstMappableActivity && onSelectActivityLocation) {
         onSelectActivityLocation(firstMappableActivity);
+        setIsDetailOpen(false);
+        return;
       }
       setIsDetailOpen(true);
       return;
@@ -267,6 +309,8 @@ export default function ActivityCalendar({
 
     if (firstMappableActivity && onSelectActivityLocation) {
       onSelectActivityLocation(firstMappableActivity);
+      setIsDetailOpen(false);
+      return;
     }
     setIsDetailOpen(true);
   }
@@ -510,6 +554,10 @@ export default function ActivityCalendar({
                     background: "color-mix(in srgb, var(--surface-muted) 82%, transparent)",
                   }}
                 >
+                  {(() => {
+                    const googleMapsUrl = buildActivityMapsUrl(item);
+
+                    return (
                   <Space orientation="vertical" size={6} style={{ width: "100%" }}>
                     <div className="flex flex-wrap gap-1.5">
                       <span
@@ -613,25 +661,21 @@ export default function ActivityCalendar({
                       </Button>
                     ) : null}
 
-                    {item.kind === "lab_event" &&
-                    (onSelectActivityLocation || (item.labId && onSelectLab)) ? (
+                    {item.kind === "lab_event" && googleMapsUrl ? (
                       <Button
                         type="link"
                         size="small"
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noreferrer"
                         style={{ paddingInline: 0, height: "auto" }}
-                        onClick={() => {
-                          if (onSelectActivityLocation) {
-                            onSelectActivityLocation(item);
-                          } else if (item.labId && onSelectLab) {
-                            onSelectLab(item.labId);
-                          }
-                          setIsDetailOpen(false);
-                        }}
                       >
                         {viewMapLabel}
                       </Button>
                     ) : null}
                   </Space>
+                    );
+                  })()}
                 </div>
               ))}
 

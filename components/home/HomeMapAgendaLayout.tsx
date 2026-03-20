@@ -223,10 +223,10 @@ export default function HomeMapAgendaLayout({
   }
 
   return (
-    <div className="grid gap-3 xl:grid-cols-[minmax(0,1.18fr)_372px] 2xl:grid-cols-[minmax(0,1.24fr)_392px]">
+    <div className="grid gap-2.5 xl:grid-cols-[minmax(0,1.18fr)_372px] 2xl:grid-cols-[minmax(0,1.24fr)_392px]">
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
-        <div className="border-b border-slate-200/80 px-3.5 py-3">
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,460px)] lg:items-end">
+        <div className="border-b border-slate-200/80 px-3 py-2.5 sm:px-3.5 sm:py-3">
+          <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,460px)] lg:items-end">
             <div className="max-w-3xl">
               <div className="smartmaps-overline">
                 {siteContent.publicHome.sections.mapEyebrow}
@@ -253,7 +253,7 @@ export default function HomeMapAgendaLayout({
                   size="middle"
                   icon={<ReloadOutlined />}
                   onClick={handleResetMapView}
-                  className="smartmaps-map-reset-button sm:min-w-[136px] sm:self-stretch"
+                  className="smartmaps-map-reset-button min-h-10 sm:min-w-[136px] sm:self-stretch"
                 >
                   {publicHomeContent.map.resetLabel}
                 </Button>
@@ -298,19 +298,19 @@ export default function HomeMapAgendaLayout({
           ) : null}
         </div>
 
-        <div className="p-2">
+        <div className="p-1.5 sm:p-2">
           <div className="rounded-[18px] border border-slate-200 bg-slate-100/90 p-1.5 shadow-[0_14px_30px_rgba(15,23,42,0.04)]">
-            <div className="h-[58vh] min-h-[430px] max-h-[700px] overflow-hidden rounded-[15px] border border-slate-200/90 bg-white sm:h-[60vh] lg:h-[62vh]">
+            <div className="h-[48vh] min-h-[340px] max-h-[620px] overflow-hidden rounded-[15px] border border-slate-200/90 bg-white sm:h-[56vh] sm:min-h-[420px] lg:h-[62vh]">
               <SmartMap
                 labs={labs}
                 highlightedLabIds={searchedLabIds}
                 activeLabIds={activeAgendaLabIds}
-              focusedLabIds={searchedLabIds}
-              mutedLabIds={mutedLabIds}
-              bestMatchLabId={bestMatchLabId}
-              focusedActivity={focusedActivity}
-              selectedLabId={effectiveSelectedLabId}
-              onSelectLab={handleSelectLab}
+                focusedLabIds={searchedLabIds}
+                mutedLabIds={mutedLabIds}
+                bestMatchLabId={bestMatchLabId}
+                focusedActivity={focusedActivity}
+                selectedLabId={effectiveSelectedLabId}
+                onSelectLab={handleSelectLab}
               />
             </div>
           </div>
@@ -318,8 +318,8 @@ export default function HomeMapAgendaLayout({
       </section>
 
       <aside className="xl:sticky xl:top-4 xl:self-start">
-        <div className="flex flex-col gap-3">
-          <section className="rounded-3xl border border-blue-200 bg-sky-50/80 px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
+        <div className="flex flex-col gap-2.5">
+          <section className="rounded-3xl border border-blue-200 bg-sky-50/80 px-2.5 py-2.5 shadow-[0_18px_40px_rgba(15,23,42,0.05)] sm:px-3 sm:py-3">
             <ActivityCalendar
               items={items}
               title={publicHomeContent.sidebar.calendarTitle}
@@ -328,7 +328,6 @@ export default function HomeMapAgendaLayout({
               compact
               hideSummary
               hideNote
-              onSelectLab={handleSelectLab}
               onSelectActivityLocation={handleSelectActivityLocation}
               weekdayLabels={publicHomeContent.calendar.weekdayLabels}
               kindLabels={publicHomeContent.calendar.kinds}
@@ -342,11 +341,11 @@ export default function HomeMapAgendaLayout({
               readRelatedArticleLabel={
                 publicHomeContent.calendar.readRelatedArticleLabel
               }
-              viewMapLabel={publicHomeContent.calendar.viewMapLabel}
+              viewMapLabel={siteContent.publicHome.map.labDetail.openMapsLabel}
             />
           </section>
 
-          <section className="rounded-3xl border border-emerald-200 bg-emerald-50/75 px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
+          <section className="rounded-3xl border border-emerald-200 bg-emerald-50/75 px-2.5 py-2.5 shadow-[0_18px_40px_rgba(15,23,42,0.05)] sm:px-3 sm:py-3">
             <UpcomingActivityList
               items={items}
               title={publicHomeContent.sidebar.agendaTitle}

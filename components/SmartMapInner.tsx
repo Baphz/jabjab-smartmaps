@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   MapContainer,
   Marker,
+  Popup,
   TileLayer,
   ZoomControl,
   useMap,
@@ -20,7 +21,7 @@ import {
 import MapAttributionBadge from "@/components/map/MapAttributionBadge";
 import { useAppTheme } from "@/components/theme/AppThemeProvider";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
-import type { ActivitySourceItem } from "@/lib/activity-calendar";
+import { formatActivityRange, type ActivitySourceItem } from "@/lib/activity-calendar";
 import {
   buildAdministrativeAddressParts,
   type LabCityTypeValue,
@@ -120,8 +121,8 @@ function MapViewportController({
         padding: options.padding,
         maxZoom: options.maxZoom,
         animate: true,
-        duration: options.duration ?? 1,
-        easeLinearity: 0.18,
+        duration: options.duration ?? 1.08,
+        easeLinearity: 0.14,
       });
     }
 
@@ -137,7 +138,8 @@ function MapViewportController({
       ) {
         map.flyTo([focusedActivity.eventLatitude!, focusedActivity.eventLongitude!], 13, {
           animate: true,
-          duration: 0.9,
+          duration: 1.08,
+          easeLinearity: 0.14,
         });
         previousSelectedLabIdRef.current = selectedLab?.id ?? null;
         previousActivityFocusKeyRef.current = activityFocusKey;
@@ -150,7 +152,8 @@ function MapViewportController({
     if (selectedLab) {
       map.flyTo([selectedLab.latitude, selectedLab.longitude], 11, {
         animate: true,
-        duration: 0.9,
+        duration: 1.02,
+        easeLinearity: 0.14,
       });
       previousSelectedLabIdRef.current = selectedLab.id;
       previousActivityFocusKeyRef.current = "";
@@ -168,7 +171,7 @@ function MapViewportController({
         animateToBounds(focusedLabsBounds, {
           padding: [52, 52],
           maxZoom: 10,
-          duration: 0.95,
+          duration: 1.04,
         });
         previousSelectedLabIdRef.current = null;
         previousActivityFocusKeyRef.current = "";
@@ -188,11 +191,11 @@ function MapViewportController({
       previousSelectedLabIdRef.current ||
       previousFocusKeyRef.current
     ) {
-      animateToBounds(labsBounds, {
-        padding: [44, 44],
-        maxZoom: 8,
-        duration: 1.15,
-      });
+        animateToBounds(labsBounds, {
+          padding: [44, 44],
+          maxZoom: 8,
+          duration: 1.24,
+        });
       previousSelectedLabIdRef.current = null;
       previousActivityFocusKeyRef.current = "";
       previousFocusKeyRef.current = "";
@@ -267,58 +270,18 @@ function createLabIcon(
   });
 }
 
-function createActivityFocusIcon(label?: string | null) {
-  const safeLabel = String(
-    label ?? siteContent.publicHome.map.defaultAgendaLocationLabel
-  )
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
+function createActivityFocusIcon() {
   return L.divIcon({
     className: "",
     html: `
       <div class="activity-focus-marker">
-        <div class="activity-focus-bubble">${safeLabel}</div>
         <div class="activity-focus-pin">
           <div class="activity-focus-pin-core"></div>
         </div>
       </div>
     `,
-    iconSize: [148, 82],
-    iconAnchor: [74, 68],
-  });
-}
-
-function escapeMapLabel(value: string) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-function createMarkerLabelIcon(
-  title: string,
-  actionLabel?: string | null,
-  tone: "selected" | "event" = "selected"
-) {
-  const safeTitle = escapeMapLabel(title);
-  const safeAction = actionLabel ? escapeMapLabel(actionLabel) : "";
-  const toneClass =
-    tone === "event" ? "map-marker-label map-marker-label-event" : "map-marker-label map-marker-label-selected";
-
-  return L.divIcon({
-    className: "",
-    html: `
-      <div class="map-marker-label-wrap">
-        <div class="${toneClass}">
-          <div class="map-marker-label-title">${safeTitle}</div>
-          ${safeAction ? `<div class="map-marker-label-action">${safeAction}</div>` : ""}
-        </div>
-      </div>
-    `,
-    iconSize: [236, 124],
-    iconAnchor: [118, 124],
+    iconSize: [44, 54],
+    iconAnchor: [22, 50],
   });
 }
 
@@ -370,6 +333,60 @@ function PhotoFrame({
       }}
     >
       <Image src={src} alt={alt} fill unoptimized className="object-cover" />
+    </div>
+  );
+}
+
+function MapPopupCard({
+  variant,
+  eyebrow,
+  title,
+  subtitle,
+  primaryHref,
+  primaryLabel,
+  secondaryHref,
+  secondaryLabel,
+}: {
+  variant: "lab" | "event";
+  eyebrow?: string | null;
+  title: string;
+  subtitle?: string | null;
+  primaryHref?: string | null;
+  primaryLabel?: string | null;
+  secondaryHref?: string | null;
+  secondaryLabel?: string | null;
+}) {
+  return (
+    <div className={`smartmaps-map-popup-card smartmaps-map-popup-card-${variant}`}>
+      {eyebrow ? <div className="smartmaps-map-popup-eyebrow">{eyebrow}</div> : null}
+      <div className="smartmaps-map-popup-title" title={title}>
+        {title}
+      </div>
+      {subtitle ? <div className="smartmaps-map-popup-subtitle">{subtitle}</div> : null}
+      {primaryHref || secondaryHref ? (
+        <div className="smartmaps-map-popup-actions">
+          {primaryHref && primaryLabel ? (
+            <a
+              href={primaryHref}
+              target={primaryHref.startsWith("http") ? "_blank" : undefined}
+              rel={primaryHref.startsWith("http") ? "noreferrer" : undefined}
+              className="smartmaps-map-popup-action smartmaps-map-popup-action-primary"
+            >
+              {primaryLabel}
+            </a>
+          ) : null}
+          {secondaryHref && secondaryLabel ? (
+            <a
+              href={secondaryHref}
+              target={secondaryHref.startsWith("http") ? "_blank" : undefined}
+              rel={secondaryHref.startsWith("http") ? "noreferrer" : undefined}
+              className="smartmaps-map-popup-action"
+            >
+              {secondaryLabel}
+            </a>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -581,6 +598,20 @@ export default function SmartMapInner({
     focusedActivity?.relatedArticleSlug
       ? `/artikel/${focusedActivity.relatedArticleSlug}`
       : null;
+  const focusedActivityAreaParts = useMemo(
+    () =>
+      focusedActivity
+        ? buildAdministrativeAddressParts({
+            provinceName: focusedActivity.provinceName,
+            cityName: focusedActivity.cityName,
+            cityType: focusedActivity.cityType,
+            districtName: focusedActivity.districtName,
+            villageName: focusedActivity.villageName,
+            villageType: focusedActivity.villageType,
+          })
+        : [],
+    [focusedActivity]
+  );
 
   function handleSelectLab(nextLabId: string | null) {
     if (!isControlled) {
@@ -588,11 +619,6 @@ export default function SmartMapInner({
     }
 
     onSelectLab?.(nextLabId);
-  }
-
-  function openExternalUrl(url: string | null) {
-    if (!url) return;
-    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   const detailContent = selectedLab ? (
@@ -626,67 +652,6 @@ export default function SmartMapInner({
           />
         </div>
       </DetailSection>
-
-      <div
-        className="rounded-3xl border p-4"
-        style={{
-          borderColor: "var(--border)",
-          background: "var(--surface-muted)",
-        }}
-      >
-        <div className="min-w-0">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-            {mapContent.labDetail.profileEyebrow}
-          </div>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {selectedLab.types.map((type) => (
-              <span
-                key={type.id}
-                className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${getLabTypePillClass(type.name)}`}
-              >
-                {type.name}
-              </span>
-            ))}
-          </div>
-          <div
-            className="mt-2 overflow-hidden text-[17px] font-semibold leading-[1.28] tracking-tight text-slate-950 sm:text-[18px]"
-            style={{
-              display: "-webkit-box",
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: "vertical",
-            }}
-            title={selectedLab.name}
-          >
-            {selectedLab.name}
-          </div>
-          {selectedLabAddressLead ? (
-            <TypographyParagraph
-              ellipsis={{ rows: 1 }}
-              style={{
-                marginTop: 8,
-                marginBottom: 0,
-                fontSize: 13,
-                lineHeight: 1.5,
-                color: "var(--text-muted)",
-              }}
-            >
-              {selectedLabAddressLead}
-            </TypographyParagraph>
-          ) : null}
-          {selectedLabAreaParts.length > 0 ? (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {selectedLabAreaParts.map((part) => (
-                <span
-                  key={part}
-                  className="inline-flex rounded-full border border-slate-200 bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-600"
-                >
-                  {part}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </div>
-      </div>
 
       <DetailSection eyebrow={mapContent.labDetail.contactSectionTitle}>
         <div className="flex flex-col gap-2">
@@ -753,13 +718,57 @@ export default function SmartMapInner({
           </DetailInfoRow>
         </div>
       </DetailSection>
+
+      <DetailSection eyebrow={mapContent.labDetail.profileEyebrow}>
+        <div className="space-y-2.5">
+          {selectedLab.types.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {selectedLab.types.map((type) => (
+                <span
+                  key={type.id}
+                  className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${getLabTypePillClass(type.name)}`}
+                >
+                  {type.name}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          {selectedLabAddressLead ? (
+            <TypographyParagraph
+              ellipsis={{ rows: 2 }}
+              style={{
+                marginBottom: 0,
+                fontSize: 12.5,
+                lineHeight: 1.55,
+                color: "var(--text-muted)",
+              }}
+            >
+              {selectedLabAddressLead}
+            </TypographyParagraph>
+          ) : null}
+
+          {selectedLabAreaParts.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {selectedLabAreaParts.map((part) => (
+                <span
+                  key={part}
+                  className="inline-flex rounded-full border border-slate-200 bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-600"
+                >
+                  {part}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </DetailSection>
     </div>
   ) : null;
 
   return (
     <div className="h-full">
       <div className="relative min-h-0 h-full overflow-hidden rounded-[22px]">
-        <div className="pointer-events-none absolute bottom-3 left-3 z-500">
+        <div className="smartmaps-map-legend-wrap pointer-events-none absolute bottom-3 left-3 z-500">
           <div className="rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
             <span className="inline-flex items-center gap-3">
               <span className="inline-flex items-center gap-2">
@@ -786,7 +795,7 @@ export default function SmartMapInner({
           </div>
         </div>
 
-        <div className="pointer-events-none absolute bottom-3 right-3 z-500">
+        <div className="smartmaps-map-attribution-wrap pointer-events-none absolute bottom-3 right-3 z-500">
           <MapAttributionBadge />
         </div>
 
@@ -821,56 +830,74 @@ export default function SmartMapInner({
             />
 
             {hasFocusedActivityCoordinates && focusedActivity ? (
-              <>
-                <Marker
-                  key={`activity-focus:${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`}
-                  position={[focusedActivity.eventLatitude!, focusedActivity.eventLongitude!]}
-                  icon={createActivityFocusIcon(
-                    focusedActivity.locationName || mapContent.defaultAgendaLocationLabel
-                  )}
-                  zIndexOffset={1200}
-                  eventHandlers={{
-                    click: () => openExternalUrl(focusedActivityNavigationUrl),
-                  }}
-                />
-                <Marker
-                  key={`activity-focus-label:${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`}
-                  position={[focusedActivity.eventLatitude!, focusedActivity.eventLongitude!]}
-                  icon={createMarkerLabelIcon(
-                    focusedActivity.locationName ||
+              <Marker
+                key={`activity-focus:${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`}
+                position={[focusedActivity.eventLatitude!, focusedActivity.eventLongitude!]}
+                icon={createActivityFocusIcon()}
+                zIndexOffset={1200}
+              >
+                <Popup
+                  className="smartmaps-map-popup smartmaps-map-popup-event"
+                  autoPan={false}
+                  closeButton={false}
+                  offset={[0, -34]}
+                  minWidth={220}
+                  maxWidth={280}
+                >
+                  <MapPopupCard
+                    variant="event"
+                    eyebrow={siteContent.publicHome.sidebar.agendaTitle}
+                    title={
+                      focusedActivity.locationName ||
                       focusedActivity.title ||
-                      mapContent.defaultAgendaLocationLabel,
-                    focusedActivityArticleUrl
-                      ? siteContent.publicHome.calendar.readRelatedArticleLabel
-                      : null,
-                    "event"
-                  )}
-                  zIndexOffset={1700}
-                  eventHandlers={
-                    focusedActivityArticleUrl
-                      ? {
-                          click: () => openExternalUrl(focusedActivityArticleUrl),
-                        }
-                      : undefined
-                  }
-                />
-              </>
+                      mapContent.defaultAgendaLocationLabel
+                    }
+                    subtitle={[
+                      formatActivityRange(
+                        focusedActivity.startDate,
+                        focusedActivity.endDate,
+                        focusedActivity.timeLabel
+                      ),
+                      focusedActivity.addressDetail ||
+                        focusedActivity.locationAddress ||
+                        focusedActivityAreaParts[0] ||
+                        null,
+                    ]
+                      .filter(Boolean)
+                      .join(" • ")}
+                    primaryHref={focusedActivityNavigationUrl}
+                    primaryLabel={mapContent.labDetail.openMapsLabel}
+                    secondaryHref={focusedActivityArticleUrl}
+                    secondaryLabel={
+                      focusedActivityArticleUrl
+                        ? siteContent.publicHome.calendar.readRelatedArticleLabel
+                        : null
+                    }
+                  />
+                </Popup>
+              </Marker>
             ) : null}
 
             {selectedLab && !hasFocusedActivityCoordinates ? (
-              <Marker
+              <Popup
                 key={`selected-lab-label:${selectedLab.id}:${selectedLab.latitude}:${selectedLab.longitude}`}
                 position={[selectedLab.latitude, selectedLab.longitude]}
-                icon={createMarkerLabelIcon(
-                  selectedLab.name,
-                  mapContent.labDetail.openMapsLabel,
-                  "selected"
-                )}
-                zIndexOffset={1600}
-                eventHandlers={{
-                  click: () => openExternalUrl(selectedLabNavigationUrl),
-                }}
-              />
+                className="smartmaps-map-popup smartmaps-map-popup-selected"
+                autoPan={false}
+                closeButton={false}
+                offset={[0, -34]}
+                minWidth={220}
+                maxWidth={280}
+              >
+                <MapPopupCard
+                  variant="lab"
+                  eyebrow={mapContent.detailDrawerTitle}
+                  title={selectedLab.name}
+                  subtitle={selectedLabAreaParts.slice(0, 2).join(" • ") || null}
+                  primaryHref={selectedLabNavigationUrl}
+                  primaryLabel={mapContent.labDetail.openMapsLabel}
+                />
+              </Popup>
             ) : null}
 
             {labs.map((lab) => {
@@ -921,10 +948,27 @@ export default function SmartMapInner({
           className="smartmaps-detail-drawer"
           open={Boolean(selectedLab)}
           onClose={() => handleSelectLab(null)}
-          title={mapContent.detailDrawerTitle}
+          title={
+            <div className="min-w-0">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                {mapContent.detailDrawerTitle}
+              </div>
+              <div
+                className="mt-0.5 overflow-hidden text-[15px] font-semibold leading-5 text-slate-950"
+                style={{
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                }}
+                title={selectedLab.name}
+              >
+                {selectedLab.name}
+              </div>
+            </div>
+          }
           closeIcon={<CloseOutlined />}
           placement={screens.lg ? "left" : "bottom"}
-          size={screens.lg ? 430 : "72vh"}
+          size={screens.lg ? 430 : "78vh"}
           mask={!screens.lg}
           styles={{
             header: {
