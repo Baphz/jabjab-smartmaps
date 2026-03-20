@@ -8,6 +8,7 @@ import {
   ClearOutlined,
   EditOutlined,
   ItalicOutlined,
+  LinkOutlined,
   OrderedListOutlined,
   PictureOutlined,
   RedoOutlined,
@@ -42,6 +43,20 @@ function resolveInlineImageSources(html: string) {
       return `<img${beforeSrc}src=${quote}${resolvedSrc}${quote}${afterSrc}>`;
     }
   );
+}
+
+function normalizeLinkUrl(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  if (/^(https?:\/\/|mailto:|tel:)/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
 }
 
 function ToolbarButton({
@@ -84,6 +99,8 @@ export default function ArticleRichTextEditor({
   const [selectedImageCaption, setSelectedImageCaption] = useState("");
   const [captionDraft, setCaptionDraft] = useState("");
   const [isCaptionModalOpen, setIsCaptionModalOpen] = useState(false);
+  const [linkDraft, setLinkDraft] = useState("");
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
@@ -99,6 +116,11 @@ export default function ArticleRichTextEditor({
           blockquote: false,
           codeBlock: false,
           horizontalRule: false,
+          link: {
+            openOnClick: false,
+            autolink: true,
+            defaultProtocol: "https",
+          },
           underline: {},
         }),
         Heading.configure({
@@ -289,6 +311,67 @@ export default function ArticleRichTextEditor({
     }
   }
 
+  function openLinkModal() {
+    if (!editor) return;
+
+    const href = String((editor.getAttributes("link") as { href?: string | null }).href ?? "");
+    setLinkDraft(href);
+    setIsLinkModalOpen(true);
+  }
+
+  function closeLinkModal() {
+    setIsLinkModalOpen(false);
+    setLinkDraft("");
+  }
+
+  function saveLink() {
+    if (!editor) return;
+
+    const href = normalizeLinkUrl(linkDraft);
+
+    if (!href) {
+      messageApi.warning("Masukkan URL tautan terlebih dahulu.");
+      return;
+    }
+
+    const { from, empty } = editor.state.selection;
+
+    if (empty && !editor.isActive("link")) {
+      const text = href;
+      editor
+        .chain()
+        .focus()
+        .insertContent(text)
+        .setTextSelection({ from, to: from + text.length })
+        .setLink({
+          href,
+          target: "_blank",
+          rel: "noopener noreferrer nofollow",
+        })
+        .run();
+    } else {
+      editor
+        .chain()
+        .focus()
+        .extendMarkRange("link")
+        .setLink({
+          href,
+          target: "_blank",
+          rel: "noopener noreferrer nofollow",
+        })
+        .run();
+    }
+
+    closeLinkModal();
+  }
+
+  function removeLink() {
+    if (!editor) return;
+
+    editor.chain().focus().extendMarkRange("link").unsetLink().run();
+    closeLinkModal();
+  }
+
   const headingValue = editor.isActive("heading", { level: 1 })
     ? "h1"
     : editor.isActive("heading", { level: 2 })
@@ -370,6 +453,13 @@ export default function ArticleRichTextEditor({
             active={editor.isActive("underline")}
             onClick={() => editor.chain().focus().toggleUnderline().run()}
             icon={<UnderlineOutlined />}
+          />
+          <ToolbarButton
+            title="Tautan"
+            disabled={disabled}
+            active={editor.isActive("link")}
+            onClick={openLinkModal}
+            icon={<LinkOutlined />}
           />
           <ToolbarButton
             title="Rata kiri"
@@ -454,6 +544,35 @@ export default function ArticleRichTextEditor({
           value={captionDraft}
           placeholder="Tulis caption untuk gambar yang dipilih"
           onChange={(event) => setCaptionDraft(event.target.value)}
+        />
+      </Modal>
+
+      <Modal
+        open={isLinkModalOpen}
+        title="Tautan artikel"
+        okText="Simpan"
+        cancelText="Batal"
+        onCancel={closeLinkModal}
+        onOk={saveLink}
+        footer={[
+          editor.isActive("link") ? (
+            <Button key="unlink" danger onClick={removeLink}>
+              Hapus tautan
+            </Button>
+          ) : null,
+          <Button key="cancel" onClick={closeLinkModal}>
+            Batal
+          </Button>,
+          <Button key="submit" type="primary" onClick={saveLink}>
+            Simpan
+          </Button>,
+        ]}
+      >
+        <Input
+          autoFocus
+          value={linkDraft}
+          placeholder="https://contoh.com/artikel"
+          onChange={(event) => setLinkDraft(event.target.value)}
         />
       </Modal>
 

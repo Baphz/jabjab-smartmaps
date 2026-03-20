@@ -1,10 +1,14 @@
+import type { Metadata } from "next";
 import { Button, Tag } from "antd";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import ArticleContent from "@/components/article/ArticleContent";
 import ArticleOriginMeta from "@/components/article/ArticleOriginMeta";
+import ArticleSharePanel from "@/components/article/ArticleSharePanel";
 import { formatMediumDate } from "@/lib/activity-calendar";
+import { getAppBranding } from "@/lib/app-branding";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
+import { getConfiguredAppBaseUrl } from "@/lib/invitation-url";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -15,10 +19,8 @@ type PageProps = {
   }>;
 };
 
-export default async function ArticleDetailPage({ params }: PageProps) {
-  const { slug } = await params;
-
-  const article = await prisma.article.findFirst({
+async function getPublishedArticle(slug: string) {
+  return prisma.article.findFirst({
     where: {
       slug,
       isPublished: true,
@@ -38,6 +40,75 @@ export default async function ArticleDetailPage({ params }: PageProps) {
       },
     },
   });
+}
+
+function buildAbsoluteUrl(value: string, appBaseUrl: string) {
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  const normalizedBase = appBaseUrl.replace(/\/$/, "");
+  const normalizedPath = value.startsWith("/") ? value : `/${value}`;
+  return `${normalizedBase}${normalizedPath}`;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const [article, branding] = await Promise.all([
+    getPublishedArticle(slug),
+    getAppBranding(),
+  ]);
+
+  if (!article) {
+    return {
+      title: `Artikel | ${branding.shortName}`,
+    };
+  }
+
+  const appBaseUrl = getConfiguredAppBaseUrl();
+  const articleUrl = `${appBaseUrl}/artikel/${article.slug}`;
+  const resolvedCover = article.coverImageUrl
+    ? resolveStoredPhotoUrl(article.coverImageUrl)
+    : resolveStoredPhotoUrl(branding.logoUrl);
+  const previewImageUrl = buildAbsoluteUrl(resolvedCover, appBaseUrl);
+  const description = article.excerpt?.trim() || branding.footerTagline;
+
+  return {
+    title: `${article.title} | ${branding.shortName}`,
+    description,
+    alternates: {
+      canonical: articleUrl,
+    },
+    openGraph: {
+      type: "article",
+      url: articleUrl,
+      title: article.title,
+      description,
+      siteName: branding.appName,
+      locale: "id_ID",
+      publishedTime: article.publishedAt.toISOString(),
+      images: previewImageUrl
+        ? [
+            {
+              url: previewImageUrl,
+              alt: article.title,
+            },
+          ]
+        : undefined,
+    },
+    twitter: {
+      card: previewImageUrl ? "summary_large_image" : "summary",
+      title: article.title,
+      description,
+      images: previewImageUrl ? [previewImageUrl] : undefined,
+    },
+  };
+}
+
+export default async function ArticleDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+  const article = await getPublishedArticle(slug);
 
   if (!article) {
     notFound();
@@ -46,6 +117,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
   const resolvedCover = article.coverImageUrl
     ? resolveStoredPhotoUrl(article.coverImageUrl)
     : "";
+  const articleUrl = `${getConfiguredAppBaseUrl()}/artikel/${article.slug}`;
 
   return (
     <main className="min-h-screen px-3 py-4 sm:px-5">
@@ -104,6 +176,14 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             <ArticleContent html={article.contentHtml} />
           </div>
         </section>
+
+        <div className="mx-auto w-full max-w-[760px]">
+          <ArticleSharePanel
+            url={articleUrl}
+            title={article.title}
+            summary={article.excerpt}
+          />
+        </div>
       </div>
     </main>
   );

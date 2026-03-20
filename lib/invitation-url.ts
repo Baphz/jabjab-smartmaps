@@ -18,6 +18,38 @@ export function normalizeBaseUrl(value?: string | null) {
   }
 }
 
+export function getConfiguredAppBaseUrl() {
+  const envCandidates = [
+    process.env.APP_URL,
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+  ];
+
+  for (const candidate of envCandidates) {
+    const normalized = normalizeBaseUrl(candidate);
+
+    if (!normalized) {
+      continue;
+    }
+
+    const hostname = new URL(normalized).hostname;
+
+    if (hostname !== "localhost" && hostname !== "127.0.0.1") {
+      return normalized;
+    }
+  }
+
+  for (const candidate of envCandidates) {
+    const normalized = normalizeBaseUrl(candidate);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return "http://localhost:3000";
+}
+
 export function getAppBaseUrl(req: Request) {
   const envCandidates = [
     process.env.APP_URL,
