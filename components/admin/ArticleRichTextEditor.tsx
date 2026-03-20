@@ -84,6 +84,21 @@ function ToolbarButton({
   );
 }
 
+function AlignJustifyIcon() {
+  return (
+    <span className="inline-flex h-[14px] w-[14px] items-center justify-center" aria-hidden="true">
+      <svg viewBox="0 0 14 14" width="14" height="14" fill="none">
+        <path
+          d="M1.5 3h11M1.5 5.8h11M1.5 8.6h11M1.5 11.4h11"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
 export default function ArticleRichTextEditor({
   value,
   onChange,
@@ -397,8 +412,8 @@ export default function ArticleRichTextEditor({
         }}
       />
 
-      <div className="overflow-hidden rounded-[18px] border border-slate-200 bg-white">
-        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2.5">
+      <div className="smartmaps-article-editor-shell rounded-[18px] border border-slate-200 bg-white">
+        <div className="smartmaps-article-editor-toolbar flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2.5">
           <ToolbarButton
             title="Undo"
             disabled={disabled || !editor.can().chain().focus().undo().run()}
@@ -487,7 +502,7 @@ export default function ArticleRichTextEditor({
             disabled={disabled}
             active={editor.isActive({ textAlign: "justify" })}
             onClick={() => editor.chain().focus().setTextAlign("justify").run()}
-            icon={<span className="text-[11px] font-semibold leading-none">J</span>}
+            icon={<AlignJustifyIcon />}
           />
           <ToolbarButton
             title="Bullet list"
@@ -524,7 +539,9 @@ export default function ArticleRichTextEditor({
           />
         </div>
 
-        <EditorContent editor={editor} />
+        <div className="smartmaps-article-editor-body">
+          <EditorContent editor={editor} />
+        </div>
       </div>
 
       <Modal

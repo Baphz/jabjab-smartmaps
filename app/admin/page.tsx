@@ -212,7 +212,7 @@ export default async function AdminDashboardPage() {
   const eventRows: AdminEventRow[] = dashboardEvents.map((event) => ({
     id: event.id,
     labId: event.lab?.id ?? null,
-    labName: event.isGlobal ? "Agenda Global DPW" : event.lab?.name ?? null,
+    labName: event.isGlobal ? "Agenda DPW" : event.lab?.name ?? null,
     isGlobal: event.isGlobal,
     title: event.title,
     description: event.description,
@@ -253,7 +253,7 @@ export default async function AdminDashboardPage() {
   const articleRows: AdminArticleRow[] = dashboardArticles.map((article) => ({
     id: article.id,
     labId: article.lab?.id ?? null,
-    labName: article.isGlobal ? "Artikel Global DPW" : article.lab?.name ?? null,
+    labName: article.isGlobal ? "Artikel DPW" : article.lab?.name ?? null,
     isGlobal: article.isGlobal,
     title: article.title,
     slug: article.slug,
@@ -271,7 +271,7 @@ export default async function AdminDashboardPage() {
     slug: article.slug,
     isGlobal: article.isGlobal,
     labId: article.lab?.id ?? null,
-    scopeLabel: article.isGlobal ? "Global DPW" : article.lab?.name ?? "Artikel Lab",
+    scopeLabel: article.isGlobal ? "DPW" : article.lab?.name ?? "Artikel Lab",
   }));
 
   const activeUsers: ActiveLabUserRow[] = (usersResult?.data ?? [])

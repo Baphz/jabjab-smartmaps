@@ -288,7 +288,7 @@ export default function AdminArticlesManager({
             width: 220,
             render: (_value: unknown, row: AdminArticleRow) =>
               row.isGlobal ? (
-                <span className="smartmaps-admin-item-copy">Artikel Global DPW</span>
+                <span className="smartmaps-admin-item-copy">Artikel DPW</span>
               ) : (
                 <span className="smartmaps-admin-item-copy">{row.labName ?? "-"}</span>
               ),

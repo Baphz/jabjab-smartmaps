@@ -608,7 +608,7 @@ export default function AdminEventsManager({
             width: 190,
             render: (_value: unknown, row: AdminEventRow) =>
               row.isGlobal ? (
-                <span className="smartmaps-admin-item-copy">Agenda Global DPW</span>
+                <span className="smartmaps-admin-item-copy">Agenda DPW</span>
               ) : (
                 <span className="smartmaps-admin-item-copy">{row.labName ?? "-"}</span>
               ),

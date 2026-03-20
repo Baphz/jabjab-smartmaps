@@ -286,12 +286,12 @@ export function getActivityKindLabel(kind: ActivityKind) {
 
 export function getActivityScopeLabel(item: Pick<ActivitySourceItem, "kind" | "isGlobal" | "labName">) {
   if (item.kind === "article") {
-    if (item.isGlobal) return "Artikel Global DPW";
+    if (item.isGlobal) return "Artikel DPW";
     return item.labName;
   }
 
   if (item.kind !== "lab_event") return null;
-  if (item.isGlobal) return "Agenda Global DPW";
+  if (item.isGlobal) return "Agenda DPW";
   return item.labName;
 }
 

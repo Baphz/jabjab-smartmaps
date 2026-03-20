@@ -92,14 +92,14 @@ export const siteContent = {
         cuti_bersama: "Cuti Bersama",
       },
       scopes: {
-        globalArticle: "Artikel Global DPW",
-        globalAgenda: "Agenda Global DPW",
+        globalArticle: "Artikel DPW",
+        globalAgenda: "Agenda DPW",
       },
     },
     articles: {
       fallbackCoverLabel: "Artikel",
       emptyLabel: "Belum ada artikel.",
-      globalOriginLabel: "Global DPW",
+      globalOriginLabel: "DPW",
       labOriginFallbackLabel: "Artikel Lab",
     },
   },
