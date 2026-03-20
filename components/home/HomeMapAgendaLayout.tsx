@@ -202,7 +202,7 @@ export default function HomeMapAgendaLayout({
   }
 
   function handleSelectActivityLocation(item: ActivitySourceItem) {
-    setFocusedActivity(item);
+    setFocusedActivity({ ...item });
     if (
       typeof item.eventLatitude === "number" &&
       Number.isFinite(item.eventLatitude) &&

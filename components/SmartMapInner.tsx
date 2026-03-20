@@ -516,6 +516,7 @@ export default function SmartMapInner({
     null
   );
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const focusedActivityMarkerRef = useRef<L.Marker | null>(null);
   const screens = Grid.useBreakpoint();
   const isControlled = selectedLabId !== undefined;
   const activeSelectedLabId = isControlled
@@ -612,6 +613,20 @@ export default function SmartMapInner({
         : [],
     [focusedActivity]
   );
+
+  useEffect(() => {
+    if (!focusedActivity || !hasFocusedActivityCoordinates) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      focusedActivityMarkerRef.current?.openPopup();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [focusedActivity, hasFocusedActivityCoordinates]);
 
   function handleSelectLab(nextLabId: string | null) {
     if (!isControlled) {
@@ -832,6 +847,9 @@ export default function SmartMapInner({
             {hasFocusedActivityCoordinates && focusedActivity ? (
               <Marker
                 key={`activity-focus:${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`}
+                ref={(marker) => {
+                  focusedActivityMarkerRef.current = marker;
+                }}
                 position={[focusedActivity.eventLatitude!, focusedActivity.eventLongitude!]}
                 icon={createActivityFocusIcon()}
                 zIndexOffset={1200}
