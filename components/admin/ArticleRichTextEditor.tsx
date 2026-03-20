@@ -77,6 +77,8 @@ export default function ArticleRichTextEditor({
 }: ArticleRichTextEditorProps) {
   const onChangeRef = useRef<(value: string) => void>(onChange ?? (() => {}));
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const selectedImagePosRef = useRef<number | null>(null);
+  const isCaptionInputFocusedRef = useRef(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isImageSelected, setIsImageSelected] = useState(false);
   const [selectedImageCaption, setSelectedImageCaption] = useState("");
@@ -146,13 +148,21 @@ export default function ArticleRichTextEditor({
 
     const syncSelectedImageState = () => {
       const active = editor.isActive("image");
+
+      if (!active && isCaptionInputFocusedRef.current && selectedImagePosRef.current !== null) {
+        setIsImageSelected(true);
+        return;
+      }
+
       setIsImageSelected(active);
 
       if (!active) {
+        selectedImagePosRef.current = null;
         setSelectedImageCaption("");
         return;
       }
 
+      selectedImagePosRef.current = editor.state.selection.from;
       const attrs = editor.getAttributes("image") as { title?: string | null };
       setSelectedImageCaption(String(attrs.title ?? ""));
     };
@@ -236,6 +246,26 @@ export default function ArticleRichTextEditor({
         imageInputRef.current.value = "";
       }
     }
+  }
+
+  function updateSelectedImageCaption(nextCaption: string) {
+    if (!editor) return;
+
+    const imagePos = selectedImagePosRef.current;
+    if (imagePos === null) return;
+
+    const imageNode = editor.state.doc.nodeAt(imagePos);
+
+    if (!imageNode || imageNode.type.name !== "image") {
+      return;
+    }
+
+    const transaction = editor.state.tr.setNodeMarkup(imagePos, undefined, {
+      ...imageNode.attrs,
+      title: nextCaption.trim() || null,
+    });
+
+    editor.view.dispatch(transaction);
   }
 
   const headingValue = editor.isActive("heading", { level: 1 })
@@ -387,16 +417,20 @@ export default function ArticleRichTextEditor({
               value={selectedImageCaption}
               placeholder="Tulis caption untuk gambar yang dipilih"
               className="mt-2"
+              onFocus={() => {
+                isCaptionInputFocusedRef.current = true;
+              }}
+              onBlur={() => {
+                isCaptionInputFocusedRef.current = false;
+                if (!editor.isActive("image")) {
+                  selectedImagePosRef.current = null;
+                  setIsImageSelected(false);
+                }
+              }}
               onChange={(event) => {
                 const nextCaption = event.target.value;
                 setSelectedImageCaption(nextCaption);
-                editor
-                  .chain()
-                  .focus()
-                  .updateAttributes("image", {
-                    title: nextCaption.trim() || null,
-                  })
-                  .run();
+                updateSelectedImageCaption(nextCaption);
               }}
             />
           </div>
