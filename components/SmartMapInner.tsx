@@ -517,6 +517,7 @@ export default function SmartMapInner({
   );
   const mapInstanceRef = useRef<L.Map | null>(null);
   const focusedActivityMarkerRef = useRef<L.Marker | null>(null);
+  const selectedLabMarkerRef = useRef<L.Marker | null>(null);
   const screens = Grid.useBreakpoint();
   const isControlled = selectedLabId !== undefined;
   const activeSelectedLabId = isControlled
@@ -627,6 +628,20 @@ export default function SmartMapInner({
       window.cancelAnimationFrame(frameId);
     };
   }, [focusedActivity, hasFocusedActivityCoordinates]);
+
+  useEffect(() => {
+    if (!selectedLab || hasFocusedActivityCoordinates) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      selectedLabMarkerRef.current?.openPopup();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [hasFocusedActivityCoordinates, selectedLab]);
 
   function handleSelectLab(nextLabId: string | null) {
     if (!isControlled) {
@@ -896,28 +911,6 @@ export default function SmartMapInner({
               </Marker>
             ) : null}
 
-            {selectedLab && !hasFocusedActivityCoordinates ? (
-              <Popup
-                key={`selected-lab-label:${selectedLab.id}:${selectedLab.latitude}:${selectedLab.longitude}`}
-                position={[selectedLab.latitude, selectedLab.longitude]}
-                className="smartmaps-map-popup smartmaps-map-popup-selected"
-                autoPan={false}
-                closeButton={false}
-                offset={[0, -34]}
-                minWidth={220}
-                maxWidth={280}
-              >
-                <MapPopupCard
-                  variant="lab"
-                  eyebrow={mapContent.detailDrawerTitle}
-                  title={selectedLab.name}
-                  subtitle={selectedLabAreaParts.slice(0, 2).join(" • ") || null}
-                  primaryHref={selectedLabNavigationUrl}
-                  primaryLabel={mapContent.labDetail.openMapsLabel}
-                />
-              </Popup>
-            ) : null}
-
             {labs.map((lab) => {
               const isSelected = activeSelectedLabId === lab.id;
               const isHighlighted = highlightedLabIdSet.has(lab.id);
@@ -939,6 +932,11 @@ export default function SmartMapInner({
               return (
                 <Marker
                   key={`${lab.id}:${isSelected ? "selected" : "idle"}:${isHighlighted ? "search" : "no-search"}:${isBestMatch ? "best" : "regular"}:${isActive ? "active" : "no-active"}:${isMuted ? "muted" : "normal"}`}
+                  ref={(marker) => {
+                    if (isSelected) {
+                      selectedLabMarkerRef.current = marker;
+                    }
+                  }}
                   position={[lab.latitude, lab.longitude]}
                   icon={createLabIcon(
                     lab.labPhotoUrl,
@@ -952,7 +950,38 @@ export default function SmartMapInner({
                   eventHandlers={{
                     click: () => handleSelectLab(lab.id),
                   }}
-                />
+                >
+                  {isSelected && !hasFocusedActivityCoordinates ? (
+                    <Popup
+                      className="smartmaps-map-popup smartmaps-map-popup-selected"
+                      autoPan={false}
+                      closeButton={false}
+                      offset={[0, -34]}
+                      minWidth={220}
+                      maxWidth={280}
+                    >
+                      <MapPopupCard
+                        variant="lab"
+                        eyebrow={mapContent.detailDrawerTitle}
+                        title={lab.name}
+                        subtitle={
+                          buildAdministrativeAddressParts({
+                            provinceName: lab.provinceName,
+                            cityName: lab.cityName,
+                            cityType: lab.cityType,
+                            districtName: lab.districtName,
+                            villageName: lab.villageName,
+                            villageType: lab.villageType,
+                          })
+                            .slice(0, 2)
+                            .join(" • ") || null
+                        }
+                        primaryHref={`https://www.google.com/maps/search/?api=1&query=${lab.latitude},${lab.longitude}`}
+                        primaryLabel={mapContent.labDetail.openMapsLabel}
+                      />
+                    </Popup>
+                  ) : null}
+                </Marker>
               );
             })}
           </MapContainer>
