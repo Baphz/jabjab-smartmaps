@@ -10,21 +10,13 @@ import {
   Empty,
   Image,
   Space,
-  Tag,
-  Typography,
   Upload,
   message,
   type UploadProps,
 } from "antd";
 import { useMemo, useState } from "react";
 import { prepareImageForUpload } from "@/lib/client-image-upload";
-import {
-  extractGoogleDriveFileId,
-  isSupabasePublicStorageUrl,
-  resolveStoredPhotoUrl,
-} from "@/lib/drive-file";
-
-const { Text: TypographyText } = Typography;
+import { resolveStoredPhotoUrl } from "@/lib/drive-file";
 
 type ImageUploadFieldProps = {
   value?: string;
@@ -58,14 +50,6 @@ export default function ImageUploadField({
   const normalizedValue = String(value ?? "").trim();
   const previewUrl = useMemo(
     () => resolveStoredPhotoUrl(normalizedValue),
-    [normalizedValue]
-  );
-  const driveFileId = useMemo(
-    () => extractGoogleDriveFileId(normalizedValue),
-    [normalizedValue]
-  );
-  const isSupabaseFile = useMemo(
-    () => isSupabasePublicStorageUrl(normalizedValue),
     [normalizedValue]
   );
 
@@ -114,7 +98,7 @@ export default function ImageUploadField({
       }
 
       onChange?.(payload.fileId);
-      messageApi.success("Gambar berhasil di-upload ke Supabase Storage.");
+      messageApi.success("Gambar berhasil disimpan.");
       options.onSuccess?.(payload);
     } catch (error) {
       const text =
@@ -144,16 +128,6 @@ export default function ImageUploadField({
                   borderRadius: 16,
                 }}
               />
-
-              <Space wrap size={[8, 8]}>
-                {isSupabaseFile ? (
-                  <Tag color="blue">Tersimpan di Supabase Storage</Tag>
-                ) : driveFileId ? (
-                  <Tag color="gold">Legacy Google Drive</Tag>
-                ) : (
-                  <Tag>URL eksternal</Tag>
-                )}
-              </Space>
             </div>
           ) : (
             <div className="smartmaps-empty-panel py-4">
@@ -192,10 +166,6 @@ export default function ImageUploadField({
             </Button>
           ) : null}
         </Space>
-
-        <TypographyText style={{ color: "#64748b" }}>
-          File di-upload langsung ke Supabase Storage. Pengguna cukup pilih file, tidak perlu menempel link manual.
-        </TypographyText>
       </Space>
     </>
   );

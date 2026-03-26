@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "Supabase Storage belum dikonfigurasi. Isi SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, dan SUPABASE_STORAGE_BUCKET.",
+          "Penyimpanan file belum dikonfigurasi. Hubungi administrator aplikasi.",
       },
       { status: 503 }
     );
@@ -126,7 +126,7 @@ export async function POST(req: Request) {
     console.error("POST /api/uploads/image error:", error);
 
     const message =
-      error instanceof Error ? error.message : "Gagal upload gambar ke Supabase Storage.";
+      error instanceof Error ? error.message : "Gagal upload gambar.";
 
     return NextResponse.json({ error: message }, { status: 500 });
   }

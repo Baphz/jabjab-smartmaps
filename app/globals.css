@@ -913,6 +913,38 @@ html.theme-dark .smartmaps-logo-frame {
 .smartmaps-detail-section.ant-card {
   border-color: var(--border) !important;
   background: var(--surface) !important;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.04);
+}
+
+.smartmaps-detail-section-eyebrow {
+  margin-bottom: 10px;
+  font-size: 10.5px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.smartmaps-detail-summary-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.smartmaps-detail-info-row {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44);
+}
+
+.smartmaps-detail-info-icon {
+  border-color: var(--border) !important;
+  background: color-mix(in srgb, var(--surface-muted) 55%, var(--surface-strong)) !important;
+}
+
+.smartmaps-detail-info-label {
+  color: var(--text-soft) !important;
+}
+
+.smartmaps-detail-info-value {
+  color: var(--foreground) !important;
 }
 
 .smartmaps-detail-drawer .ant-drawer-header {
@@ -989,6 +1021,19 @@ html.theme-dark .smartmaps-role-pill-head {
   background: rgba(41, 91, 171, 0.58);
   color: #dbeafe;
   box-shadow: inset 0 0 0 1px rgba(125, 172, 255, 0.42);
+}
+
+html.theme-dark .smartmaps-detail-section.ant-card {
+  box-shadow: 0 18px 36px rgba(2, 6, 23, 0.22);
+}
+
+html.theme-dark .smartmaps-detail-summary-card,
+html.theme-dark .smartmaps-detail-info-row {
+  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.05);
+}
+
+html.theme-dark .smartmaps-detail-info-icon {
+  background: rgba(24, 36, 60, 0.96) !important;
 }
 
 html.theme-dark .smartmaps-role-pill-tu {

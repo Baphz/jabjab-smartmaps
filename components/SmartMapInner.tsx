@@ -24,6 +24,10 @@ import { resolveStoredPhotoUrl } from "@/lib/drive-file";
 import { formatActivityRange, type ActivitySourceItem } from "@/lib/activity-calendar";
 import {
   buildAdministrativeAddressParts,
+  formatCityName,
+  formatDistrictName,
+  formatProvinceName,
+  formatVillageName,
   type LabCityTypeValue,
   type LabVillageTypeValue,
 } from "@/lib/lab-address";
@@ -408,9 +412,7 @@ function DetailSection({
         background: "var(--surface)",
       }}
     >
-      <div className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-        {eyebrow}
-      </div>
+      <div className="smartmaps-detail-section-eyebrow">{eyebrow}</div>
       {children}
     </Card>
   );
@@ -427,20 +429,20 @@ function DetailInfoRow({
 }) {
   return (
     <div
-      className="flex items-start gap-2.5 rounded-[18px] border px-3 py-2.5"
+      className="smartmaps-detail-info-row flex items-start gap-2.5 rounded-[18px] border px-3 py-2.5"
       style={{
         borderColor: "var(--border)",
         background: "var(--surface-strong)",
       }}
     >
-      <div className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-[15px] text-slate-500">
+      <div className="smartmaps-detail-info-icon mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-[15px] text-slate-500">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        <div className="smartmaps-detail-info-label text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
           {label}
         </div>
-        <div className="mt-1 break-words text-[13px] font-medium leading-5 text-slate-900">
+        <div className="smartmaps-detail-info-value mt-1 break-words text-[13px] font-medium leading-5 text-slate-900">
           {children}
         </div>
       </div>
@@ -572,20 +574,43 @@ export default function SmartMapInner({
     mode === "dark"
       ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
-  const selectedLabAreaParts = useMemo(
-    () =>
-      selectedLab
-        ? buildAdministrativeAddressParts({
-            provinceName: selectedLab.provinceName,
-            cityName: selectedLab.cityName,
-            cityType: selectedLab.cityType,
-            districtName: selectedLab.districtName,
-            villageName: selectedLab.villageName,
-            villageType: selectedLab.villageType,
-          })
-        : [],
-    [selectedLab]
-  );
+  const selectedLabAreaDetails = useMemo(() => {
+    if (!selectedLab) return [];
+
+    const cityDisplay = formatCityName(selectedLab.cityName, selectedLab.cityType);
+
+    return [
+      {
+        label:
+          selectedLab.villageType === "DESA" ? "Desa" : "Kelurahan",
+        value: formatVillageName(selectedLab.villageName),
+      },
+      {
+        label: "Kecamatan",
+        value: selectedLab.districtName
+          ? formatDistrictName(selectedLab.districtName)
+          : "",
+      },
+      {
+        label:
+          selectedLab.cityType === "KOTA"
+            ? "Kota"
+            : selectedLab.cityType === "KABUPATEN"
+              ? "Kabupaten"
+              : "Kabupaten / Kota",
+        value:
+          selectedLab.cityType === "KOTA" || selectedLab.cityType === "KABUPATEN"
+            ? cityDisplay.replace(/^(Kabupaten|Kota)\s+/i, "")
+            : cityDisplay,
+      },
+      {
+        label: "Provinsi",
+        value: selectedLab.provinceName
+          ? formatProvinceName(selectedLab.provinceName)
+          : "",
+      },
+    ].filter((item) => item.value);
+  }, [selectedLab]);
   const selectedLabAddressLead = selectedLab
     ? selectedLab.addressDetail?.trim() || selectedLab.address
     : "";
@@ -752,41 +777,72 @@ export default function SmartMapInner({
       <DetailSection eyebrow={mapContent.labDetail.profileEyebrow}>
         <div className="space-y-2.5">
           {selectedLab.types.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {selectedLab.types.map((type) => (
-                <span
-                  key={type.id}
-                  className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${getLabTypePillClass(type.name)}`}
-                >
-                  {type.name}
-                </span>
-              ))}
+            <div
+              className="smartmaps-detail-summary-card rounded-[18px] border px-3.5 py-3"
+              style={{
+                borderColor: "var(--border)",
+                background: "var(--surface-strong)",
+              }}
+            >
+              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Jenis Laboratorium
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {selectedLab.types.map((type) => (
+                  <span
+                    key={type.id}
+                    className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${getLabTypePillClass(type.name)}`}
+                  >
+                    {type.name}
+                  </span>
+                ))}
+              </div>
             </div>
           ) : null}
 
           {selectedLabAddressLead ? (
-            <TypographyParagraph
-              ellipsis={{ rows: 2 }}
+            <div
+              className="smartmaps-detail-summary-card rounded-[18px] border px-3.5 py-3"
               style={{
-                marginBottom: 0,
-                fontSize: 12.5,
-                lineHeight: 1.55,
-                color: "var(--text-muted)",
+                borderColor: "var(--border)",
+                background: "var(--surface-strong)",
               }}
             >
-              {selectedLabAddressLead}
-            </TypographyParagraph>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Alamat Utama
+              </div>
+              <TypographyParagraph
+                ellipsis={{ rows: 4 }}
+                style={{
+                  margin: "6px 0 0",
+                  fontSize: 13.5,
+                  lineHeight: 1.65,
+                  color: "var(--foreground)",
+                }}
+              >
+                {selectedLabAddressLead}
+              </TypographyParagraph>
+            </div>
           ) : null}
 
-          {selectedLabAreaParts.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {selectedLabAreaParts.map((part) => (
-                <span
-                  key={part}
-                  className="inline-flex rounded-full border border-slate-200 bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-600"
+          {selectedLabAreaDetails.length > 0 ? (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {selectedLabAreaDetails.map((item) => (
+                <div
+                  key={item.label}
+                  className="smartmaps-detail-summary-card rounded-[16px] border px-3 py-2.5"
+                  style={{
+                    borderColor: "var(--border)",
+                    background: "color-mix(in srgb, var(--surface-muted) 72%, var(--surface-strong))",
+                  }}
                 >
-                  {part}
-                </span>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    {item.label}
+                  </div>
+                  <div className="mt-1 text-[13px] font-semibold leading-5 text-slate-900">
+                    {item.value}
+                  </div>
+                </div>
               ))}
             </div>
           ) : null}
