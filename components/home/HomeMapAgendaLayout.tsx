@@ -118,17 +118,6 @@ export default function HomeMapAgendaLayout({
     () => labs.find((lab) => lab.id === selectedLabId) ?? null,
     [labs, selectedLabId]
   );
-  const effectiveSelectedLabId =
-    normalizedSearchQuery &&
-    selectedLabCandidate &&
-    normalizeSearchValue(selectedLabCandidate.name) !== normalizedSearchQuery
-      ? null
-      : selectedLabId;
-
-  const selectedLab = useMemo(
-    () => labs.find((lab) => lab.id === effectiveSelectedLabId) ?? null,
-    [effectiveSelectedLabId, labs]
-  );
   const searchIndexedLabs = useMemo(
     () =>
       labs.map((lab) => ({
@@ -179,6 +168,18 @@ export default function HomeMapAgendaLayout({
     () => matchedSearchEntries.map((entry) => entry.lab.id),
     [matchedSearchEntries]
   );
+  const effectiveSelectedLabId =
+    normalizedSearchQuery &&
+    searchedLabIds.length > 0 &&
+    selectedLabCandidate &&
+    !searchedLabIds.includes(selectedLabCandidate.id)
+      ? null
+      : selectedLabId;
+
+  const selectedLab = useMemo(
+    () => labs.find((lab) => lab.id === effectiveSelectedLabId) ?? null,
+    [effectiveSelectedLabId, labs]
+  );
   const bestMatchLabId = matchedSearchEntries[0]?.lab.id ?? null;
   const hasSearchFocus = normalizedSearchQuery.length >= 2 && searchedLabIds.length > 0;
   const searchAreaPreview = useMemo(
@@ -195,6 +196,13 @@ export default function HomeMapAgendaLayout({
             .filter((lab) => !searchedLabIds.includes(lab.id))
             .map((lab) => lab.id)
         : [],
+    [hasSearchFocus, labs, searchedLabIds]
+  );
+  const visibleLabs = useMemo(
+    () =>
+      hasSearchFocus
+        ? labs.filter((lab) => searchedLabIds.includes(lab.id))
+        : labs,
     [hasSearchFocus, labs, searchedLabIds]
   );
 
@@ -248,6 +256,8 @@ export default function HomeMapAgendaLayout({
                   placeholder={publicHomeContent.map.searchPlaceholder}
                   onChange={(event) => {
                     setSearchQuery(event.target.value);
+                    setFocusedActivity(null);
+                    setSelectedLabId(null);
                   }}
                 />
                 {normalizedSearchQuery || focusedActivity || effectiveSelectedLabId ? (
@@ -305,7 +315,7 @@ export default function HomeMapAgendaLayout({
             <div className="rounded-[18px] border border-slate-200 bg-slate-100/90 p-1.5 shadow-[0_14px_30px_rgba(15,23,42,0.04)]">
               <div className="h-[48vh] min-h-[340px] max-h-[620px] overflow-hidden rounded-[15px] border border-slate-200/90 bg-white sm:h-[56vh] sm:min-h-[420px] lg:h-[62vh]">
                 <SmartMap
-                  labs={labs}
+                  labs={visibleLabs}
                   highlightedLabIds={searchedLabIds}
                   activeLabIds={activeAgendaLabIds}
                   focusedLabIds={searchedLabIds}
