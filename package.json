@@ -8,7 +8,8 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "wilayah:sync": "node scripts/build-wilayah-snapshot.mjs"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",

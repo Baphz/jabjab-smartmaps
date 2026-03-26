@@ -10,6 +10,7 @@ import {
   type LabCityTypeValue,
   type LabVillageTypeValue,
 } from "./lab-address.ts";
+import wilayahSnapshot from "../data/wilayah-snapshot.json";
 
 type WilayahFetchItem = Record<string, string>;
 
@@ -47,6 +48,31 @@ type DistrictWithHierarchy = DistrictOption & {
   regencyType: LabCityTypeValue;
 };
 
+type VillageOverrideSeed = {
+  id: string;
+  name: string;
+};
+
+type WilayahSnapshotRow = {
+  id: string;
+  name: string;
+};
+
+type WilayahSnapshotRelationRow = WilayahSnapshotRow & {
+  provinceId?: string;
+  regencyId?: string;
+  districtId?: string;
+};
+
+type WilayahSnapshot = {
+  generatedAt: string;
+  source: string;
+  provinces: WilayahSnapshotRow[];
+  regencies: Array<WilayahSnapshotRow & { provinceId: string }>;
+  districts: Array<WilayahSnapshotRow & { regencyId: string }>;
+  villages: Array<WilayahSnapshotRow & { districtId: string }>;
+};
+
 export type ResolvedLabRegion = {
   addressDetail: string | null;
   provinceId: string | null;
@@ -66,6 +92,110 @@ const WILAYAH_BASE_URL =
   "https://emsifa.github.io/api-wilayah-indonesia/api";
 
 const wilayahCache = new Map<string, Promise<WilayahFetchItem[]>>();
+const localWilayahSnapshot = wilayahSnapshot as WilayahSnapshot;
+const localProvinceIds = new Set(
+  localWilayahSnapshot.provinces.map((item) => String(item.id))
+);
+const localRegencyIds = new Set(
+  localWilayahSnapshot.regencies.map((item) => String(item.id))
+);
+const localDistrictIds = new Set(
+  localWilayahSnapshot.districts.map((item) => String(item.id))
+);
+const localRegenciesByProvinceId = new Map<string, WilayahFetchItem[]>();
+const localDistrictsByRegencyId = new Map<string, WilayahFetchItem[]>();
+const localVillagesByDistrictId = new Map<string, WilayahFetchItem[]>();
+
+// Upstream wilayah reference is occasionally missing newer villages.
+// Keep targeted local corrections here so dependent APIs and geocoding
+// still return complete results without changing route behavior.
+const VILLAGE_OVERRIDES_BY_DISTRICT_ID: Record<string, VillageOverrideSeed[]> = {
+  // Kecamatan Cimanggis, Kota Depok.
+  // Upstream list currently misses Curug and Tugu.
+  "3276040": [
+    { id: "local-3276040-curug", name: "CURUG" },
+    { id: "local-3276040-tugu", name: "TUGU" },
+  ],
+};
+
+for (const row of localWilayahSnapshot.regencies) {
+  const provinceId = String(row.provinceId);
+  const current = localRegenciesByProvinceId.get(provinceId) ?? [];
+  current.push({
+    id: String(row.id),
+    province_id: provinceId,
+    name: String(row.name),
+  });
+  localRegenciesByProvinceId.set(provinceId, current);
+}
+
+for (const row of localWilayahSnapshot.districts) {
+  const regencyId = String(row.regencyId);
+  const current = localDistrictsByRegencyId.get(regencyId) ?? [];
+  current.push({
+    id: String(row.id),
+    regency_id: regencyId,
+    name: String(row.name),
+  });
+  localDistrictsByRegencyId.set(regencyId, current);
+}
+
+for (const row of localWilayahSnapshot.villages) {
+  const districtId = String(row.districtId);
+  const current = localVillagesByDistrictId.get(districtId) ?? [];
+  current.push({
+    id: String(row.id),
+    district_id: districtId,
+    name: String(row.name),
+  });
+  localVillagesByDistrictId.set(districtId, current);
+}
+
+function cloneWilayahRows<T extends WilayahFetchItem | WilayahSnapshotRelationRow>(
+  rows: T[]
+) {
+  return rows.map((item) => ({ ...item }));
+}
+
+function getLocalWilayahList(path: string): WilayahFetchItem[] | null {
+  if (path === "/provinces.json") {
+    return cloneWilayahRows(
+      localWilayahSnapshot.provinces.map((item) => ({
+        id: String(item.id),
+        name: String(item.name),
+      }))
+    );
+  }
+
+  const regencyMatch = path.match(/^\/regencies\/([^/]+)\.json$/);
+  if (regencyMatch) {
+    const provinceId = regencyMatch[1];
+    if (localProvinceIds.has(provinceId)) {
+      return cloneWilayahRows(localRegenciesByProvinceId.get(provinceId) ?? []);
+    }
+    return null;
+  }
+
+  const districtMatch = path.match(/^\/districts\/([^/]+)\.json$/);
+  if (districtMatch) {
+    const regencyId = districtMatch[1];
+    if (localRegencyIds.has(regencyId)) {
+      return cloneWilayahRows(localDistrictsByRegencyId.get(regencyId) ?? []);
+    }
+    return null;
+  }
+
+  const villageMatch = path.match(/^\/villages\/([^/]+)\.json$/);
+  if (villageMatch) {
+    const districtId = villageMatch[1];
+    if (localDistrictIds.has(districtId)) {
+      return cloneWilayahRows(localVillagesByDistrictId.get(districtId) ?? []);
+    }
+    return null;
+  }
+
+  return null;
+}
 
 function normalizeComparable(value: string) {
   return normalizeSearchValue(value)
@@ -85,6 +215,11 @@ function normalizeComparable(value: string) {
 }
 
 async function fetchWilayahList(path: string) {
+  const localRows = getLocalWilayahList(path);
+  if (localRows) {
+    return localRows;
+  }
+
   const cacheKey = `${WILAYAH_BASE_URL}${path}`;
   let pending = wilayahCache.get(cacheKey);
 
@@ -115,6 +250,37 @@ async function fetchWilayahList(path: string) {
 
 function inferCityTypeFromName(name: string): LabCityTypeValue {
   return name.toUpperCase().startsWith("KOTA ") ? "KOTA" : "KABUPATEN";
+}
+
+function applyVillageOverrides(districtId: string, rows: VillageOption[]) {
+  const overrides = VILLAGE_OVERRIDES_BY_DISTRICT_ID[districtId];
+  if (!overrides || overrides.length === 0) {
+    return rows;
+  }
+
+  const existingComparableNames = new Set(
+    rows.map((item) => normalizeComparable(item.name))
+  );
+  const merged = [...rows];
+
+  for (const override of overrides) {
+    const comparableName = normalizeComparable(override.name);
+    if (existingComparableNames.has(comparableName)) {
+      continue;
+    }
+
+    merged.push({
+      id: override.id,
+      districtId,
+      name: override.name,
+      displayName: formatVillageName(override.name),
+    });
+    existingComparableNames.add(comparableName);
+  }
+
+  return merged.sort((left, right) =>
+    left.displayName.localeCompare(right.displayName, "id")
+  );
 }
 
 function extractAddressToken(
@@ -292,13 +458,16 @@ export async function fetchVillageOptions(districtId: string, search = "") {
   const rows = await fetchWilayahList(`/villages/${districtId}.json`);
   const normalizedSearch = normalizeSearchValue(search);
 
-  return rows
-    .map((item) => ({
-      id: String(item.id),
-      districtId,
-      name: String(item.name),
-      displayName: formatVillageName(String(item.name)),
-    }))
+  return applyVillageOverrides(
+    districtId,
+    rows
+      .map((item) => ({
+        id: String(item.id),
+        districtId,
+        name: String(item.name),
+        displayName: formatVillageName(String(item.name)),
+      }))
+  )
     .filter((item) =>
       normalizedSearch
         ? normalizeSearchValue(item.displayName).includes(normalizedSearch)
