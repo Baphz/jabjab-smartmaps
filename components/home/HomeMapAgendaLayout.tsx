@@ -9,7 +9,7 @@ import { Button, Input } from "antd";
 import { useMemo, useState } from "react";
 import ActivityCalendar from "@/components/activity/ActivityCalendar";
 import UpcomingActivityList from "@/components/activity/UpcomingActivityList";
-import SmartMap, { type LabWithTypes } from "@/components/SmartMap";
+import SmartMap, { type LabWithTypes, type MapLayerFilter } from "@/components/SmartMap";
 import type { ActivitySourceItem } from "@/lib/activity-calendar";
 import {
   buildLabAreaLabels,
@@ -83,6 +83,7 @@ export default function HomeMapAgendaLayout({
 }: HomeMapAgendaLayoutProps) {
   const publicHomeContent = siteContent.publicHome;
   const [searchQuery, setSearchQuery] = useState("");
+  const [mapLayerFilter, setMapLayerFilter] = useState<MapLayerFilter>("all");
   const [focusedActivity, setFocusedActivity] = useState<ActivitySourceItem | null>(null);
   const activeAgendaLabIds = useMemo(
     () =>
@@ -109,6 +110,10 @@ export default function HomeMapAgendaLayout({
   );
   const [selectedLabId, setSelectedLabId] = useState<string | null>(
     initialSelectedLabId
+  );
+  const activeAgendaLabIdSet = useMemo(
+    () => new Set(activeAgendaLabIds),
+    [activeAgendaLabIds]
   );
   const normalizedSearchQuery = useMemo(
     () => normalizeSearchValue(searchQuery),
@@ -205,6 +210,13 @@ export default function HomeMapAgendaLayout({
         : labs,
     [hasSearchFocus, labs, searchedLabIds]
   );
+  const layerVisibleLabs = useMemo(() => {
+    if (mapLayerFilter === "agenda") {
+      return visibleLabs.filter((lab) => activeAgendaLabIdSet.has(lab.id));
+    }
+
+    return visibleLabs;
+  }, [activeAgendaLabIdSet, mapLayerFilter, visibleLabs]);
 
   function handleSelectLab(nextLabId: string | null) {
     setFocusedActivity(null);
@@ -230,6 +242,24 @@ export default function HomeMapAgendaLayout({
     setSearchQuery("");
     setFocusedActivity(null);
     setSelectedLabId(null);
+    setMapLayerFilter("all");
+  }
+
+  function handleChangeMapLayerFilter(nextFilter: MapLayerFilter) {
+    setMapLayerFilter(nextFilter);
+
+    if (nextFilter === "lab") {
+      setFocusedActivity(null);
+      return;
+    }
+
+    if (
+      nextFilter === "agenda" &&
+      selectedLabId &&
+      !activeAgendaLabIdSet.has(selectedLabId)
+    ) {
+      setSelectedLabId(null);
+    }
   }
 
   return (
@@ -315,15 +345,17 @@ export default function HomeMapAgendaLayout({
             <div className="rounded-[18px] border border-slate-200 bg-slate-100/90 p-1.5 shadow-[0_14px_30px_rgba(15,23,42,0.04)]">
               <div className="h-[48vh] min-h-[340px] max-h-[620px] overflow-hidden rounded-[15px] border border-slate-200/90 bg-white sm:h-[56vh] sm:min-h-[420px] lg:h-[62vh]">
                 <SmartMap
-                  labs={visibleLabs}
+                  labs={layerVisibleLabs}
                   highlightedLabIds={searchedLabIds}
                   activeLabIds={activeAgendaLabIds}
                   focusedLabIds={searchedLabIds}
                   mutedLabIds={mutedLabIds}
                   bestMatchLabId={bestMatchLabId}
-                  focusedActivity={focusedActivity}
+                  focusedActivity={mapLayerFilter === "lab" ? null : focusedActivity}
                   selectedLabId={effectiveSelectedLabId}
                   onSelectLab={handleSelectLab}
+                  layerFilter={mapLayerFilter}
+                  onLayerFilterChange={handleChangeMapLayerFilter}
                 />
               </div>
             </div>

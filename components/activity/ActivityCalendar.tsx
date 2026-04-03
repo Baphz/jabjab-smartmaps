@@ -22,6 +22,7 @@ import {
   getActivityKindLabel,
   getActivityScopeLabel,
   isSameMonth,
+  parseDateKey,
   parseMonthKey,
   type ActivityKind,
   type ActivitySourceItem,
@@ -136,6 +137,11 @@ function hasActivityCoordinates(item: ActivitySourceItem) {
   );
 }
 
+function isWeekendDate(date: Date) {
+  const day = date.getUTCDay();
+  return day === 0 || day === 6;
+}
+
 function buildActivityMapsUrl(item: ActivitySourceItem) {
   if (item.kind !== "lab_event") {
     return null;
@@ -225,6 +231,12 @@ export default function ActivityCalendar({
   const monthStart = parseMonthKey(monthKey) ?? parseMonthKey(todayKey.slice(0, 7));
   const cells = useMemo(() => buildMonthCells(monthStart ?? new Date()), [monthStart]);
   const selectedItems = sortDayItems(dayMap.get(selectedDateKey) ?? []);
+  const selectedDate = parseDateKey(selectedDateKey);
+  const selectedIsWeekend = selectedDate ? isWeekendDate(selectedDate) : false;
+  const selectedHasSpecialHoliday = selectedItems.some(
+    (item) => item.kind === "libur_nasional" || item.kind === "cuti_bersama"
+  );
+  const selectedIsRegularHoliday = selectedIsWeekend && !selectedHasSpecialHoliday;
   const visibleMonthItems = useMemo(
     () => sortedItems.filter((item) => overlapsMonth(item, monthKey)),
     [monthKey, sortedItems]
@@ -442,40 +454,70 @@ export default function ActivityCalendar({
                 const currentItems = sortDayItems(dayMap.get(cell.dateKey) ?? []);
                 const isToday = cell.dateKey === todayKey;
                 const isSelected = cell.dateKey === selectedDateKey;
+                const eventBadgeCount = currentItems.filter(
+                  (item) => item.kind === "lab_event" || item.kind === "article"
+                ).length;
+                const hasNationalHoliday = currentItems.some(
+                  (item) => item.kind === "libur_nasional"
+                );
+                const hasCollectiveLeave = currentItems.some(
+                  (item) => item.kind === "cuti_bersama"
+                );
+                const isWeekend = isWeekendDate(cell.date);
+                const holidayToneClass = hasNationalHoliday
+                  ? "smartmaps-calendar-day-holiday"
+                  : hasCollectiveLeave
+                    ? "smartmaps-calendar-day-leave"
+                    : isWeekend
+                      ? "smartmaps-calendar-day-weekend"
+                      : "";
+                const dateToneClass = hasNationalHoliday
+                  ? "smartmaps-calendar-date-holiday"
+                  : hasCollectiveLeave
+                    ? "smartmaps-calendar-date-leave"
+                    : isWeekend
+                      ? "smartmaps-calendar-date-weekend"
+                      : "";
 
                 return (
                   <button
                     key={cell.dateKey}
                     type="button"
                     onClick={() => handleSelectDate(cell.dateKey)}
-                    className={`relative overflow-visible ${compact ? "min-h-14 rounded-[13px] px-1 py-1.5" : "min-h-[76px] rounded-2xl px-2 py-1.5"} border text-left transition ${
+                    className={`smartmaps-calendar-day relative overflow-visible ${compact ? "min-h-14 rounded-[13px] px-1 py-1.5" : "min-h-[76px] rounded-2xl px-2 py-1.5"} border text-left transition ${
                       cell.isCurrentMonth
                         ? "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
                         : "border-transparent bg-slate-100/70 text-slate-300 hover:border-slate-200"
-                    } ${isSelected ? "border-sky-700 shadow-[0_12px_28px_rgba(37,99,235,0.12)]" : ""}`}
+                    } ${holidayToneClass} ${isToday ? "smartmaps-calendar-day-today" : ""} ${isSelected ? "smartmaps-calendar-day-selected border-sky-700 shadow-[0_12px_28px_rgba(37,99,235,0.12)]" : ""}`}
                   >
-                    {currentItems.length > 0 ? (
+                    {eventBadgeCount > 0 ? (
                       <span
-                        className={`absolute z-2 inline-flex items-center justify-center rounded-full bg-sky-700 text-white shadow-[0_10px_24px_rgba(37,99,235,0.28)] ${
+                        className={`smartmaps-calendar-event-count absolute z-2 inline-flex items-center justify-center rounded-full bg-sky-700 text-white shadow-[0_10px_24px_rgba(37,99,235,0.28)] ${
                           compact
                             ? "-right-1 -top-1 min-w-[22px] px-1.5 text-[10px] leading-[22px]"
                             : "-right-1.5 -top-1.5 min-w-[26px] px-1.5 text-[11px] leading-[26px]"
                         } font-semibold`}
                       >
-                        {currentItems.length}
+                        {eventBadgeCount}
                       </span>
                     ) : null}
 
                     <span
-                      className={`inline-flex items-center justify-center rounded-full text-xs font-semibold ${
-                        compact ? "h-[22px] w-[22px]" : "h-7 w-7"
-                      } ${
+                      className={`inline-flex items-center justify-center text-xs font-semibold ${
                         isToday
-                          ? "bg-sky-700 text-white"
-                          : cell.isCurrentMonth
-                          ? "text-slate-800"
-                          : "text-slate-400"
-                      }`}
+                          ? compact
+                            ? "smartmaps-calendar-date-today text-[13px]"
+                            : "smartmaps-calendar-date-today text-[15px]"
+                          : compact
+                            ? "h-[22px] w-[22px] rounded-full"
+                            : "h-7 w-7 rounded-full"
+                      } ${
+                        !isToday
+                          ? cell.isCurrentMonth
+                            ? "text-slate-800"
+                            : "text-slate-400"
+                          : ""
+                      } ${!isToday ? dateToneClass : ""}`}
                     >
                       {cell.date.getUTCDate()}
                     </span>
@@ -537,12 +579,41 @@ export default function ActivityCalendar({
       >
         <div className="pb-1">
           {selectedItems.length === 0 ? (
+            selectedIsRegularHoliday ? (
+              <div
+                className="rounded-2xl border px-3.5 py-3"
+                style={{
+                  borderColor: "var(--border)",
+                  background: "color-mix(in srgb, var(--surface-muted) 82%, transparent)",
+                }}
+              >
+                <Space orientation="vertical" size={6} style={{ width: "100%" }}>
+                  <div>
+                    <TypographyText strong style={{ fontSize: 14 }}>
+                      Hari libur reguler
+                    </TypographyText>
+                    <TypographyParagraph
+                      style={{
+                        marginTop: 3,
+                        marginBottom: 0,
+                        color: "#64748b",
+                        fontSize: 12,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Akhir pekan. Tidak ada agenda atau keterangan libur khusus pada tanggal ini.
+                    </TypographyParagraph>
+                  </div>
+                </Space>
+              </div>
+            ) : (
             <div className="smartmaps-empty-panel rounded-[20px] px-4 py-8">
               <Empty
                 description={emptyDayLabel}
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               />
             </div>
+            )
           ) : (
             <Space orientation="vertical" size={8} style={{ width: "100%" }}>
               {selectedItems.map((item) => (

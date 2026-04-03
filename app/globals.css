@@ -604,6 +604,50 @@ main {
   transform: translateY(-1px);
 }
 
+.smartmaps-map-legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(203, 213, 225, 0.88);
+  background: rgba(255, 255, 255, 0.72);
+  color: #64748b;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    opacity 180ms ease;
+}
+
+.smartmaps-map-legend-chip:hover,
+.smartmaps-map-legend-chip:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.smartmaps-map-legend-chip-inactive {
+  opacity: 0.72;
+}
+
+.smartmaps-map-legend-chip-lab {
+  border-color: rgba(252, 165, 165, 0.72);
+  background: #fff5f5;
+  color: #b91c1c;
+  box-shadow: 0 10px 22px rgba(248, 113, 113, 0.12);
+}
+
+.smartmaps-map-legend-chip-agenda {
+  border-color: rgba(110, 231, 183, 0.72);
+  background: #edfdf5;
+  color: #047857;
+  box-shadow: 0 10px 22px rgba(16, 185, 129, 0.12);
+}
+
 .smartmaps-calendar-kind-pill {
   box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.18);
 }
@@ -654,6 +698,137 @@ main {
 
 .smartmaps-calendar-kind-dot-leave {
   background: #f97316;
+}
+
+.smartmaps-calendar-day {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.smartmaps-calendar-day-today {
+  border-color: rgba(29, 78, 216, 0.82) !important;
+  background:
+    radial-gradient(circle at top right, rgba(147, 197, 253, 0.2), transparent 38%),
+    linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  box-shadow:
+    0 16px 30px rgba(37, 99, 235, 0.22),
+    inset 0 0 0 1px rgba(191, 219, 254, 0.14);
+}
+
+.smartmaps-calendar-day-today::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 6px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(224, 242, 254, 0.88) 100%);
+  opacity: 0.92;
+}
+
+.smartmaps-calendar-day-holiday {
+  border-color: rgba(252, 165, 165, 0.5) !important;
+  background: #fff3f4 !important;
+}
+
+.smartmaps-calendar-day-leave {
+  border-color: rgba(253, 186, 116, 0.52) !important;
+  background: #fff8ef !important;
+}
+
+.smartmaps-calendar-day-weekend {
+  border-color: rgba(191, 219, 254, 0.78) !important;
+  background: #f7fbff !important;
+}
+
+.smartmaps-calendar-day-today.smartmaps-calendar-day-holiday {
+  background:
+    radial-gradient(circle at top right, rgba(254, 202, 202, 0.2), transparent 40%),
+    linear-gradient(180deg, #ef4444 0%, #dc2626 100%) !important;
+  border-color: rgba(220, 38, 38, 0.82) !important;
+}
+
+.smartmaps-calendar-day-today.smartmaps-calendar-day-leave {
+  background:
+    radial-gradient(circle at top right, rgba(254, 215, 170, 0.22), transparent 40%),
+    linear-gradient(180deg, #f97316 0%, #ea580c 100%) !important;
+  border-color: rgba(194, 65, 12, 0.8) !important;
+}
+
+.smartmaps-calendar-day-today.smartmaps-calendar-day-weekend {
+  background:
+    radial-gradient(circle at top right, rgba(191, 219, 254, 0.22), transparent 40%),
+    linear-gradient(180deg, #3b82f6 0%, #1e40af 100%) !important;
+  border-color: rgba(30, 64, 175, 0.82) !important;
+}
+
+.smartmaps-calendar-day-selected.smartmaps-calendar-day-holiday {
+  box-shadow:
+    0 12px 28px rgba(37, 99, 235, 0.12),
+    inset 0 0 0 1px rgba(248, 113, 113, 0.18);
+}
+
+.smartmaps-calendar-day-selected.smartmaps-calendar-day-leave {
+  box-shadow:
+    0 12px 28px rgba(37, 99, 235, 0.12),
+    inset 0 0 0 1px rgba(251, 146, 60, 0.18);
+}
+
+.smartmaps-calendar-day-selected.smartmaps-calendar-day-weekend {
+  box-shadow:
+    0 12px 28px rgba(37, 99, 235, 0.12),
+    inset 0 0 0 1px rgba(96, 165, 250, 0.18);
+}
+
+.smartmaps-calendar-day-selected.smartmaps-calendar-day-today {
+  box-shadow:
+    0 20px 36px rgba(37, 99, 235, 0.26),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.smartmaps-calendar-date-holiday {
+  color: #b91c1c !important;
+}
+
+.smartmaps-calendar-date-today {
+  color: #fff !important;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.smartmaps-calendar-day-today .smartmaps-calendar-event-count {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #1d4ed8 !important;
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.16),
+    inset 0 0 0 1px rgba(191, 219, 254, 0.84);
+}
+
+.smartmaps-calendar-day-today.smartmaps-calendar-day-holiday .smartmaps-calendar-event-count {
+  color: #b91c1c !important;
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.16),
+    inset 0 0 0 1px rgba(254, 202, 202, 0.88);
+}
+
+.smartmaps-calendar-day-today.smartmaps-calendar-day-leave .smartmaps-calendar-event-count {
+  color: #c2410c !important;
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.16),
+    inset 0 0 0 1px rgba(253, 186, 116, 0.88);
+}
+
+.smartmaps-calendar-date-leave {
+  color: #c2410c !important;
+}
+
+.smartmaps-calendar-date-weekend {
+  color: #1d4ed8 !important;
 }
 
 .smartmaps-activity-kind-badge {
@@ -772,6 +947,26 @@ html.theme-dark .smartmaps-map-reset-button.ant-btn:focus {
   color: #f8fbff !important;
 }
 
+html.theme-dark .smartmaps-map-legend-chip {
+  border-color: rgba(71, 85, 105, 0.88);
+  background: rgba(15, 23, 42, 0.84);
+  color: #94a3b8;
+}
+
+html.theme-dark .smartmaps-map-legend-chip-lab {
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(127, 29, 29, 0.82);
+  color: #fee2e2;
+  box-shadow: 0 12px 24px rgba(2, 6, 23, 0.24);
+}
+
+html.theme-dark .smartmaps-map-legend-chip-agenda {
+  border-color: rgba(52, 211, 153, 0.38);
+  background: rgba(6, 78, 59, 0.84);
+  color: #d1fae5;
+  box-shadow: 0 12px 24px rgba(2, 6, 23, 0.24);
+}
+
 html.theme-dark .smartmaps-calendar-kind-pill-event {
   background: rgba(20, 83, 45, 0.9);
   color: #d1fae5;
@@ -810,6 +1005,102 @@ html.theme-dark .smartmaps-calendar-kind-pill-leave {
 
 html.theme-dark .smartmaps-calendar-kind-dot-leave {
   background: #fb923c;
+}
+
+html.theme-dark .smartmaps-calendar-day-holiday {
+  border-color: rgba(248, 113, 113, 0.34) !important;
+  background: rgba(94, 28, 28, 0.34) !important;
+}
+
+html.theme-dark .smartmaps-calendar-day-today {
+  border-color: rgba(103, 232, 249, 0.46) !important;
+  background:
+    radial-gradient(circle at top right, rgba(103, 232, 249, 0.22), transparent 40%),
+    linear-gradient(180deg, rgba(29, 78, 216, 0.96) 0%, rgba(30, 64, 175, 0.98) 100%) !important;
+  box-shadow:
+    0 18px 34px rgba(2, 6, 23, 0.48),
+    inset 0 0 0 1px rgba(191, 219, 254, 0.12);
+}
+
+html.theme-dark .smartmaps-calendar-day-today::before {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(224, 242, 254, 0.86) 100%);
+}
+
+html.theme-dark .smartmaps-calendar-day-leave {
+  border-color: rgba(251, 146, 60, 0.34) !important;
+  background: rgba(99, 51, 17, 0.34) !important;
+}
+
+html.theme-dark .smartmaps-calendar-day-weekend {
+  border-color: rgba(96, 165, 250, 0.26) !important;
+  background: rgba(24, 52, 87, 0.3) !important;
+}
+
+html.theme-dark .smartmaps-calendar-day-today.smartmaps-calendar-day-holiday {
+  background:
+    radial-gradient(circle at top right, rgba(254, 202, 202, 0.16), transparent 40%),
+    linear-gradient(180deg, rgba(220, 38, 38, 0.92) 0%, rgba(153, 27, 27, 0.98) 100%) !important;
+  border-color: rgba(254, 202, 202, 0.4) !important;
+}
+
+html.theme-dark .smartmaps-calendar-day-today.smartmaps-calendar-day-leave {
+  background:
+    radial-gradient(circle at top right, rgba(254, 215, 170, 0.18), transparent 40%),
+    linear-gradient(180deg, rgba(234, 88, 12, 0.92) 0%, rgba(154, 52, 18, 0.98) 100%) !important;
+  border-color: rgba(253, 186, 116, 0.4) !important;
+}
+
+html.theme-dark .smartmaps-calendar-day-today.smartmaps-calendar-day-weekend {
+  background:
+    radial-gradient(circle at top right, rgba(147, 197, 253, 0.18), transparent 40%),
+    linear-gradient(180deg, rgba(37, 99, 235, 0.96) 0%, rgba(30, 64, 175, 0.98) 100%) !important;
+  border-color: rgba(147, 197, 253, 0.42) !important;
+}
+
+html.theme-dark .smartmaps-calendar-date-holiday {
+  color: #fecaca !important;
+}
+
+html.theme-dark .smartmaps-calendar-day-selected.smartmaps-calendar-day-today {
+  box-shadow:
+    0 20px 38px rgba(2, 6, 23, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+html.theme-dark .smartmaps-calendar-date-today {
+  color: #eff6ff !important;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+html.theme-dark .smartmaps-calendar-day-today .smartmaps-calendar-event-count {
+  background: rgba(239, 246, 255, 0.96) !important;
+  color: #1d4ed8 !important;
+  box-shadow:
+    0 12px 24px rgba(2, 6, 23, 0.24),
+    inset 0 0 0 1px rgba(191, 219, 254, 0.78);
+}
+
+html.theme-dark .smartmaps-calendar-day-today.smartmaps-calendar-day-holiday .smartmaps-calendar-event-count {
+  color: #b91c1c !important;
+  box-shadow:
+    0 12px 24px rgba(2, 6, 23, 0.24),
+    inset 0 0 0 1px rgba(254, 202, 202, 0.82);
+}
+
+html.theme-dark .smartmaps-calendar-day-today.smartmaps-calendar-day-leave .smartmaps-calendar-event-count {
+  color: #c2410c !important;
+  box-shadow:
+    0 12px 24px rgba(2, 6, 23, 0.24),
+    inset 0 0 0 1px rgba(253, 186, 116, 0.82);
+}
+
+html.theme-dark .smartmaps-calendar-date-leave {
+  color: #fdba74 !important;
+}
+
+html.theme-dark .smartmaps-calendar-date-weekend {
+  color: #bfdbfe !important;
 }
 
 html.theme-dark .smartmaps-activity-kind-badge-event {

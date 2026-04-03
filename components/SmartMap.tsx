@@ -14,7 +14,7 @@ const SmartMapInner = dynamic(() => import("./SmartMapInner"), {
   ),
 });
 
-export type { LabTypeDTO, LabWithTypes } from "./SmartMapInner";
+export type { LabTypeDTO, LabWithTypes, MapLayerFilter } from "./SmartMapInner";
 
 export default function SmartMap(props: SmartMapInnerProps) {
   return (

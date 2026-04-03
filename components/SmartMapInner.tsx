@@ -74,7 +74,11 @@ export type SmartMapInnerProps = {
   focusedActivity?: ActivitySourceItem | null;
   selectedLabId?: string | null;
   onSelectLab?: (labId: string | null) => void;
+  layerFilter?: MapLayerFilter;
+  onLayerFilterChange?: (nextFilter: MapLayerFilter) => void;
 };
+
+export type MapLayerFilter = "all" | "lab" | "agenda";
 
 function hasValidEventCoordinates(item: ActivitySourceItem | null | undefined) {
   return Boolean(
@@ -193,7 +197,8 @@ function MapViewportController({
     if (
       !hasInitializedRef.current ||
       previousSelectedLabIdRef.current ||
-      previousFocusKeyRef.current
+      previousFocusKeyRef.current ||
+      previousActivityFocusKeyRef.current
     ) {
         animateToBounds(labsBounds, {
           padding: [44, 44],
@@ -510,6 +515,8 @@ export default function SmartMapInner({
   focusedActivity = null,
   selectedLabId,
   onSelectLab,
+  layerFilter = "all",
+  onLayerFilterChange,
 }: SmartMapInnerProps) {
   const mapContent = siteContent.publicHome.map;
   const { mode } = useAppTheme();
@@ -567,9 +574,15 @@ export default function SmartMapInner({
     () => new Set(highlightedLabIds),
     [highlightedLabIds]
   );
-  const activeLabIdSet = useMemo(() => new Set(activeLabIds), [activeLabIds]);
   const mutedLabIdSet = useMemo(() => new Set(mutedLabIds), [mutedLabIds]);
-  const hasFocusedActivityCoordinates = hasValidEventCoordinates(focusedActivity);
+  const hasFocusedActivityCoordinates =
+    layerFilter !== "lab" && hasValidEventCoordinates(focusedActivity);
+  const visibleFocusedActivity =
+    layerFilter !== "lab" ? focusedActivity : null;
+  const visibleActiveLabIdSet = useMemo(
+    () => new Set(layerFilter === "lab" ? [] : activeLabIds),
+    [activeLabIds, layerFilter]
+  );
   const tileLayerUrl =
     mode === "dark"
       ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -618,30 +631,30 @@ export default function SmartMapInner({
     ? `https://www.google.com/maps/search/?api=1&query=${selectedLab.latitude},${selectedLab.longitude}`
     : null;
   const focusedActivityNavigationUrl =
-    focusedActivity && hasFocusedActivityCoordinates
-      ? `https://www.google.com/maps/search/?api=1&query=${focusedActivity.eventLatitude},${focusedActivity.eventLongitude}`
+    visibleFocusedActivity && hasFocusedActivityCoordinates
+      ? `https://www.google.com/maps/search/?api=1&query=${visibleFocusedActivity.eventLatitude},${visibleFocusedActivity.eventLongitude}`
       : null;
   const focusedActivityArticleUrl =
-    focusedActivity?.relatedArticleSlug
-      ? `/artikel/${focusedActivity.relatedArticleSlug}`
+    visibleFocusedActivity?.relatedArticleSlug
+      ? `/artikel/${visibleFocusedActivity.relatedArticleSlug}`
       : null;
   const focusedActivityAreaParts = useMemo(
     () =>
-      focusedActivity
+      visibleFocusedActivity
         ? buildAdministrativeAddressParts({
-            provinceName: focusedActivity.provinceName,
-            cityName: focusedActivity.cityName,
-            cityType: focusedActivity.cityType,
-            districtName: focusedActivity.districtName,
-            villageName: focusedActivity.villageName,
-            villageType: focusedActivity.villageType,
+            provinceName: visibleFocusedActivity.provinceName,
+            cityName: visibleFocusedActivity.cityName,
+            cityType: visibleFocusedActivity.cityType,
+            districtName: visibleFocusedActivity.districtName,
+            villageName: visibleFocusedActivity.villageName,
+            villageType: visibleFocusedActivity.villageType,
           })
         : [],
-    [focusedActivity]
+    [visibleFocusedActivity]
   );
 
   useEffect(() => {
-    if (!focusedActivity || !hasFocusedActivityCoordinates) {
+    if (!visibleFocusedActivity || !hasFocusedActivityCoordinates) {
       return;
     }
 
@@ -652,7 +665,7 @@ export default function SmartMapInner({
     return () => {
       window.cancelAnimationFrame(frameId);
     };
-  }, [focusedActivity, hasFocusedActivityCoordinates]);
+  }, [visibleFocusedActivity, hasFocusedActivityCoordinates]);
 
   useEffect(() => {
     if (!selectedLab || hasFocusedActivityCoordinates) {
@@ -674,6 +687,11 @@ export default function SmartMapInner({
     }
 
     onSelectLab?.(nextLabId);
+  }
+
+  function handleLayerFilterClick(target: Exclude<MapLayerFilter, "all">) {
+    if (!onLayerFilterChange) return;
+    onLayerFilterChange(layerFilter === target ? "all" : target);
   }
 
   const detailContent = selectedLab ? (
@@ -857,14 +875,22 @@ export default function SmartMapInner({
         <div className="smartmaps-map-legend-wrap pointer-events-none absolute bottom-3 left-3 z-500">
           <div className="rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
             <span className="inline-flex items-center gap-3">
-              <span className="inline-flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleLayerFilterClick("lab")}
+                className={`smartmaps-map-legend-chip pointer-events-auto ${layerFilter !== "agenda" ? "smartmaps-map-legend-chip-active smartmaps-map-legend-chip-lab" : "smartmaps-map-legend-chip-inactive"}`}
+              >
                 <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                 {mapContent.legend.labLocation}
-              </span>
-              <span className="inline-flex items-center gap-2">
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLayerFilterClick("agenda")}
+                className={`smartmaps-map-legend-chip pointer-events-auto ${layerFilter !== "lab" ? "smartmaps-map-legend-chip-active smartmaps-map-legend-chip-agenda" : "smartmaps-map-legend-chip-inactive"}`}
+              >
                 <span className="map-legend-pulse map-legend-pulse-active" />
                 {mapContent.legend.activeAgenda}
-              </span>
+              </button>
               {highlightedLabIds.length > 0 ? (
                 <span className="inline-flex items-center gap-2">
                   <span className="map-legend-pulse map-legend-pulse-search" />
@@ -915,13 +941,13 @@ export default function SmartMapInner({
               focusKey={focusKey}
             />
 
-            {hasFocusedActivityCoordinates && focusedActivity ? (
+            {hasFocusedActivityCoordinates && visibleFocusedActivity ? (
               <Marker
-                key={`activity-focus:${focusedActivity.id}:${focusedActivity.eventLatitude}:${focusedActivity.eventLongitude}`}
+                key={`activity-focus:${visibleFocusedActivity.id}:${visibleFocusedActivity.eventLatitude}:${visibleFocusedActivity.eventLongitude}`}
                 ref={(marker) => {
                   focusedActivityMarkerRef.current = marker;
                 }}
-                position={[focusedActivity.eventLatitude!, focusedActivity.eventLongitude!]}
+                position={[visibleFocusedActivity.eventLatitude!, visibleFocusedActivity.eventLongitude!]}
                 icon={createActivityFocusIcon()}
                 zIndexOffset={1200}
               >
@@ -937,18 +963,18 @@ export default function SmartMapInner({
                     variant="event"
                     eyebrow={siteContent.publicHome.sidebar.agendaTitle}
                     title={
-                      focusedActivity.locationName ||
-                      focusedActivity.title ||
+                      visibleFocusedActivity.locationName ||
+                      visibleFocusedActivity.title ||
                       mapContent.defaultAgendaLocationLabel
                     }
                     subtitle={[
                       formatActivityRange(
-                        focusedActivity.startDate,
-                        focusedActivity.endDate,
-                        focusedActivity.timeLabel
+                        visibleFocusedActivity.startDate,
+                        visibleFocusedActivity.endDate,
+                        visibleFocusedActivity.timeLabel
                       ),
-                      focusedActivity.addressDetail ||
-                        focusedActivity.locationAddress ||
+                      visibleFocusedActivity.addressDetail ||
+                        visibleFocusedActivity.locationAddress ||
                         focusedActivityAreaParts[0] ||
                         null,
                     ]
@@ -970,7 +996,7 @@ export default function SmartMapInner({
             {labs.map((lab) => {
               const isSelected = activeSelectedLabId === lab.id;
               const isHighlighted = highlightedLabIdSet.has(lab.id);
-              const isActive = activeLabIdSet.has(lab.id);
+              const isActive = visibleActiveLabIdSet.has(lab.id);
               const isMuted = mutedLabIdSet.has(lab.id);
               const isBestMatch = bestMatchLabId === lab.id;
               const zIndexOffset = isSelected
