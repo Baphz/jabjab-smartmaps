@@ -2,7 +2,11 @@ import "server-only";
 
 import type { Article, HolidayType, MasterHoliday, Prisma, LabEvent } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { ActivitySourceItem, formatDateKey } from "@/lib/activity-calendar";
+import {
+  ActivitySourceItem,
+  formatDateKey,
+  getCurrentIndonesiaYear,
+} from "@/lib/activity-calendar";
 
 export type ActivityQueryArgs = {
   labId?: string | null;
@@ -13,13 +17,30 @@ export type ActivityQueryArgs = {
   rangeEnd?: Date;
 };
 
+const INDONESIA_UTC_OFFSET = "+07:00";
+
+function dateKeyToIndonesiaBoundaryDate(
+  dateKey: string,
+  boundary: "start" | "end"
+) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return null;
+
+  const time = boundary === "start" ? "00:00:00.000" : "23:59:59.999";
+  const date = new Date(`${dateKey}T${time}${INDONESIA_UTC_OFFSET}`);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export function buildDefaultActivityRange() {
-  const now = new Date();
-  const currentYear = now.getUTCFullYear();
+  const currentYear = getCurrentIndonesiaYear();
 
   return {
-    rangeStart: new Date(Date.UTC(currentYear, 0, 1)),
-    rangeEnd: new Date(Date.UTC(currentYear + 1, 11, 31)),
+    rangeStart:
+      dateKeyToIndonesiaBoundaryDate(`${currentYear}-01-01`, "start") ??
+      new Date(Date.UTC(currentYear, 0, 1)),
+    rangeEnd:
+      dateKeyToIndonesiaBoundaryDate(`${currentYear + 1}-12-31`, "end") ??
+      new Date(Date.UTC(currentYear + 1, 11, 31, 23, 59, 59, 999)),
   };
 }
 

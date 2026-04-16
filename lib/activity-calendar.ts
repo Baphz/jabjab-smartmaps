@@ -1,5 +1,8 @@
 import type { LabCityTypeValue, LabVillageTypeValue } from "@/lib/lab-address";
 
+export const INDONESIA_LOCALE = "id-ID";
+export const INDONESIA_TIME_ZONE = "Asia/Jakarta";
+
 export const CALENDAR_WEEKDAY_LABELS = [
   "Sen",
   "Sel",
@@ -53,8 +56,21 @@ export type MonthCell = {
   isCurrentMonth: boolean;
 };
 
-function pad2(value: number) {
-  return String(value).padStart(2, "0");
+function getIndonesiaDateParts(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: INDONESIA_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value])
+  ) as Record<"year" | "month" | "day", string>;
+
+  return values;
 }
 
 export function parseDateKey(value: string) {
@@ -79,9 +95,9 @@ export function formatDateKey(value: Date | string) {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
 
-  return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(
-    date.getUTCDate()
-  )}`;
+  const { year, month, day } = getIndonesiaDateParts(date);
+
+  return `${year}-${month}-${day}`;
 }
 
 export function parseMonthKey(value: string) {
@@ -98,6 +114,10 @@ export function parseMonthKey(value: string) {
 }
 
 export function formatMonthKey(value: Date | string) {
+  if (typeof value === "string" && /^\d{4}-\d{2}$/.test(value.trim())) {
+    return value.trim();
+  }
+
   const date =
     typeof value === "string"
       ? parseDateKey(`${value.trim()}-01`) ?? new Date(value)
@@ -105,7 +125,7 @@ export function formatMonthKey(value: Date | string) {
 
   if (Number.isNaN(date.getTime())) return "";
 
-  return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}`;
+  return formatDateKey(date).slice(0, 7);
 }
 
 export function addDaysUtc(dateKey: string, days: number) {
@@ -221,10 +241,10 @@ export function formatMonthTitle(monthKey: string) {
   const monthDate = parseMonthKey(monthKey);
   if (!monthDate) return monthKey;
 
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat(INDONESIA_LOCALE, {
     month: "long",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: INDONESIA_TIME_ZONE,
   }).format(monthDate);
 }
 
@@ -232,12 +252,12 @@ export function formatFullDate(dateKey: string) {
   const date = parseDateKey(dateKey);
   if (!date) return dateKey;
 
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat(INDONESIA_LOCALE, {
     weekday: "long",
     day: "2-digit",
     month: "long",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: INDONESIA_TIME_ZONE,
   }).format(date);
 }
 
@@ -245,10 +265,10 @@ export function formatCompactDate(dateKey: string) {
   const date = parseDateKey(dateKey);
   if (!date) return dateKey;
 
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat(INDONESIA_LOCALE, {
     day: "2-digit",
     month: "short",
-    timeZone: "UTC",
+    timeZone: INDONESIA_TIME_ZONE,
   }).format(date);
 }
 
@@ -256,12 +276,31 @@ export function formatMediumDate(dateKey: string) {
   const date = parseDateKey(dateKey);
   if (!date) return dateKey;
 
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat(INDONESIA_LOCALE, {
     day: "2-digit",
     month: "long",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: INDONESIA_TIME_ZONE,
   }).format(date);
+}
+
+export function formatDateTimeInIndonesia(
+  value: Date | string,
+  options: Intl.DateTimeFormatOptions
+) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return typeof value === "string" ? value : "";
+  }
+
+  return new Intl.DateTimeFormat(INDONESIA_LOCALE, {
+    ...options,
+    timeZone: INDONESIA_TIME_ZONE,
+  }).format(date);
+}
+
+export function getCurrentIndonesiaYear() {
+  return Number(getIndonesiaDateParts(new Date()).year);
 }
 
 export function formatActivityRange(

@@ -12,7 +12,7 @@ import { notFound } from "next/navigation";
 import ArticleContent from "@/components/article/ArticleContent";
 import ArticleOriginMeta from "@/components/article/ArticleOriginMeta";
 import ArticleSharePanel from "@/components/article/ArticleSharePanel";
-import { formatMediumDate } from "@/lib/activity-calendar";
+import { formatDateKey, formatMediumDate } from "@/lib/activity-calendar";
 import { getAppBranding } from "@/lib/app-branding";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
 import { getConfiguredAppBaseUrl } from "@/lib/invitation-url";
@@ -115,12 +115,6 @@ function buildAbsoluteUrl(value: string, appBaseUrl: string) {
   return `${normalizedBase}${normalizedPath}`;
 }
 
-function formatDate(value: Date) {
-  return `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2, "0")}-${String(
-    value.getUTCDate()
-  ).padStart(2, "0")}`;
-}
-
 function getPublicationLabel(isGlobal: boolean) {
   return isGlobal ? "Publikasi DPW" : "Publikasi Lab";
 }
@@ -204,7 +198,7 @@ function RelatedArticleCard({
       </div>
 
       <div className="mt-2 text-[12px] text-slate-500">
-        {formatMediumDate(formatDate(article.publishedAt))}
+        {formatMediumDate(formatDateKey(article.publishedAt))}
       </div>
 
       <h3 className="smartmaps-title-card mt-1">{article.title}</h3>
@@ -294,7 +288,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
   const resolvedCover = article.coverImageUrl ? resolveStoredPhotoUrl(article.coverImageUrl) : "";
   const articleUrl = `${getConfiguredAppBaseUrl()}/artikel/${article.slug}`;
-  const publishLabel = formatMediumDate(formatDate(article.publishedAt));
+  const publishLabel = formatMediumDate(formatDateKey(article.publishedAt));
   const publicationLabel = getPublicationLabel(article.isGlobal);
   const coverageLabel = getCoverageLabel({
     isGlobal: article.isGlobal,

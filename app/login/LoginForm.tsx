@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
+import { getCurrentIndonesiaYear } from "@/lib/activity-calendar";
 import type { AppBranding } from "@/lib/app-branding";
 import { siteContent } from "@/lib/site-content";
 
@@ -94,7 +95,7 @@ export function LoginForm({ branding }: { branding: AppBranding }) {
             </div>
 
             <div className="flex items-center justify-between rounded-[18px] border border-slate-200 bg-slate-50/95 px-3.5 py-3 text-xs text-slate-500">
-              <span>© {new Date().getFullYear()} {branding.appName}</span>
+              <span>© {getCurrentIndonesiaYear()} {branding.appName}</span>
               <Link
                 href="/"
                 className="font-medium text-slate-600 transition hover:text-slate-900"

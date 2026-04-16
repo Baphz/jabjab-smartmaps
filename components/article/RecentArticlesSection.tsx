@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button, Empty } from "antd";
 import Image from "next/image";
 import ArticleOriginMeta from "@/components/article/ArticleOriginMeta";
+import { formatDateTimeInIndonesia } from "@/lib/activity-calendar";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
 import { type LabCityTypeValue, type LabVillageTypeValue } from "@/lib/lab-address";
 import { siteContent } from "@/lib/site-content";
@@ -24,13 +25,11 @@ type ArticleCardItem = {
 };
 
 function formatPublishedDate(value: Date | string) {
-  const date = value instanceof Date ? value : new Date(value);
-
-  return new Intl.DateTimeFormat("id-ID", {
+  return formatDateTimeInIndonesia(value, {
     day: "2-digit",
     month: "long",
     year: "numeric",
-  }).format(date);
+  });
 }
 
 function ArticleCover({

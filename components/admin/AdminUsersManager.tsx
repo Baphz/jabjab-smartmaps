@@ -23,6 +23,7 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { formatDateTimeInIndonesia } from "@/lib/activity-calendar";
 
 const { Title: TypographyTitle } = Typography;
 const { Item: FormItem } = Form;
@@ -61,10 +62,10 @@ type Props = {
 };
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("id-ID", {
+  return formatDateTimeInIndonesia(value, {
     dateStyle: "medium",
     timeStyle: "short",
-  }).format(new Date(value));
+  });
 }
 
 export default function AdminUsersManager({

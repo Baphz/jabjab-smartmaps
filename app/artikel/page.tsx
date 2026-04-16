@@ -2,19 +2,13 @@ import Link from "next/link";
 import { Button, Empty } from "antd";
 import Image from "next/image";
 import ArticleOriginMeta from "@/components/article/ArticleOriginMeta";
-import { formatMediumDate } from "@/lib/activity-calendar";
+import { formatDateKey, formatMediumDate } from "@/lib/activity-calendar";
 import { getAppBranding } from "@/lib/app-branding";
 import { resolveStoredPhotoUrl } from "@/lib/drive-file";
 import { type LabCityTypeValue, type LabVillageTypeValue } from "@/lib/lab-address";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-
-function formatDate(value: Date) {
-  return `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2, "0")}-${String(
-    value.getUTCDate()
-  ).padStart(2, "0")}`;
-}
 
 function ArticleCard({
   title,
@@ -83,11 +77,7 @@ function ArticleCard({
       </div>
 
       <div className="mt-2 text-[12px] text-slate-500">
-        {formatMediumDate(
-          `${publishedAt.getUTCFullYear()}-${String(publishedAt.getUTCMonth() + 1).padStart(2, "0")}-${String(
-            publishedAt.getUTCDate()
-          ).padStart(2, "0")}`
-        )}
+        {formatMediumDate(formatDateKey(publishedAt))}
       </div>
 
       <h2 className="smartmaps-title-card mt-1 transition-colors group-hover:text-sky-700">
@@ -160,7 +150,7 @@ function FeaturedArticleCard({
         />
 
         <div className="smartmaps-copy-muted mt-3">
-          {formatMediumDate(formatDate(publishedAt))}
+          {formatMediumDate(formatDateKey(publishedAt))}
         </div>
 
         <h2 className="smartmaps-title-page mt-2 transition-colors group-hover:text-sky-700">

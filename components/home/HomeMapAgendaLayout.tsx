@@ -389,7 +389,8 @@ export default function HomeMapAgendaLayout({
               readRelatedArticleLabel={
                 publicHomeContent.calendar.readRelatedArticleLabel
               }
-              viewMapLabel={siteContent.publicHome.map.labDetail.openMapsLabel}
+              viewMapLabel={publicHomeContent.calendar.viewMapLabel}
+              openMapsLabel={siteContent.publicHome.map.labDetail.openMapsLabel}
             />
           </section>
 

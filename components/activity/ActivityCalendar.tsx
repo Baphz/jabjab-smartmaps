@@ -55,6 +55,7 @@ type ActivityCalendarProps = {
   readArticleLabel?: string;
   readRelatedArticleLabel?: string;
   viewMapLabel?: string;
+  openMapsLabel?: string;
 };
 
 const KIND_STYLES: Record<
@@ -196,7 +197,8 @@ export default function ActivityCalendar({
   emptyDayLabel = "Belum ada item.",
   readArticleLabel = "Baca artikel",
   readRelatedArticleLabel = "Baca artikel terkait",
-  viewMapLabel = siteContent.publicHome.map.labDetail.openMapsLabel,
+  viewMapLabel = siteContent.publicHome.calendar.viewMapLabel,
+  openMapsLabel = siteContent.publicHome.map.labDetail.openMapsLabel,
 }: ActivityCalendarProps) {
   const sortedItems = useMemo(
     () =>
@@ -297,10 +299,10 @@ export default function ActivityCalendar({
       nextItems.find(
         (item) =>
           item.kind === "lab_event" &&
-          (typeof item.eventLatitude === "number" ||
-            typeof item.eventLongitude === "number" ||
+          (hasActivityCoordinates(item) ||
             Boolean(item.labId))
       ) ?? null;
+    const shouldOpenDetail = nextItems.length > 1;
 
     if (!isSameMonth(dateKey, monthKey)) {
       startTransition(() => {
@@ -308,7 +310,7 @@ export default function ActivityCalendar({
         setSelectedDateKey(dateKey);
       });
 
-      if (firstMappableActivity && onSelectActivityLocation) {
+      if (!shouldOpenDetail && firstMappableActivity && onSelectActivityLocation) {
         onSelectActivityLocation(firstMappableActivity);
         setIsDetailOpen(false);
         return;
@@ -319,7 +321,7 @@ export default function ActivityCalendar({
 
     setSelectedDateKey(dateKey);
 
-    if (firstMappableActivity && onSelectActivityLocation) {
+    if (!shouldOpenDetail && firstMappableActivity && onSelectActivityLocation) {
       onSelectActivityLocation(firstMappableActivity);
       setIsDetailOpen(false);
       return;
@@ -627,6 +629,10 @@ export default function ActivityCalendar({
                 >
                   {(() => {
                     const googleMapsUrl = buildActivityMapsUrl(item);
+                    const canShowSelectedLocation =
+                      item.kind === "lab_event" &&
+                      Boolean(onSelectActivityLocation) &&
+                      (hasActivityCoordinates(item) || Boolean(item.labId));
 
                     return (
                   <Space orientation="vertical" size={6} style={{ width: "100%" }}>
@@ -732,6 +738,20 @@ export default function ActivityCalendar({
                       </Button>
                     ) : null}
 
+                    {canShowSelectedLocation ? (
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                          onSelectActivityLocation?.(item);
+                          setIsDetailOpen(false);
+                        }}
+                        style={{ paddingInline: 0, height: "auto" }}
+                      >
+                        {viewMapLabel}
+                      </Button>
+                    ) : null}
+
                     {item.kind === "lab_event" && googleMapsUrl ? (
                       <Button
                         type="link"
@@ -741,7 +761,7 @@ export default function ActivityCalendar({
                         rel="noreferrer"
                         style={{ paddingInline: 0, height: "auto" }}
                       >
-                        {viewMapLabel}
+                        {openMapsLabel}
                       </Button>
                     ) : null}
                   </Space>

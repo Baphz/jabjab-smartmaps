@@ -4,7 +4,7 @@ import Image from "next/image";
 import RecentArticlesSection from "@/components/article/RecentArticlesSection";
 import HomeMapAgendaLayout from "@/components/home/HomeMapAgendaLayout";
 import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
-import { formatDateKey } from "@/lib/activity-calendar";
+import { formatDateKey, getCurrentIndonesiaYear } from "@/lib/activity-calendar";
 import { getActivitySources } from "@/lib/activity-server";
 import { getAppBranding } from "@/lib/app-branding";
 import { getCurrentClerkSession } from "@/lib/clerk-auth";
@@ -75,7 +75,7 @@ export default async function HomePage() {
     }),
   ]);
 
-  const year = new Date().getFullYear();
+  const year = getCurrentIndonesiaYear();
   const todayKey = formatDateKey(new Date());
   const bantenLabCount = labs.filter((lab) =>
     matchesProvinceName(lab.provinceName, "banten")
