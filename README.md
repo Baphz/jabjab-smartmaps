@@ -123,6 +123,16 @@ Buka `http://localhost:3000`.
 
 Contoh lengkap ada di [`.env.example`](/Users/baphien/Documents/projects/smart-maps/.env.example).
 
+### Basemap CARTO
+
+```env
+NEXT_PUBLIC_CARTO_BASEMAP_API_KEY=
+```
+
+Daftarkan key gratis di [CARTO Basemaps](https://carto.com/basemaps/apikey/), lalu isi variabel ini di `.env` dan environment deployment. Key dipakai oleh peta publik dan pemilih koordinat admin. Tanpa key, CARTO menampilkan watermark `API key required`.
+
+Variabel `NEXT_PUBLIC_` disertakan dalam bundle browser. Gunakan key basemap dengan pembatasan domain sesuai website aplikasi. Setelah mengubah nilainya, restart server development atau build dan deploy ulang aplikasi, lalu lakukan hard refresh browser.
+
 ### Database
 
 ```env

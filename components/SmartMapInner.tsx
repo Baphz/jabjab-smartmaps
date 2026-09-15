@@ -32,6 +32,7 @@ import {
   type LabVillageTypeValue,
 } from "@/lib/lab-address";
 import { siteContent } from "@/lib/site-content";
+import { getCartoTileUrl } from "@/lib/map-tiles";
 import "leaflet/dist/leaflet.css";
 
 const { Paragraph: TypographyParagraph } = Typography;
@@ -583,10 +584,7 @@ export default function SmartMapInner({
     () => new Set(layerFilter === "lab" ? [] : activeLabIds),
     [activeLabIds, layerFilter]
   );
-  const tileLayerUrl =
-    mode === "dark"
-      ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+  const tileLayerUrl = getCartoTileUrl("voyager");
   const selectedLabAreaDetails = useMemo(() => {
     if (!selectedLab) return [];
 

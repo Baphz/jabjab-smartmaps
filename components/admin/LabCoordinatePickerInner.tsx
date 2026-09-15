@@ -13,6 +13,7 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import MapAttributionBadge from "@/components/map/MapAttributionBadge";
+import { getCartoTileUrl } from "@/lib/map-tiles";
 import "leaflet/dist/leaflet.css";
 
 type LabCoordinatePickerInnerProps = {
@@ -215,7 +216,7 @@ export default function LabCoordinatePickerInner({
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              url={getCartoTileUrl("light_all")}
             />
             <ZoomControl position="topright" />
             <CoordinateViewportController latitude={markerPosition[0]} longitude={markerPosition[1]} />
