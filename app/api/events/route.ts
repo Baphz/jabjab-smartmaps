@@ -189,16 +189,6 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!provinceId || !provinceName || !cityId || !cityName || !districtId || !districtName) {
-      return NextResponse.json(
-        {
-          error:
-            "Pilih minimal provinsi, kabupaten/kota, dan kecamatan untuk lokasi event.",
-        },
-        { status: 400 }
-      );
-    }
-
     if (
       latitude === null ||
       longitude === null ||

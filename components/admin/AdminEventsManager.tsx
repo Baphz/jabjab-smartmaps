@@ -797,8 +797,12 @@ export default function AdminEventsManager({
             </FormItem>
           </div>
 
+          <p className="mb-3 text-[12px] text-slate-500">
+            Wilayah bersifat opsional. Lokasi agenda dapat ditentukan langsung melalui latitude,
+            longitude, atau pin pada peta.
+          </p>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            <FormItem label="Provinsi" required>
+            <FormItem label="Provinsi">
               <Select
                 showSearch
                 allowClear
@@ -838,7 +842,7 @@ export default function AdminEventsManager({
               />
             </FormItem>
 
-            <FormItem label="Kabupaten / Kota" required>
+            <FormItem label="Kabupaten / Kota">
               <Select
                 showSearch
                 allowClear
@@ -875,7 +879,7 @@ export default function AdminEventsManager({
               />
             </FormItem>
 
-            <FormItem label="Kecamatan" required>
+            <FormItem label="Kecamatan">
               <Select
                 showSearch
                 allowClear
@@ -970,7 +974,7 @@ export default function AdminEventsManager({
                     ? "Titik sudah mengikuti alamat."
                     : canAutoLocate
                     ? "Titik akan mengikuti alamat."
-                    : "Lengkapi wilayah untuk menggeser titik otomatis."}
+                    : "Klik peta, geser pin, atau isi latitude dan longitude untuk menentukan lokasi."}
                 </span>
               </div>
 
